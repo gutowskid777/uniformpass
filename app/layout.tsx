@@ -1,0 +1,42 @@
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import './globals.css'
+import Link from 'next/link'
+
+const inter = Inter({ subsets: ['latin'] })
+
+export const metadata: Metadata = {
+  title: 'UniformPass — NJ School Uniform Resale',
+  description: 'Buy and sell NJ private school uniforms. Filter by school, size, and condition.',
+}
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+          <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+            <Link href="/" className="font-bold text-xl text-indigo-700 tracking-tight flex items-center gap-1.5">
+              <span className="text-2xl">👕</span> UniformPass
+            </Link>
+            <div className="flex items-center gap-3 sm:gap-4">
+              <Link href="/" className="text-sm text-gray-600 hover:text-gray-900 hidden sm:block">
+                Browse
+              </Link>
+              <Link
+                href="/new"
+                className="bg-indigo-600 text-white text-sm font-medium px-4 py-1.5 rounded-full hover:bg-indigo-700 transition-colors"
+              >
+                + Sell
+              </Link>
+            </div>
+          </div>
+        </header>
+        <main className="min-h-screen">{children}</main>
+        <footer className="border-t border-gray-200 bg-white mt-16 py-8 text-center text-sm text-gray-500">
+          UniformPass — helping NJ families buy and sell school uniforms
+        </footer>
+      </body>
+    </html>
+  )
+}
