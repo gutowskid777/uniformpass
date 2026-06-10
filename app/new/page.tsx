@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase, type School, SIZES } from '@/lib/supabase'
+import { supabase, type School, SIZES, US_STATES, PAYMENT_OPTIONS } from '@/lib/supabase'
 
 const MAX_PHOTOS = 4
 const MAX_FILE_SIZE_MB = 5
@@ -22,11 +22,12 @@ export default function NewListingPage() {
     gender: 'unisex',
     item_type: '',
     size: '',
+    is_lot: false,
     condition: 'good',
     price: '',
     location_city: '',
-    contact_method: 'email',
-    contact_info: '',
+    location_state: '',
+    payment_methods: [] as string[],
     seller_name: '',
     description: '',
   })
@@ -37,12 +38,21 @@ export default function NewListingPage() {
     })
   }, [])
 
-  const set = (key: string, value: string) => setForm(f => ({ ...f, [key]: value }))
+  const set = (key: string, value: string | boolean) =>
+    setForm(f => ({ ...f, [key]: value }))
+
+  const togglePayment = (value: string) => {
+    setForm(f => ({
+      ...f,
+      payment_methods: f.payment_methods.includes(value)
+        ? f.payment_methods.filter(v => v !== value)
+        : [...f.payment_methods, value],
+    }))
+  }
 
   const handleSchoolChange = (schoolId: string) => {
     const school = schools.find(s => s.id === schoolId)
-    set('school_id', schoolId)
-    set('school_name', school?.name || '')
+    setForm(f => ({ ...f, school_id: schoolId, school_name: school?.name || '' }))
   }
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,17 +83,16 @@ export default function NewListingPage() {
     setError('')
 
     if (!form.school_id) return setError('Please select a school.')
-    if (!form.item_type.trim()) return setError('Please enter the item type.')
-    if (!form.size) return setError('Please enter a size.')
-    if (!form.price || Number(form.price) <= 0) return setError('Please enter a valid price.')
+    if (!form.item_type.trim()) return setError('Please describe the item.')
+    if (!form.is_lot && !form.size) return setError('Please select a size, or check "Multiple sizes (lot)".')
+    if (!form.price || Number(form.price) < 0) return setError('Please enter a valid price.')
     if (!form.location_city.trim()) return setError('Please enter your city.')
-    if (!form.contact_info.trim()) return setError('Please enter contact info.')
+    if (!form.location_state) return setError('Please select a state.')
     if (!form.seller_name.trim()) return setError('Please enter your name.')
 
     setSubmitting(true)
 
     try {
-      // Upload photos
       const photoUrls: string[] = []
       const listingId = crypto.randomUUID()
 
@@ -93,17 +102,13 @@ export default function NewListingPage() {
         const { error: uploadError } = await supabase.storage
           .from('uniform-photos')
           .upload(path, file, { contentType: file.type })
-
         if (uploadError) throw uploadError
-
         const { data: urlData } = supabase.storage
           .from('uniform-photos')
           .getPublicUrl(path)
-
         photoUrls.push(urlData.publicUrl)
       }
 
-      // Insert listing
       const { data, error: insertError } = await supabase
         .from('listings')
         .insert({
@@ -113,14 +118,17 @@ export default function NewListingPage() {
           category: form.category,
           gender: form.gender,
           item_type: form.item_type.trim(),
-          size: form.size,
+          size: form.is_lot ? 'Multiple sizes' : form.size,
+          is_lot: form.is_lot,
           condition: form.condition,
           price: Number(form.price),
           location_city: form.location_city.trim(),
-          contact_method: form.contact_method,
-          contact_info: form.contact_info.trim(),
+          location_state: form.location_state,
+          payment_methods: form.payment_methods,
           seller_name: form.seller_name.trim(),
           description: form.description.trim() || null,
+          contact_method: null,
+          contact_info: null,
           photos: photoUrls,
           status: 'active',
         })
@@ -144,7 +152,8 @@ export default function NewListingPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* School */}
+
+        {/* Item details */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
           <h2 className="font-semibold text-gray-800">About the item</h2>
 
@@ -158,7 +167,7 @@ export default function NewListingPage() {
             >
               <option value="">Select a school...</option>
               {schools.map(s => (
-                <option key={s.id} value={s.id}>{s.name} — {s.city}</option>
+                <option key={s.id} value={s.id}>{s.name} ({s.state})</option>
               ))}
             </select>
           </div>
@@ -179,21 +188,21 @@ export default function NewListingPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">For *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Gender *</label>
               <select
                 value={form.gender}
                 onChange={e => set('gender', e.target.value)}
                 className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
               >
                 <option value="unisex">Unisex</option>
-                <option value="boy">Boys</option>
-                <option value="girl">Girls</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
               </select>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Item type *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Item description *</label>
             <input
               type="text"
               placeholder="e.g. Navy dress pants, White polo, Gym shorts"
@@ -203,9 +212,20 @@ export default function NewListingPage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Size *</label>
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <label className="block text-sm font-medium text-gray-700">Size *</label>
+              <label className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.is_lot}
+                  onChange={e => set('is_lot', e.target.checked)}
+                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                Multiple sizes (lot)
+              </label>
+            </div>
+            {!form.is_lot && (
               <select
                 value={form.size}
                 onChange={e => set('size', e.target.value)}
@@ -213,29 +233,36 @@ export default function NewListingPage() {
               >
                 <option value="">Select size...</option>
                 {SIZES.map(s => <option key={s} value={s}>{s}</option>)}
-                <option value="other">Other</option>
+                <option value="Other">Other</option>
               </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Condition *</label>
-              <select
-                value={form.condition}
-                onChange={e => set('condition', e.target.value)}
-                className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                <option value="new">New / Never worn</option>
-                <option value="good">Good condition</option>
-                <option value="fair">Fair / Some wear</option>
-              </select>
-            </div>
+            )}
+            {form.is_lot && (
+              <p className="text-sm text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
+                Lot listing — describe the sizes included in the comments below.
+              </p>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Condition *</label>
+            <select
+              value={form.condition}
+              onChange={e => set('condition', e.target.value)}
+              className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              <option value="new">New / Never worn</option>
+              <option value="good">Good condition</option>
+              <option value="fair">Fair / Some wear</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Comments <span className="text-gray-400 font-normal">(condition details, stains, pickup preferences, etc.)</span>
+            </label>
             <textarea
               rows={3}
-              placeholder="Any details about the item..."
+              placeholder="e.g. Small stain on sleeve, only worn twice. Happy to meet at school parking lot. Can also ship for cost of postage."
               value={form.description}
               onChange={e => set('description', e.target.value)}
               className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
@@ -246,7 +273,6 @@ export default function NewListingPage() {
         {/* Photos */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
           <h2 className="font-semibold text-gray-800">Photos (up to {MAX_PHOTOS})</h2>
-
           <div className="flex flex-wrap gap-3">
             {photoPreviews.map((src, i) => (
               <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200">
@@ -277,26 +303,27 @@ export default function NewListingPage() {
           <p className="text-xs text-gray-400">JPG or PNG, max {MAX_FILE_SIZE_MB}MB each</p>
         </div>
 
-        {/* Pricing & Contact */}
+        {/* Price, location, payment */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-          <h2 className="font-semibold text-gray-800">Price & contact</h2>
+          <h2 className="font-semibold text-gray-800">Price & location</h2>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Price ($) *</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="25"
+              value={form.price}
+              onChange={e => set('price', e.target.value)}
+              className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+            />
+            <p className="text-xs text-gray-400 mt-1">Enter 0 if giving away for free.</p>
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Price ($) *</label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="25"
-                value={form.price}
-                onChange={e => set('price', e.target.value)}
-                className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Your city *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">City *</label>
               <input
                 type="text"
                 placeholder="Montvale"
@@ -305,41 +332,43 @@ export default function NewListingPage() {
                 className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">State *</label>
+              <select
+                value={form.location_state}
+                onChange={e => set('location_state', e.target.value)}
+                className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="">Select...</option>
+                {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Contact method *</label>
-            <select
-              value={form.contact_method}
-              onChange={e => set('contact_method', e.target.value)}
-              className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="email">Email</option>
-              <option value="venmo">Venmo</option>
-              <option value="zelle">Zelle</option>
-              <option value="cash">Cash only (pickup)</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {form.contact_method === 'email' ? 'Email address' :
-               form.contact_method === 'venmo' ? 'Venmo handle (@...)' :
-               form.contact_method === 'zelle' ? 'Zelle phone/email' :
-               'Pickup instructions'} *
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Payment accepted <span className="text-gray-400 font-normal">(check all that apply)</span>
             </label>
-            <input
-              type="text"
-              placeholder={
-                form.contact_method === 'email' ? 'you@example.com' :
-                form.contact_method === 'venmo' ? '@yourhandle' :
-                form.contact_method === 'zelle' ? '555-555-5555' :
-                'Contact to arrange pickup'
-              }
-              value={form.contact_info}
-              onChange={e => set('contact_info', e.target.value)}
-              className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-            />
+            <div className="flex flex-wrap gap-3">
+              {PAYMENT_OPTIONS.map(opt => (
+                <label
+                  key={opt.value}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-colors text-sm font-medium ${
+                    form.payment_methods.includes(opt.value)
+                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                      : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={form.payment_methods.includes(opt.value)}
+                    onChange={() => togglePayment(opt.value)}
+                    className="hidden"
+                  />
+                  {opt.label}
+                </label>
+              ))}
+            </div>
           </div>
 
           <div>
@@ -369,7 +398,7 @@ export default function NewListingPage() {
         </button>
 
         <p className="text-center text-xs text-gray-400">
-          Your contact info will be visible to buyers. Never share passwords or sensitive info.
+          Your name will be visible to buyers. Share contact details in the comments if you want buyers to reach you directly.
         </p>
       </form>
     </div>

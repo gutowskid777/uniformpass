@@ -2,8 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
-import { supabase, type Listing, type School, CONDITION_LABELS, CATEGORY_LABELS, SIZES } from '@/lib/supabase'
+import { supabase, type Listing, type School, CONDITION_LABELS, CATEGORY_LABELS, GENDER_LABELS, SIZES } from '@/lib/supabase'
 
 const PLACEHOLDER = 'https://placehold.co/400x300/e8e8f0/9999bb?text=No+photo'
 
@@ -12,7 +11,6 @@ export default function BrowsePage() {
   const [schools, setSchools] = useState<School[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Filters
   const [schoolId, setSchoolId] = useState('')
   const [category, setCategory] = useState('')
   const [gender, setGender] = useState('')
@@ -50,26 +48,19 @@ export default function BrowsePage() {
   }, [fetchListings])
 
   const activeFilters = [schoolId, category, gender, size, condition].filter(Boolean).length
-
   const clearFilters = () => {
-    setSchoolId('')
-    setCategory('')
-    setGender('')
-    setSize('')
-    setCondition('')
+    setSchoolId(''); setCategory(''); setGender(''); setSize(''); setCondition('')
   }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      {/* Hero */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-1">School Uniform Marketplace</h1>
-        <p className="text-gray-500">NJ private school uniforms — buy and sell directly with other families.</p>
+        <p className="text-gray-500">Buy and sell private school uniforms — directly with other families.</p>
       </div>
 
       {/* Filter bar */}
       <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 shadow-sm">
-        {/* Mobile toggle */}
         <div className="flex items-center justify-between sm:hidden mb-3">
           <button
             onClick={() => setShowFilters(!showFilters)}
@@ -83,9 +74,7 @@ export default function BrowsePage() {
             )}
           </button>
           {activeFilters > 0 && (
-            <button onClick={clearFilters} className="text-xs text-gray-500 underline">
-              Clear
-            </button>
+            <button onClick={clearFilters} className="text-xs text-gray-500 underline">Clear</button>
           )}
         </div>
 
@@ -97,7 +86,7 @@ export default function BrowsePage() {
           >
             <option value="">All Schools</option>
             {schools.map(s => (
-              <option key={s.id} value={s.id}>{s.name}</option>
+              <option key={s.id} value={s.id}>{s.name} ({s.state})</option>
             ))}
           </select>
 
@@ -118,9 +107,9 @@ export default function BrowsePage() {
             className="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
           >
             <option value="">All</option>
-            <option value="boy">Boys</option>
-            <option value="girl">Girls</option>
-            <option value="unisex">Unisex</option>
+            {Object.entries(GENDER_LABELS).map(([k, v]) => (
+              <option key={k} value={k}>{v}</option>
+            ))}
           </select>
 
           <select
@@ -190,6 +179,8 @@ function ListingCard({ listing }: { listing: Listing }) {
     good: 'bg-blue-100 text-blue-700',
     fair: 'bg-yellow-100 text-yellow-700',
   }
+  const locationStr = [listing.location_city, listing.location_state].filter(Boolean).join(', ')
+  const genderLabel = GENDER_LABELS[listing.gender] || listing.gender
 
   return (
     <Link href={`/listing/${listing.id}`} className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
@@ -203,14 +194,22 @@ function ListingCard({ listing }: { listing: Listing }) {
         <span className={`absolute top-2 left-2 text-xs font-medium px-2 py-0.5 rounded-full ${conditionColors[listing.condition]}`}>
           {listing.condition === 'new' ? 'New' : listing.condition === 'good' ? 'Good' : 'Fair'}
         </span>
+        {listing.is_lot && (
+          <span className="absolute top-2 right-2 text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+            Lot
+          </span>
+        )}
       </div>
       <div className="p-3">
         <p className="text-xs text-gray-500 truncate">{listing.school_name}</p>
         <p className="font-semibold text-gray-900 truncate">{listing.item_type}</p>
-        <div className="flex items-center justify-between mt-1">
-          <p className="text-sm text-gray-600">Size {listing.size} · {listing.gender === 'boy' ? 'Boys' : listing.gender === 'girl' ? 'Girls' : 'Unisex'}</p>
-          <p className="font-bold text-indigo-700">${listing.price}</p>
-        </div>
+        <p className="text-xs text-gray-500 truncate mt-0.5">
+          {listing.is_lot ? 'Multiple sizes' : `Size ${listing.size}`} · {genderLabel}
+          {locationStr ? ` · ${locationStr}` : ''}
+        </p>
+        <p className="font-bold text-indigo-700 mt-1">
+          {listing.price === 0 ? 'Free' : `$${listing.price}`}
+        </p>
       </div>
     </Link>
   )
