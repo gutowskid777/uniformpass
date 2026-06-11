@@ -6,14 +6,17 @@ import { supabase, type School, SIZES, US_STATES, PAYMENT_OPTIONS } from '@/lib/
 
 const MAX_PHOTOS = 4
 const MAX_FILE_SIZE_MB = 5
+const LAST_DESC_KEY = 'uniformpass_last_description'
 
 export default function NewListingPage() {
   const router = useRouter()
   const [schools, setSchools] = useState<School[]>([])
   const [submitting, setSubmitting] = useState(false)
+  const [savingDraft, setSavingDraft] = useState(false)
   const [error, setError] = useState('')
   const [photoFiles, setPhotoFiles] = useState<File[]>([])
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([])
+  const [lastDescription, setLastDescription] = useState('')
 
   const [form, setForm] = useState({
     school_id: '',
@@ -36,10 +39,12 @@ export default function NewListingPage() {
     supabase.from('schools').select('*').order('name').then(({ data }) => {
       if (data) setSchools(data)
     })
+    // Load last description from localStorage
+    const saved = localStorage.getItem(LAST_DESC_KEY)
+    if (saved) setLastDescription(saved)
   }, [])
 
-  const set = (key: string, value: string | boolean) =>
-    setForm(f => ({ ...f, [key]: value }))
+  const set = (key: string, value: string | boolean) => setForm(f => ({ ...f, [key]: value }))
 
   const togglePayment = (value: string) => {
     setForm(f => ({
@@ -72,75 +77,93 @@ export default function NewListingPage() {
 
   const removePhoto = (index: number) => {
     setPhotoFiles(prev => prev.filter((_, i) => i !== index))
-    setPhotoPreviews(prev => {
-      URL.revokeObjectURL(prev[index])
-      return prev.filter((_, i) => i !== index)
-    })
+    setPhotoPreviews(prev => { URL.revokeObjectURL(prev[index]); return prev.filter((_, i) => i !== index) })
+  }
+
+  const buildPayload = (listingId: string, photoUrls: string[], status: string) => ({
+    id: listingId,
+    school_id: form.school_id,
+    school_name: form.school_name,
+    category: form.category,
+    gender: form.gender,
+    item_type: form.item_type.trim(),
+    size: form.is_lot ? 'Multiple sizes' : form.size,
+    is_lot: form.is_lot,
+    condition: form.condition,
+    price: Number(form.price) || 0,
+    location_city: form.location_city.trim(),
+    location_state: form.location_state,
+    payment_methods: form.payment_methods,
+    seller_name: form.seller_name.trim(),
+    description: form.description.trim() || null,
+    contact_method: null,
+    contact_info: null,
+    photos: photoUrls,
+    status,
+  })
+
+  const validate = (requireLocation = true) => {
+    if (!form.school_id) return 'Please select a school.'
+    if (!form.item_type.trim()) return 'Please describe the item.'
+    if (!form.is_lot && !form.size) return 'Please select a size, or check "Multiple sizes (lot)".'
+    if (requireLocation && !form.location_city.trim()) return 'Please enter your city.'
+    if (requireLocation && !form.location_state) return 'Please select a state.'
+    if (!form.seller_name.trim()) return 'Please enter your name.'
+    return null
+  }
+
+  const uploadPhotos = async (listingId: string) => {
+    const urls: string[] = []
+    for (const file of photoFiles) {
+      const ext = file.name.split('.').pop()
+      const path = `listings/${listingId}/${crypto.randomUUID()}.${ext}`
+      const { error: uploadError } = await supabase.storage.from('uniform-photos').upload(path, file, { contentType: file.type })
+      if (uploadError) throw uploadError
+      const { data } = supabase.storage.from('uniform-photos').getPublicUrl(path)
+      urls.push(data.publicUrl)
+    }
+    return urls
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-
-    if (!form.school_id) return setError('Please select a school.')
-    if (!form.item_type.trim()) return setError('Please describe the item.')
-    if (!form.is_lot && !form.size) return setError('Please select a size, or check "Multiple sizes (lot)".')
-    if (!form.price || Number(form.price) < 0) return setError('Please enter a valid price.')
-    if (!form.location_city.trim()) return setError('Please enter your city.')
-    if (!form.location_state) return setError('Please select a state.')
-    if (!form.seller_name.trim()) return setError('Please enter your name.')
-
+    const err = validate()
+    if (err) return setError(err)
     setSubmitting(true)
-
     try {
-      const photoUrls: string[] = []
       const listingId = crypto.randomUUID()
-
-      for (const file of photoFiles) {
-        const ext = file.name.split('.').pop()
-        const path = `listings/${listingId}/${crypto.randomUUID()}.${ext}`
-        const { error: uploadError } = await supabase.storage
-          .from('uniform-photos')
-          .upload(path, file, { contentType: file.type })
-        if (uploadError) throw uploadError
-        const { data: urlData } = supabase.storage
-          .from('uniform-photos')
-          .getPublicUrl(path)
-        photoUrls.push(urlData.publicUrl)
-      }
-
+      const photoUrls = await uploadPhotos(listingId)
       const { data, error: insertError } = await supabase
         .from('listings')
-        .insert({
-          id: listingId,
-          school_id: form.school_id,
-          school_name: form.school_name,
-          category: form.category,
-          gender: form.gender,
-          item_type: form.item_type.trim(),
-          size: form.is_lot ? 'Multiple sizes' : form.size,
-          is_lot: form.is_lot,
-          condition: form.condition,
-          price: Number(form.price),
-          location_city: form.location_city.trim(),
-          location_state: form.location_state,
-          payment_methods: form.payment_methods,
-          seller_name: form.seller_name.trim(),
-          description: form.description.trim() || null,
-          contact_method: null,
-          contact_info: null,
-          photos: photoUrls,
-          status: 'active',
-        })
+        .insert(buildPayload(listingId, photoUrls, 'available'))
         .select()
         .single()
-
       if (insertError) throw insertError
+      // Save description for reuse
+      if (form.description.trim()) localStorage.setItem(LAST_DESC_KEY, form.description.trim())
       router.push(`/listing/${data.id}`)
     } catch (err: unknown) {
-      console.error(err)
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+      setError(err instanceof Error ? err.message : 'Something went wrong.')
       setSubmitting(false)
+    }
+  }
+
+  const handleSaveDraft = async () => {
+    setError('')
+    const err = validate(false)
+    if (err) return setError(err)
+    setSavingDraft(true)
+    try {
+      const listingId = crypto.randomUUID()
+      const { error: insertError } = await supabase
+        .from('listings')
+        .insert(buildPayload(listingId, [], 'draft'))
+      if (insertError) throw insertError
+      router.push('/')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong.')
+      setSavingDraft(false)
     }
   }
 
@@ -159,41 +182,28 @@ export default function NewListingPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">School *</label>
-            <select
-              required
-              value={form.school_id}
-              onChange={e => handleSchoolChange(e.target.value)}
-              className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-            >
+            <select required value={form.school_id} onChange={e => handleSchoolChange(e.target.value)}
+              className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
               <option value="">Select a school...</option>
-              {schools.map(s => (
-                <option key={s.id} value={s.id}>{s.name} ({s.state})</option>
-              ))}
+              {schools.map(s => <option key={s.id} value={s.id}>{s.name} ({s.state})</option>)}
             </select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-              <select
-                value={form.category}
-                onChange={e => set('category', e.target.value)}
-                className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-              >
+              <select value={form.category} onChange={e => set('category', e.target.value)}
+                className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="uniform">Uniform</option>
                 <option value="sport">Sport</option>
                 <option value="spirit">Spirit wear</option>
                 <option value="alumni">Alumni</option>
               </select>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Gender *</label>
-              <select
-                value={form.gender}
-                onChange={e => set('gender', e.target.value)}
-                className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-              >
+              <select value={form.gender} onChange={e => set('gender', e.target.value)}
+                className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="unisex">Unisex</option>
                 <option value="male">Male</option>
                 <option value="female">Female</option>
@@ -203,70 +213,60 @@ export default function NewListingPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Item description *</label>
-            <input
-              type="text"
-              placeholder="e.g. Navy dress pants, White polo, Gym shorts"
-              value={form.item_type}
-              onChange={e => set('item_type', e.target.value)}
-              className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-            />
+            <input type="text" placeholder="e.g. Navy dress pants, White polo, Gym shorts"
+              value={form.item_type} onChange={e => set('item_type', e.target.value)}
+              className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
           </div>
 
           <div>
             <div className="flex items-center gap-3 mb-2">
               <label className="block text-sm font-medium text-gray-700">Size *</label>
               <label className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={form.is_lot}
-                  onChange={e => set('is_lot', e.target.checked)}
-                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                />
+                <input type="checkbox" checked={form.is_lot} onChange={e => set('is_lot', e.target.checked)}
+                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
                 Multiple sizes (lot)
               </label>
             </div>
-            {!form.is_lot && (
-              <select
-                value={form.size}
-                onChange={e => set('size', e.target.value)}
-                className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-              >
+            {!form.is_lot ? (
+              <select value={form.size} onChange={e => set('size', e.target.value)}
+                className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="">Select size...</option>
                 {SIZES.map(s => <option key={s} value={s}>{s}</option>)}
                 <option value="Other">Other</option>
               </select>
-            )}
-            {form.is_lot && (
+            ) : (
               <p className="text-sm text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
-                Lot listing — describe the sizes included in the comments below.
+                Describe the sizes included in the comments below.
               </p>
             )}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Condition *</label>
-            <select
-              value={form.condition}
-              onChange={e => set('condition', e.target.value)}
-              className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="new">New / Never worn</option>
+            <select value={form.condition} onChange={e => set('condition', e.target.value)}
+              className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+              <option value="new">New / Never worn (NWT)</option>
               <option value="good">Good condition</option>
               <option value="fair">Fair / Some wear</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Comments <span className="text-gray-400 font-normal">(condition details, stains, pickup preferences, etc.)</span>
-            </label>
-            <textarea
-              rows={3}
-              placeholder="e.g. Small stain on sleeve, only worn twice. Happy to meet at school parking lot. Can also ship for cost of postage."
-              value={form.description}
-              onChange={e => set('description', e.target.value)}
-              className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-            />
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700">
+                Comments <span className="text-gray-400 font-normal">(condition, stains, pickup, sizes in lot, etc.)</span>
+              </label>
+              {lastDescription && lastDescription !== form.description && (
+                <button type="button" onClick={() => set('description', lastDescription)}
+                  className="text-xs text-indigo-600 hover:underline shrink-0 ml-2">
+                  Reuse last description
+                </button>
+              )}
+            </div>
+            <textarea rows={3}
+              placeholder="e.g. Small stain on sleeve, only worn twice. Happy to meet at school parking lot."
+              value={form.description} onChange={e => set('description', e.target.value)}
+              className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
           </div>
         </div>
 
@@ -275,28 +275,19 @@ export default function NewListingPage() {
           <h2 className="font-semibold text-gray-800">Photos (up to {MAX_PHOTOS})</h2>
           <div className="flex flex-wrap gap-3">
             {photoPreviews.map((src, i) => (
-              <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200">
+              <div key={i} className="relative w-24 h-32 rounded-lg overflow-hidden border border-gray-200">
                 <img src={src} alt="" className="w-full h-full object-cover" />
-                <button
-                  type="button"
-                  onClick={() => removePhoto(i)}
-                  className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-black"
-                >
+                <button type="button" onClick={() => removePhoto(i)}
+                  className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-black">
                   ×
                 </button>
               </div>
             ))}
             {photoFiles.length < MAX_PHOTOS && (
-              <label className="w-24 h-24 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition-colors">
+              <label className="w-24 h-32 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition-colors">
                 <span className="text-2xl text-gray-400">+</span>
                 <span className="text-xs text-gray-400 mt-1">Add photo</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handlePhotoChange}
-                  className="hidden"
-                />
+                <input type="file" accept="image/*" multiple onChange={handlePhotoChange} className="hidden" />
               </label>
             )}
           </div>
@@ -309,36 +300,23 @@ export default function NewListingPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Price ($) *</label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="25"
-              value={form.price}
-              onChange={e => set('price', e.target.value)}
-              className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-            />
-            <p className="text-xs text-gray-400 mt-1">Enter 0 if giving away for free.</p>
+            <input type="number" min="0" step="0.01" placeholder="25"
+              value={form.price} onChange={e => set('price', e.target.value)}
+              className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+            <p className="text-xs text-gray-400 mt-1">Enter 0 for free.</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">City *</label>
-              <input
-                type="text"
-                placeholder="Montvale"
-                value={form.location_city}
-                onChange={e => set('location_city', e.target.value)}
-                className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-              />
+              <input type="text" placeholder="Montvale"
+                value={form.location_city} onChange={e => set('location_city', e.target.value)}
+                className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">State *</label>
-              <select
-                value={form.location_state}
-                onChange={e => set('location_state', e.target.value)}
-                className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-              >
+              <select value={form.location_state} onChange={e => set('location_state', e.target.value)}
+                className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="">Select...</option>
                 {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
@@ -351,20 +329,13 @@ export default function NewListingPage() {
             </label>
             <div className="flex flex-wrap gap-3">
               {PAYMENT_OPTIONS.map(opt => (
-                <label
-                  key={opt.value}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-colors text-sm font-medium ${
-                    form.payment_methods.includes(opt.value)
-                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                      : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={form.payment_methods.includes(opt.value)}
-                    onChange={() => togglePayment(opt.value)}
-                    className="hidden"
-                  />
+                <label key={opt.value} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-colors text-sm font-medium ${
+                  form.payment_methods.includes(opt.value)
+                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                }`}>
+                  <input type="checkbox" checked={form.payment_methods.includes(opt.value)}
+                    onChange={() => togglePayment(opt.value)} className="hidden" />
                   {opt.label}
                 </label>
               ))}
@@ -373,32 +344,29 @@ export default function NewListingPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Your first name *</label>
-            <input
-              type="text"
-              placeholder="Maria"
-              value={form.seller_name}
-              onChange={e => set('seller_name', e.target.value)}
-              className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-            />
+            <input type="text" placeholder="Maria"
+              value={form.seller_name} onChange={e => set('seller_name', e.target.value)}
+              className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
           </div>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
-            {error}
-          </div>
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{error}</div>
         )}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full bg-indigo-600 text-white font-semibold py-3 rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-lg"
-        >
-          {submitting ? 'Posting...' : 'Post listing'}
-        </button>
+        <div className="flex gap-3">
+          <button type="button" onClick={handleSaveDraft} disabled={savingDraft || submitting}
+            className="flex-1 bg-white border border-gray-300 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-50 disabled:opacity-50 transition-colors">
+            {savingDraft ? 'Saving...' : 'Save as draft'}
+          </button>
+          <button type="submit" disabled={submitting || savingDraft}
+            className="flex-[2] bg-indigo-600 text-white font-semibold py-3 rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-colors text-lg">
+            {submitting ? 'Posting...' : 'Post listing'}
+          </button>
+        </div>
 
         <p className="text-center text-xs text-gray-400">
-          Your name will be visible to buyers. Share contact details in the comments if you want buyers to reach you directly.
+          Share contact details in comments if you want buyers to reach you directly.
         </p>
       </form>
     </div>

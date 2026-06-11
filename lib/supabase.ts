@@ -31,7 +31,7 @@ export type Listing = {
   seller_name: string
   description: string | null
   photos: string[]
-  status: 'active' | 'sold'
+  status: 'available' | 'pending' | 'sold' | 'draft'
   created_at: string
 }
 
