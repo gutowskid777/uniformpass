@@ -157,7 +157,7 @@ export default function ListingDetailPage() {
             </div>
           )}
 
-          {listing.status === 'active' && !listing.description && (
+          {listing.status === 'available' && !listing.description && (
             <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-sm text-indigo-700">
               To contact this seller, reach out through your school community or ask them to share their contact details.
             </div>

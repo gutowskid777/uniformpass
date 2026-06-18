@@ -205,8 +205,8 @@ export default function NewListingPage() {
               <select value={form.gender} onChange={e => set('gender', e.target.value)}
                 className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="unisex">Unisex</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
+                <option value="boy">Boys</option>
+                <option value="girl">Girls</option>
               </select>
             </div>
           </div>

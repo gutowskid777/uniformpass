@@ -17,7 +17,7 @@ export type Listing = {
   school_id: string | null
   school_name: string
   category: 'uniform' | 'sport' | 'spirit' | 'alumni'
-  gender: 'male' | 'female' | 'unisex'
+  gender: 'boy' | 'girl' | 'unisex'
   item_type: string
   size: string
   is_lot: boolean
@@ -70,7 +70,7 @@ export const CATEGORY_LABELS: Record<string, string> = {
 }
 
 export const GENDER_LABELS: Record<string, string> = {
-  male: 'Male',
-  female: 'Female',
+  boy: 'Boys',
+  girl: 'Girls',
   unisex: 'Unisex',
 }
