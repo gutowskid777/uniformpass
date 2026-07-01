@@ -33,7 +33,7 @@
 
 ## PRD
 
-`/Users/dylan/Claude/Cowork/Dylan-AI-OS/hq/outputs/school-uniform-resale-prd.md`
+`/Users/dylan/Claude/Cowork/Dylan-AI-OS/school-uniform-resale/docs/school-uniform-resale-prd.md`
 
 Scope summary: listing create, browse/filter by school/category/gender/size/condition, detail page, admin panel. Out of scope for MVP: in-app payments, seller accounts, concierge pickup, books/gear, charity lots.
 
