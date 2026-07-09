@@ -21,6 +21,7 @@ export default function SellForMePage() {
     contact: '',
     school_id: '',
     school_name: '',
+    custom_school: '',
     town: '',
     item_summary: '',
     est_items: '',
@@ -46,14 +47,15 @@ export default function SellForMePage() {
     if (!form.name.trim()) return setError('Please enter your name.')
     if (!form.contact.trim()) return setError('Please enter a phone or email so we can reach you.')
     if (!form.school_id) return setError('Please pick the school these are from.')
+    if (form.school_id === 'other' && !form.custom_school.trim()) return setError('Please type the school name.')
     if (!form.item_summary.trim()) return setError('Tell us roughly what you have.')
     setSubmitting(true)
     try {
       const { error: insertError } = await supabase.from('pickup_requests').insert({
         name: form.name.trim(),
         contact: form.contact.trim(),
-        school_id: form.school_id || null,
-        school_name: form.school_name || null,
+        school_id: form.school_id && form.school_id !== 'other' ? form.school_id : null,
+        school_name: form.school_id === 'other' ? form.custom_school.trim() : (form.school_name || null),
         town: form.town.trim() || null,
         item_summary: form.item_summary.trim(),
         est_items: form.est_items ? Number(form.est_items) : null,
@@ -130,7 +132,13 @@ export default function SellForMePage() {
                 className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="">Select a school...</option>
                 {schools.map(s => <option key={s.id} value={s.id}>{s.name} ({s.state})</option>)}
+                <option value="other">Other — not listed</option>
               </select>
+              {form.school_id === 'other' && (
+                <input type="text" placeholder="Type the school name"
+                  value={form.custom_school} onChange={e => set('custom_school', e.target.value)}
+                  className="w-full mt-2 rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Your town <span className="text-gray-400 font-normal">(for pickup)</span></label>

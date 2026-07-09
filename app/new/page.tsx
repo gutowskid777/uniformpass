@@ -20,6 +20,7 @@ export default function NewListingPage() {
   const [form, setForm] = useState({
     school_id: '',
     school_name: '',
+    custom_school: '',
     category: 'uniform',
     gender: 'unisex',
     item_type: '',
@@ -83,8 +84,8 @@ export default function NewListingPage() {
 
   const buildPayload = (listingId: string, photoUrls: string[], status: string) => ({
     id: listingId,
-    school_id: form.school_id,
-    school_name: form.school_name,
+    school_id: form.school_id === 'other' ? null : form.school_id,
+    school_name: form.school_id === 'other' ? form.custom_school.trim() : form.school_name,
     category: form.category,
     gender: form.gender,
     item_type: form.item_type.trim(),
@@ -105,6 +106,7 @@ export default function NewListingPage() {
 
   const validate = (requireLocation = true) => {
     if (!form.school_id) return 'Please select a school.'
+    if (form.school_id === 'other' && !form.custom_school.trim()) return 'Please type your school name.'
     if (!form.item_type.trim()) return 'Please describe the item.'
     if (!form.is_lot && !form.size) return 'Please select a size, or check "Multiple sizes (lot)".'
     if (requireLocation && !form.location_city.trim()) return 'Please enter your city.'
@@ -178,7 +180,13 @@ export default function NewListingPage() {
               className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
               <option value="">Select a school...</option>
               {schools.map(s => <option key={s.id} value={s.id}>{s.name} ({s.state})</option>)}
+              <option value="other">Other — my school isn&apos;t listed</option>
             </select>
+            {form.school_id === 'other' && (
+              <input type="text" placeholder="Type your school name"
+                value={form.custom_school} onChange={e => set('custom_school', e.target.value)}
+                className="w-full mt-2 rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
