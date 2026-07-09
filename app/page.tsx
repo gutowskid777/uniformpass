@@ -29,7 +29,7 @@ export default function BrowsePage() {
     let query = supabase
       .from('listings')
       .select('*')
-      .in('status', ['available', 'pending'])
+      .eq('status', 'available')
       .order('created_at', { ascending: false })
 
     if (schoolId) query = query.eq('school_id', schoolId)
@@ -168,7 +168,6 @@ export default function BrowsePage() {
 
 function ListingCard({ listing }: { listing: Listing }) {
   const photo = listing.photos?.[0] || PLACEHOLDER
-  const isPending = listing.status === 'pending'
   const locationStr = [listing.location_city, listing.location_state].filter(Boolean).join(', ')
   const genderLabel = GENDER_LABELS[listing.gender] || listing.gender
 
@@ -196,12 +195,6 @@ function ListingCard({ listing }: { listing: Listing }) {
         }`}>
           {conditionBadge[listing.condition]}
         </span>
-        {/* Status badges */}
-        {isPending && (
-          <span className="absolute top-2 right-2 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-            Pending
-          </span>
-        )}
         {listing.is_lot && (
           <span className="absolute bottom-2 left-2 bg-black/70 text-white text-xs font-medium px-2 py-0.5 rounded-full">
             Lot

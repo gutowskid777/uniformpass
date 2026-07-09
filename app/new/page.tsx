@@ -12,7 +12,6 @@ export default function NewListingPage() {
   const router = useRouter()
   const [schools, setSchools] = useState<School[]>([])
   const [submitting, setSubmitting] = useState(false)
-  const [savingDraft, setSavingDraft] = useState(false)
   const [error, setError] = useState('')
   const [photoFiles, setPhotoFiles] = useState<File[]>([])
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([])
@@ -157,24 +156,6 @@ export default function NewListingPage() {
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong.')
       setSubmitting(false)
-    }
-  }
-
-  const handleSaveDraft = async () => {
-    setError('')
-    const err = validate(false)
-    if (err) return setError(err)
-    setSavingDraft(true)
-    try {
-      const listingId = crypto.randomUUID()
-      const { error: insertError } = await supabase
-        .from('listings')
-        .insert(buildPayload(listingId, [], 'draft'))
-      if (insertError) throw insertError
-      router.push('/')
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.')
-      setSavingDraft(false)
     }
   }
 
@@ -389,16 +370,10 @@ export default function NewListingPage() {
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{error}</div>
         )}
 
-        <div className="flex gap-3">
-          <button type="button" onClick={handleSaveDraft} disabled={savingDraft || submitting}
-            className="flex-1 bg-white border border-gray-300 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-50 disabled:opacity-50 transition-colors">
-            {savingDraft ? 'Saving...' : 'Save as draft'}
-          </button>
-          <button type="submit" disabled={submitting || savingDraft}
-            className="flex-[2] bg-indigo-600 text-white font-semibold py-3 rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-colors text-lg">
-            {submitting ? 'Posting...' : 'Post listing'}
-          </button>
-        </div>
+        <button type="submit" disabled={submitting}
+          className="w-full bg-indigo-600 text-white font-semibold py-3.5 rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-colors text-lg">
+          {submitting ? 'Posting...' : 'Post listing'}
+        </button>
 
         <p className="text-center text-xs text-gray-400">
           No accounts, no fees. Buyers reach out directly and you meet up to complete the sale.

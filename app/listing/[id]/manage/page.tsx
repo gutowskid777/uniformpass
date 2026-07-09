@@ -7,7 +7,6 @@ import { type Listing, SIZES, CONTACT_METHODS } from '@/lib/supabase'
 
 const STATUS_TABS = [
   { value: 'available', label: 'Available' },
-  { value: 'pending', label: 'Pending' },
   { value: 'sold', label: 'Sold' },
 ] as const
 
@@ -57,7 +56,6 @@ export default function ManageListingPage() {
   const [deleting, setDeleting] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
-  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     const sp = new URLSearchParams(window.location.search)
@@ -138,11 +136,6 @@ export default function ManageListingPage() {
     }
   }
 
-  const copyLink = () => {
-    navigator.clipboard?.writeText(`${window.location.origin}/listing/${id}/manage?token=${token}`)
-    setCopied(true); setTimeout(() => setCopied(false), 2000)
-  }
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -165,14 +158,11 @@ export default function ManageListingPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
       {isNew && (
-        <div className="mb-6 rounded-xl bg-emerald-50 border border-emerald-200 p-5">
+        <div className="mb-6 rounded-xl bg-emerald-50 border border-emerald-200 p-4">
           <p className="font-bold text-emerald-900">✅ Your listing is live!</p>
           <p className="text-sm text-emerald-800 mt-1">
-            Bookmark this page — it&apos;s your private link to edit or take down the listing later. (On this device we&apos;ll remember it for you.)
+            Find it anytime under <Link href="/my-listings" className="underline font-semibold">My Listings</Link>.
           </p>
-          <button onClick={copyLink} className="mt-3 text-sm font-semibold text-emerald-700 underline">
-            {copied ? 'Link copied ✓' : 'Copy my manage link'}
-          </button>
         </div>
       )}
 

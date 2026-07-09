@@ -27,6 +27,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/sell-for-me" className="text-sm text-gray-600 hover:text-gray-900 hidden sm:block">
                 Sell it for me
               </Link>
+              <Link href="/my-listings" className="text-sm text-gray-600 hover:text-gray-900">
+                My Listings
+              </Link>
               <Link
                 href="/new"
                 className="bg-indigo-600 text-white text-sm font-medium px-4 py-1.5 rounded-full hover:bg-indigo-700 transition-colors"

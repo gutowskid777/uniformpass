@@ -6,7 +6,7 @@ import { supabase, type Listing, type PickupRequest, CONDITION_LABELS, CATEGORY_
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'uniform2026'
 const PLACEHOLDER = 'https://placehold.co/100x100/e8e8f0/9999bb?text=?'
 
-const STATUS_OPTIONS = ['available', 'pending', 'sold', 'draft'] as const
+const STATUS_OPTIONS = ['available', 'sold', 'draft'] as const
 type Status = typeof STATUS_OPTIONS[number]
 
 const PICKUP_STATUSES = ['new', 'scheduled', 'picked_up', 'listed', 'done', 'declined'] as const
@@ -23,7 +23,6 @@ const PICKUP_STATUS_STYLES: Record<string, string> = {
 
 const STATUS_STYLES: Record<Status, string> = {
   available: 'bg-green-100 text-green-700',
-  pending: 'bg-orange-100 text-orange-700',
   sold: 'bg-gray-100 text-gray-500',
   draft: 'bg-purple-100 text-purple-700',
 }
@@ -178,7 +177,7 @@ export default function AdminPage() {
           <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             {view === 'listings'
-              ? `${counts.available || 0} available · ${counts.pending || 0} pending · ${counts.sold || 0} sold · ${counts.draft || 0} draft`
+              ? `${counts.available || 0} available · ${counts.sold || 0} sold · ${counts.draft || 0} draft`
               : `${pickups.filter(p => p.status === 'new').length} new · ${pickups.length} total pickup requests`}
           </p>
         </div>
