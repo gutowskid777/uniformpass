@@ -38,7 +38,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </header>
         <main className="min-h-screen">{children}</main>
         <footer className="border-t border-gray-200 bg-white mt-16 py-8 text-center text-sm text-gray-500">
-          UniformPass — helping NJ families buy and sell school uniforms
+          <p>Buy and sell school uniforms in your community.</p>
+          <p className="mt-1 text-gray-400">© 2026 UniformPass. All rights reserved.</p>
         </footer>
       </body>
     </html>

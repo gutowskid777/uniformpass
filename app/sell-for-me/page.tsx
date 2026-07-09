@@ -5,9 +5,9 @@ import Link from 'next/link'
 import { supabase, type School } from '@/lib/supabase'
 
 const STEPS = [
-  { icon: '📦', title: 'You gather the pile', body: 'Uniforms, gym clothes, spirit wear — any condition, any school. Even one bag is fine.' },
-  { icon: '🚗', title: 'We come pick it up', body: 'We schedule a quick pickup near you. You hand it off and you’re done — no photos, no listing, no coordinating buyers.' },
-  { icon: '💵', title: 'We sell it, you get 50%', body: 'We photograph, list, and sell everything. You keep 50% of the profit — money for stuff that was headed for the trash.' },
+  { icon: '📦', title: 'You gather the pile', body: 'Uniforms, gym clothes, or spirit wear. Any condition. Even one bag works.' },
+  { icon: '🚗', title: 'We pick it up', body: 'We schedule a quick pickup near you. Hand it off and you’re done.' },
+  { icon: '💵', title: 'We sell it, you keep 50%', body: 'We photograph, list, and sell it all. You get half the profit.' },
 ]
 
 export default function SellForMePage() {
@@ -45,6 +45,7 @@ export default function SellForMePage() {
     setError('')
     if (!form.name.trim()) return setError('Please enter your name.')
     if (!form.contact.trim()) return setError('Please enter a phone or email so we can reach you.')
+    if (!form.school_id) return setError('Please pick the school these are from.')
     if (!form.item_summary.trim()) return setError('Tell us roughly what you have.')
     setSubmitting(true)
     try {
@@ -124,10 +125,10 @@ export default function SellForMePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">School <span className="text-gray-400 font-normal">(optional)</span></label>
-              <select value={form.school_id} onChange={e => handleSchoolChange(e.target.value)}
+              <label className="block text-sm font-medium text-gray-700 mb-1">School *</label>
+              <select required value={form.school_id} onChange={e => handleSchoolChange(e.target.value)}
                 className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                <option value="">Mixed / not sure</option>
+                <option value="">Select a school...</option>
                 {schools.map(s => <option key={s.id} value={s.id}>{s.name} ({s.state})</option>)}
               </select>
             </div>
