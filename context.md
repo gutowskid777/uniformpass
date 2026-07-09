@@ -24,9 +24,12 @@
 |---|---|
 | `app/page.tsx` | Browse — hero + consignment band + filterable grid; Verified badge on cards |
 | `app/new/page.tsx` | Create listing form — now collects seller contact (method + info) |
-| `app/listing/[id]/page.tsx` | Listing detail — shows Contact block (tel/mailto/venmo link) + Verified badge |
+| `app/listing/[id]/page.tsx` | Listing detail — Contact block (tel/mailto/venmo) + Verified badge + owner "Manage" button |
+| `app/listing/[id]/manage/page.tsx` | **Seller self-serve** — edit fields / change status / delete via secret token |
 | `app/sell-for-me/page.tsx` | **Consignment intake** — "how it works" + pickup-request form → `pickup_requests` |
 | `app/api/pickup-requests/route.ts` | **Server route** — GET/PATCH pickup requests via service role (PII stays off the public key) |
+| `app/api/listings/manage/route.ts` | **Server route** — token-verified load/update/delete for seller self-management |
+| `app/opengraph-image.tsx`, `app/icon.svg` | Link-preview thumbnail + hanger favicon |
 | `app/admin/page.tsx` | Admin panel — Listings / Pickup-requests tabs; per-listing Verified toggle |
 | `app/layout.tsx` | Root layout — "UniformPass" branding, sticky header, footer |
 | `app/globals.css` | Tailwind base styles |
@@ -53,16 +56,24 @@ Consignment + contact build complete. `npm run build` passes (8 routes). Local s
 - `listings.is_verified boolean default false` (Verified-by-UniformPass badge)
 - Dropped restrictive `contact_method` check so sellers can pick text/email/venmo/other
 - New `pickup_requests` table (name, contact, school, town, item_summary, est_items, notes, status). RLS: **insert-only for PUBLIC, no SELECT** (PII protected). Admin reads via service role.
+- New `listing_tokens` table (listing_id PK → listings, token uuid). RLS: **insert-only for PUBLIC, no SELECT** — secret manage tokens readable only via service role. `on delete cascade` from listings.
+- **RLS rule for this project:** insert policies must target `PUBLIC` (`with check (true)`), NOT `to anon` — the REST role doesn't match `anon`-scoped policies here (the working listings policy is PUBLIC).
+
+### Self-serve management (no accounts)
+Sellers get a secret manage link at post time (`/listing/[id]/manage?token=…`); token also saved to localStorage so the public page shows a "Manage your listing" button on the same device. All edit/delete actions go through `/api/listings/manage` which verifies the token with the service role. Photos + school aren't editable there (delete + repost to change).
 
 ### PostgREST gotcha (documented so we don't re-debug it)
 Insert-only tables work with `supabase-js .insert()` (sends `Prefer: return=minimal`). Do **NOT** chain `.select()` on a pickup_requests insert — that forces a read-back which RLS blocks, throwing a misleading "violates row-level security policy" error.
 
 ## What's Next (Dylan's actions)
 
-1. **Set `SUPABASE_SERVICE_ROLE_KEY`** — required for the admin Pickup-requests tab. Get from Supabase → Project Settings → API → service_role secret. Add to `.env.local` (placeholder already there) AND Vercel env vars. Until set, the tab shows "Server not configured."
+1. **🔴 ROTATE `SUPABASE_SERVICE_ROLE_KEY`** — it's SET in Vercel and working (manage + pickup routes verified live), BUT Dylan screenshotted it into a chat = possible leak. Regenerate in Supabase → Settings → API, then update Vercel env + `.env.local`. Service role = full DB access, so do this soon.
 2. **Admin password** — currently `uniform2026` via `NEXT_PUBLIC_ADMIN_PASSWORD`. Change for mom in `.env.local` + Vercel.
-3. **Deploy + domain** — confirm Vercel deploy; register `uniformpass.com`.
+3. **Domain** — register `uniformpass.com` before heavy marketing (currently live at uniformpass.vercel.app).
 4. **Seed inventory** — list Dylan's donation stock, flag it Verified in admin.
+
+## Live
+Production: **https://uniformpass.vercel.app** (auto-deploys on push to main). GitHub: gutowskid777/uniformpass. Vercel project `uniformpass` (prj_k78oaKd4rdiHJHX9nhlOAPIsRBUu, team_RdQ4Fy1VqvfIWjtMSJIACSAH).
 
 ## Brand
 
