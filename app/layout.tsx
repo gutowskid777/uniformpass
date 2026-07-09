@@ -6,8 +6,9 @@ import Link from 'next/link'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'UniformPass — NJ School Uniform Resale',
-  description: 'Buy and sell NJ private school uniforms. Filter by school, size, and condition.',
+  metadataBase: new URL('https://uniformpass.vercel.app'),
+  title: 'UniformPass — Buy & Sell School Uniforms',
+  description: 'Buy and sell used school uniforms and spirit wear right in your school community. No fees, meet up local.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -16,8 +17,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={inter.className}>
         <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
           <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-            <Link href="/" className="font-bold text-xl text-indigo-700 tracking-tight flex items-center gap-1.5">
-              <span className="text-2xl">👕</span> UniformPass
+            <Link href="/" className="font-extrabold text-xl text-indigo-700 tracking-tight">
+              UniformPass
             </Link>
             <div className="flex items-center gap-3 sm:gap-4">
               <Link href="/" className="text-sm text-gray-600 hover:text-gray-900 hidden sm:block">
