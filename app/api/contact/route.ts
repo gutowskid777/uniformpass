@@ -58,7 +58,7 @@ export async function POST(req: Request) {
   if (!captured && !emailed) {
     return NextResponse.json({ error: 'Contact is not set up yet.' }, { status: 500 })
   }
-  return NextResponse.json({ ok: true })
+  return NextResponse.json({ ok: true, captured, emailed })
 }
 
 // Admin: list contact messages (service role, password-gated).
