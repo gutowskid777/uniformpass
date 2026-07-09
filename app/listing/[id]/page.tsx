@@ -15,6 +15,11 @@ export default function ListingDetailPage() {
   const [listing, setListing] = useState<Listing | null>(null)
   const [loading, setLoading] = useState(true)
   const [activePhoto, setActivePhoto] = useState(0)
+  const [manageToken, setManageToken] = useState<string | null>(null)
+
+  useEffect(() => {
+    setManageToken(localStorage.getItem(`uniformpass_manage_${id}`))
+  }, [id])
 
   useEffect(() => {
     supabase
@@ -59,9 +64,17 @@ export default function ListingDetailPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
-      <Link href="/" className="text-sm text-indigo-600 hover:underline mb-6 inline-block">
-        ← Back to listings
-      </Link>
+      <div className="flex items-center justify-between mb-6">
+        <Link href="/" className="text-sm text-indigo-600 hover:underline">
+          ← Back to listings
+        </Link>
+        {manageToken && (
+          <Link href={`/listing/${id}/manage?token=${manageToken}`}
+            className="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-1.5 rounded-full transition-colors">
+            Manage your listing
+          </Link>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Photo gallery */}

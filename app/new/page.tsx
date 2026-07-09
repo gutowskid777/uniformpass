@@ -136,15 +136,24 @@ export default function NewListingPage() {
     try {
       const listingId = crypto.randomUUID()
       const photoUrls = await uploadPhotos(listingId)
-      const { data, error: insertError } = await supabase
+      const { error: insertError } = await supabase
         .from('listings')
         .insert(buildPayload(listingId, photoUrls, 'available'))
-        .select()
-        .single()
       if (insertError) throw insertError
       // Save description for reuse
       if (form.description.trim()) localStorage.setItem(LAST_DESC_KEY, form.description.trim())
-      router.push(`/listing/${data.id}`)
+      // Create a secret manage token so the seller can edit / take down later (no account needed)
+      const manageToken = crypto.randomUUID()
+      const { error: tokenError } = await supabase
+        .from('listing_tokens')
+        .insert({ listing_id: listingId, token: manageToken })
+      if (tokenError) {
+        // Listing is still posted; just fall back to the public page if the token failed.
+        router.push(`/listing/${listingId}`)
+        return
+      }
+      localStorage.setItem(`uniformpass_manage_${listingId}`, manageToken)
+      router.push(`/listing/${listingId}/manage?token=${manageToken}&new=1`)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong.')
       setSubmitting(false)
