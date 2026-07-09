@@ -1,9 +1,15 @@
 # School Uniform Resale Platform — Context
-# Last updated: 2026-06-09
+# Last updated: 2026-07-08
 
 ## What It Is
 
 "UniformPass" — a web app for NJ private school parents to buy/sell used uniforms. Built as a gift for Dylan's mom, who identified the problem: uniforms go instantly on FB Marketplace, tons of waste, no school-specific search. Mom is the intended operator.
+
+**Locked model (2026-07-08):**
+- **No shipping, no in-app payments.** Buyers contact sellers directly (contact shown on the listing) and meet up to pay cash/Venmo. The platform never touches money — same trust model as FB Marketplace, scoped to uniforms.
+- **The moat = concierge consignment.** `/sell-for-me` lets anyone request a pickup of a pile of uniforms/spirit wear. Dylan/mom picks it up, lists it, sells it, and pays the owner 50% of profit. Requests land in the admin "Pickup requests" tab. Operator-listed inventory can be flagged **"Verified by UniformPass"** (badge on cards + detail).
+- **Beachhead:** 3-school NJ cluster — St. Joseph Regional (Montvale), Don Bosco Prep (Ramsey), Bergen Catholic (Oradell). All already seeded (44 schools total in DB).
+- **Long-term (deferred):** general spirit wear for any school, college merch resale, party/one-off wear.
 
 ## Stack
 
@@ -16,10 +22,12 @@
 
 | File | Purpose |
 |---|---|
-| `app/page.tsx` | Browse page — filterable grid of listings (217 lines) |
-| `app/new/page.tsx` | Create listing form — school, category, gender, size, condition, price, photos (377 lines) |
-| `app/listing/[id]/page.tsx` | Listing detail — full info + contact button (191 lines) |
-| `app/admin/page.tsx` | Admin panel — password-protected, view all / mark sold / delete (241 lines) |
+| `app/page.tsx` | Browse — hero + consignment band + filterable grid; Verified badge on cards |
+| `app/new/page.tsx` | Create listing form — now collects seller contact (method + info) |
+| `app/listing/[id]/page.tsx` | Listing detail — shows Contact block (tel/mailto/venmo link) + Verified badge |
+| `app/sell-for-me/page.tsx` | **Consignment intake** — "how it works" + pickup-request form → `pickup_requests` |
+| `app/api/pickup-requests/route.ts` | **Server route** — GET/PATCH pickup requests via service role (PII stays off the public key) |
+| `app/admin/page.tsx` | Admin panel — Listings / Pickup-requests tabs; per-listing Verified toggle |
 | `app/layout.tsx` | Root layout — "UniformPass" branding, sticky header, footer |
 | `app/globals.css` | Tailwind base styles |
 | `lib/supabase.ts` | Supabase client + type definitions (59 lines) |
@@ -37,17 +45,24 @@
 
 Scope summary: listing create, browse/filter by school/category/gender/size/condition, detail page, admin panel. Out of scope for MVP: in-app payments, seller accounts, concierge pickup, books/gear, charity lots.
 
-## Current Status
+## Current Status (2026-07-08)
 
-All 5 core pages written. npm installed. Supabase live. **Not yet deployed to Vercel.**
+Consignment + contact build complete. `npm run build` passes (8 routes). Local smoke test: all pages 200, consignment form insert verified against live DB (201), PII read-back correctly blocked, API auth returns 401/500 as designed. **Deploy status: confirm — projects.json said not-yet-deployed but memory notes auto-deploy-on-push.**
 
-## Known Issues / What's Next
+### DB changes applied (Supabase migrations)
+- `listings.is_verified boolean default false` (Verified-by-UniformPass badge)
+- Dropped restrictive `contact_method` check so sellers can pick text/email/venmo/other
+- New `pickup_requests` table (name, contact, school, town, item_summary, est_items, notes, status). RLS: **insert-only for PUBLIC, no SELECT** (PII protected). Admin reads via service role.
 
-1. **Vercel deploy** — not done. Run `vercel --prod` from the project folder. Add env vars (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY) in Vercel dashboard.
-2. **Admin password** — hardcoded. Dylan needs to decide what password mom should use and wire it in (it's in `admin/page.tsx`, find the password check logic).
-3. **Photo upload** — Supabase Storage bucket created, but verify upload permissions are set correctly (public read, authenticated write — or anonymous write for MVP since there's no auth).
-4. **`api/` folder** — exists but contents unclear. Check what routes are there.
-5. **Open PRD questions**: domain name (uniformpass.com?), sold listing visibility (hidden vs. greyed out).
+### PostgREST gotcha (documented so we don't re-debug it)
+Insert-only tables work with `supabase-js .insert()` (sends `Prefer: return=minimal`). Do **NOT** chain `.select()` on a pickup_requests insert — that forces a read-back which RLS blocks, throwing a misleading "violates row-level security policy" error.
+
+## What's Next (Dylan's actions)
+
+1. **Set `SUPABASE_SERVICE_ROLE_KEY`** — required for the admin Pickup-requests tab. Get from Supabase → Project Settings → API → service_role secret. Add to `.env.local` (placeholder already there) AND Vercel env vars. Until set, the tab shows "Server not configured."
+2. **Admin password** — currently `uniform2026` via `NEXT_PUBLIC_ADMIN_PASSWORD`. Change for mom in `.env.local` + Vercel.
+3. **Deploy + domain** — confirm Vercel deploy; register `uniformpass.com`.
+4. **Seed inventory** — list Dylan's donation stock, flag it Verified in admin.
 
 ## Brand
 

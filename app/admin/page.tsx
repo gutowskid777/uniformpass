@@ -1,13 +1,25 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase, type Listing, CONDITION_LABELS, CATEGORY_LABELS } from '@/lib/supabase'
+import { supabase, type Listing, type PickupRequest, CONDITION_LABELS, CATEGORY_LABELS } from '@/lib/supabase'
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'uniform2026'
 const PLACEHOLDER = 'https://placehold.co/100x100/e8e8f0/9999bb?text=?'
 
 const STATUS_OPTIONS = ['available', 'pending', 'sold', 'draft'] as const
 type Status = typeof STATUS_OPTIONS[number]
+
+const PICKUP_STATUSES = ['new', 'scheduled', 'picked_up', 'listed', 'done', 'declined'] as const
+type PickupStatus = typeof PICKUP_STATUSES[number]
+
+const PICKUP_STATUS_STYLES: Record<string, string> = {
+  new: 'bg-indigo-100 text-indigo-700',
+  scheduled: 'bg-blue-100 text-blue-700',
+  picked_up: 'bg-amber-100 text-amber-700',
+  listed: 'bg-green-100 text-green-700',
+  done: 'bg-gray-100 text-gray-500',
+  declined: 'bg-red-100 text-red-500',
+}
 
 const STATUS_STYLES: Record<Status, string> = {
   available: 'bg-green-100 text-green-700',
@@ -25,6 +37,10 @@ export default function AdminPage() {
   const [actionPending, setActionPending] = useState<string | null>(null)
   const [filter, setFilter] = useState<Status | 'all'>('all')
   const [counts, setCounts] = useState<Record<string, number>>({})
+  const [view, setView] = useState<'listings' | 'pickups'>('listings')
+  const [pickups, setPickups] = useState<PickupRequest[]>([])
+  const [pickupsLoading, setPickupsLoading] = useState(false)
+  const [pickupsError, setPickupsError] = useState('')
 
   useEffect(() => {
     if (sessionStorage.getItem('admin_authed') === '1') setAuthed(true)
@@ -70,6 +86,48 @@ export default function AdminPage() {
     await fetchListings()
     setActionPending(null)
   }
+
+  const toggleVerified = async (id: string, current: boolean) => {
+    setActionPending(id + '-verify')
+    await supabase.from('listings').update({ is_verified: !current }).eq('id', id)
+    await fetchListings()
+    setActionPending(null)
+  }
+
+  const fetchPickups = async () => {
+    setPickupsLoading(true)
+    setPickupsError('')
+    try {
+      const res = await fetch('/api/pickup-requests', { headers: { 'x-admin-password': ADMIN_PASSWORD } })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'Failed to load requests')
+      setPickups(json.requests || [])
+    } catch (err: unknown) {
+      setPickupsError(err instanceof Error ? err.message : 'Failed to load requests')
+    }
+    setPickupsLoading(false)
+  }
+
+  const updatePickupStatus = async (id: string, status: PickupStatus) => {
+    setActionPending(id + '-pickup')
+    try {
+      const res = await fetch('/api/pickup-requests', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json', 'x-admin-password': ADMIN_PASSWORD },
+        body: JSON.stringify({ id, status }),
+      })
+      if (!res.ok) throw new Error((await res.json()).error || 'Update failed')
+      await fetchPickups()
+    } catch (err: unknown) {
+      setPickupsError(err instanceof Error ? err.message : 'Update failed')
+    }
+    setActionPending(null)
+  }
+
+  useEffect(() => {
+    if (authed && view === 'pickups') fetchPickups()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authed, view])
 
   const deleteListing = async (id: string, itemType: string) => {
     if (!confirm(`Delete "${itemType}"? This cannot be undone.`)) return
@@ -119,12 +177,33 @@ export default function AdminPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            {counts.available || 0} available · {counts.pending || 0} pending · {counts.sold || 0} sold · {counts.draft || 0} draft
+            {view === 'listings'
+              ? `${counts.available || 0} available · ${counts.pending || 0} pending · ${counts.sold || 0} sold · ${counts.draft || 0} draft`
+              : `${pickups.filter(p => p.status === 'new').length} new · ${pickups.length} total pickup requests`}
           </p>
         </div>
         <button onClick={logout} className="text-sm text-gray-500 hover:text-gray-900 underline">Sign out</button>
       </div>
 
+      {/* View toggle */}
+      <div className="flex gap-2 mb-6">
+        {(['listings', 'pickups'] as const).map(v => (
+          <button key={v} onClick={() => setView(v)}
+            className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors ${
+              view === v ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+            }`}>
+            {v === 'listings' ? 'Listings' : 'Pickup requests'}
+            {v === 'pickups' && pickups.some(p => p.status === 'new') && (
+              <span className="ml-2 bg-indigo-600 text-white text-xs rounded-full px-1.5 py-0.5">
+                {pickups.filter(p => p.status === 'new').length}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {view === 'listings' && (
+      <>
       {/* Status tabs */}
       <div className="flex gap-2 mb-6 flex-wrap">
         {(['all', ...STATUS_OPTIONS] as const).map(f => (
@@ -190,6 +269,16 @@ export default function AdminPage() {
                     ))}
                   </select>
 
+                  <button onClick={() => toggleVerified(listing.id, listing.is_verified)}
+                    disabled={actionPending !== null}
+                    className={`text-xs font-semibold px-2 py-1.5 rounded-lg border transition-colors disabled:opacity-50 ${
+                      listing.is_verified
+                        ? 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700'
+                        : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                    }`}>
+                    {actionPending === listing.id + '-verify' ? '...' : listing.is_verified ? '✓ Verified' : 'Mark verified'}
+                  </button>
+
                   <div className="flex gap-1">
                     <a href={`/listing/${listing.id}`} target="_blank" rel="noopener noreferrer"
                       className="flex-1 text-center text-xs font-medium px-2 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
@@ -206,6 +295,49 @@ export default function AdminPage() {
             )
           })}
         </div>
+      )}
+      </>
+      )}
+
+      {view === 'pickups' && (
+        pickupsLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : pickupsError ? (
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{pickupsError}</div>
+        ) : pickups.length === 0 ? (
+          <div className="text-center py-20 text-gray-500">No pickup requests yet.</div>
+        ) : (
+          <div className="space-y-3">
+            {pickups.map(req => (
+              <div key={req.id} className="bg-white rounded-xl border border-gray-200 p-4">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold text-gray-900">{req.name}</p>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${PICKUP_STATUS_STYLES[req.status] || 'bg-gray-100 text-gray-500'}`}>
+                        {req.status.replace('_', ' ')}
+                      </span>
+                    </div>
+                    <p className="text-sm text-indigo-700 font-medium mt-0.5">{req.contact}</p>
+                    <p className="text-sm text-gray-600 mt-1">{req.item_summary}</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {[req.school_name, req.town, req.est_items ? `~${req.est_items} items` : null]
+                        .filter(Boolean).join(' · ')} · {new Date(req.created_at).toLocaleDateString()}
+                    </p>
+                    {req.notes && <p className="text-xs text-gray-500 mt-1 italic">&ldquo;{req.notes}&rdquo;</p>}
+                  </div>
+                  <select value={req.status} disabled={actionPending !== null}
+                    onChange={e => updatePickupStatus(req.id, e.target.value as PickupStatus)}
+                    className="text-xs rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 py-1 shrink-0 capitalize">
+                    {PICKUP_STATUSES.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
+                  </select>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
       )}
     </div>
   )

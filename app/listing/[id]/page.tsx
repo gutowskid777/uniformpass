@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase, type Listing, CONDITION_LABELS, CATEGORY_LABELS, GENDER_LABELS, PAYMENT_OPTIONS } from '@/lib/supabase'
+import { supabase, type Listing, CONDITION_LABELS, CATEGORY_LABELS, GENDER_LABELS, PAYMENT_OPTIONS, CONTACT_METHOD_LABELS } from '@/lib/supabase'
 
 const PLACEHOLDER = 'https://placehold.co/800x600/e8e8f0/9999bb?text=No+photo'
 
@@ -102,6 +102,11 @@ export default function ListingDetailPage() {
             <div>
               <p className="text-sm text-gray-500 font-medium">{listing.school_name}</p>
               <h1 className="text-2xl font-bold text-gray-900 mt-0.5">{listing.item_type}</h1>
+              {listing.is_verified && (
+                <span className="inline-flex items-center gap-1 mt-2 text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-600 text-white">
+                  ✓ Verified by UniformPass
+                </span>
+              )}
             </div>
             <p className="text-2xl font-bold text-indigo-700">
               {listing.price === 0 ? 'Free' : `$${listing.price}`}
@@ -157,15 +162,51 @@ export default function ListingDetailPage() {
             </div>
           )}
 
-          {listing.status === 'available' && !listing.description && (
-            <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-sm text-indigo-700">
-              To contact this seller, reach out through your school community or ask them to share their contact details.
-            </div>
+          {/* Contact seller */}
+          {listing.status !== 'sold' && (
+            listing.contact_info ? (
+              <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
+                <p className="text-sm font-medium text-indigo-900 mb-2">Contact {listing.seller_name}</p>
+                <ContactAction method={listing.contact_method} info={listing.contact_info} />
+                <p className="text-xs text-indigo-500 mt-3">
+                  Message directly and arrange to meet up. Payment is cash or Venmo in person — never through this site.
+                </p>
+              </div>
+            ) : (
+              <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-sm text-indigo-700">
+                This seller hasn&apos;t listed contact info. Check the comments above, or reach out through your school community.
+              </div>
+            )
           )}
         </div>
       </div>
     </div>
   )
+}
+
+function ContactAction({ method, info }: { method: string | null; info: string }) {
+  const label = CONTACT_METHOD_LABELS[method || 'other'] || 'Contact'
+  let href: string | null = null
+  if (method === 'text') href = `sms:${info.replace(/[^\d+]/g, '')}`
+  else if (method === 'email') href = `mailto:${info}`
+  else if (method === 'venmo') href = `https://venmo.com/u/${info.replace(/^@/, '')}`
+
+  const inner = (
+    <>
+      <span className="text-xs uppercase tracking-wide text-indigo-400 font-semibold">{label}</span>
+      <span className="text-base font-semibold text-indigo-800 break-all">{info}</span>
+    </>
+  )
+
+  if (href) {
+    return (
+      <a href={href} target={method === 'venmo' ? '_blank' : undefined} rel="noopener noreferrer"
+        className="flex flex-col bg-white border border-indigo-200 rounded-lg px-4 py-3 hover:border-indigo-400 hover:shadow-sm transition-all">
+        {inner}
+      </a>
+    )
+  }
+  return <div className="flex flex-col bg-white border border-indigo-200 rounded-lg px-4 py-3">{inner}</div>
 }
 
 function Row({ label, value }: { label: string; value: string }) {

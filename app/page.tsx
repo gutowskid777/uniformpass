@@ -51,13 +51,41 @@ export default function BrowsePage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Hero */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-1">School Uniform Marketplace</h1>
-        <p className="text-gray-500">Buy and sell private school uniforms directly with other families.</p>
+      <div className="mb-6 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white px-6 py-10 sm:px-10 sm:py-14">
+        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-[1.05]">
+          Skip the $80 uniform.
+        </h1>
+        <p className="text-indigo-100 text-lg sm:text-xl mt-4 max-w-2xl">
+          Buy and sell used uniforms and spirit wear inside your own school community.
+          No fees, no shipping, no digging through Facebook Marketplace.
+        </p>
+        <div className="flex flex-wrap gap-3 mt-7">
+          <a href="#browse" className="bg-white text-indigo-700 font-semibold px-6 py-3 rounded-full hover:bg-indigo-50 transition-colors">
+            Browse uniforms
+          </a>
+          <Link href="/new" className="bg-white/15 border border-white/40 text-white font-semibold px-6 py-3 rounded-full hover:bg-white/25 transition-colors">
+            Sell yours
+          </Link>
+        </div>
       </div>
 
+      {/* Consignment band — the concierge offer */}
+      <Link href="/sell-for-me"
+        className="group flex flex-col sm:flex-row sm:items-center gap-4 mb-8 rounded-2xl border-2 border-dashed border-indigo-300 bg-indigo-50/60 px-6 py-5 hover:border-indigo-500 hover:bg-indigo-50 transition-colors">
+        <div className="text-4xl">📦</div>
+        <div className="flex-1">
+          <p className="text-lg font-bold text-gray-900">Got a pile of old uniforms? Don&apos;t throw them out.</p>
+          <p className="text-sm text-gray-600 mt-0.5">
+            We pick them up, photograph, list, and sell everything for you — you keep <span className="font-semibold text-indigo-700">50% of the profit</span>. Zero work on your end.
+          </p>
+        </div>
+        <span className="shrink-0 font-semibold text-indigo-700 group-hover:translate-x-0.5 transition-transform">
+          Sell it for me →
+        </span>
+      </Link>
+
       {/* Filter bar */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 shadow-sm">
+      <div id="browse" className="bg-white rounded-xl border border-gray-200 p-4 mb-6 shadow-sm scroll-mt-4">
         <div className="flex items-center justify-between sm:hidden mb-3">
           <button onClick={() => setShowFilters(!showFilters)} className="text-sm font-medium text-indigo-600">
             {showFilters ? '▲ Hide filters' : '▼ Filters'}
@@ -161,6 +189,11 @@ function ListingCard({ listing }: { listing: Listing }) {
         {listing.is_lot && (
           <span className="absolute bottom-2 left-2 bg-black/70 text-white text-xs font-medium px-2 py-0.5 rounded-full">
             Lot
+          </span>
+        )}
+        {listing.is_verified && (
+          <span className="absolute bottom-2 right-2 bg-indigo-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm">
+            ✓ Verified
           </span>
         )}
       </div>

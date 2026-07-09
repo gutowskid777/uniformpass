@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase, type School, SIZES, US_STATES, PAYMENT_OPTIONS } from '@/lib/supabase'
+import { supabase, type School, SIZES, US_STATES, PAYMENT_OPTIONS, CONTACT_METHODS } from '@/lib/supabase'
 
 const MAX_PHOTOS = 4
 const MAX_FILE_SIZE_MB = 5
@@ -31,6 +31,8 @@ export default function NewListingPage() {
     location_city: '',
     location_state: '',
     payment_methods: [] as string[],
+    contact_method: 'text',
+    contact_info: '',
     seller_name: '',
     description: '',
   })
@@ -96,8 +98,8 @@ export default function NewListingPage() {
     payment_methods: form.payment_methods,
     seller_name: form.seller_name.trim(),
     description: form.description.trim() || null,
-    contact_method: null,
-    contact_info: null,
+    contact_method: form.contact_info.trim() ? form.contact_method : null,
+    contact_info: form.contact_info.trim() || null,
     photos: photoUrls,
     status,
   })
@@ -350,6 +352,30 @@ export default function NewListingPage() {
           </div>
         </div>
 
+        {/* Contact — how buyers reach you */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+          <div>
+            <h2 className="font-semibold text-gray-800">How buyers reach you</h2>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Buyers contact you directly and arrange payment (cash/Venmo) in person — nothing goes through the site.
+              Listings with contact info sell much faster.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-[9rem_1fr] gap-3">
+            <select value={form.contact_method} onChange={e => set('contact_method', e.target.value)}
+              className="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+              {CONTACT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+            </select>
+            <input type="text"
+              placeholder={CONTACT_METHODS.find(m => m.value === form.contact_method)?.placeholder}
+              value={form.contact_info} onChange={e => set('contact_info', e.target.value)}
+              className="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+          </div>
+          <p className="text-xs text-gray-400">
+            This will be shown publicly on your listing. Leave blank to only be reachable through the comments.
+          </p>
+        </div>
+
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{error}</div>
         )}
@@ -366,7 +392,7 @@ export default function NewListingPage() {
         </div>
 
         <p className="text-center text-xs text-gray-400">
-          Share contact details in comments if you want buyers to reach you directly.
+          No accounts, no fees. Buyers reach out directly and you meet up to complete the sale.
         </p>
       </form>
     </div>

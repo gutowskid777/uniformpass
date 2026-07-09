@@ -32,6 +32,21 @@ export type Listing = {
   description: string | null
   photos: string[]
   status: 'available' | 'pending' | 'sold' | 'draft'
+  is_verified: boolean
+  created_at: string
+}
+
+export type PickupRequest = {
+  id: string
+  name: string
+  contact: string
+  school_id: string | null
+  school_name: string | null
+  town: string | null
+  item_summary: string
+  est_items: number | null
+  notes: string | null
+  status: 'new' | 'scheduled' | 'picked_up' | 'listed' | 'done' | 'declined'
   created_at: string
 }
 
@@ -55,6 +70,20 @@ export const PAYMENT_OPTIONS = [
   { value: 'venmo', label: 'Venmo' },
   { value: 'zelle', label: 'Zelle' },
 ]
+
+export const CONTACT_METHODS = [
+  { value: 'text', label: 'Text / Call', placeholder: 'e.g. (201) 555-0134' },
+  { value: 'email', label: 'Email', placeholder: 'e.g. maria@email.com' },
+  { value: 'venmo', label: 'Venmo', placeholder: 'e.g. @maria-r' },
+  { value: 'other', label: 'Other', placeholder: 'e.g. Instagram @…' },
+]
+
+export const CONTACT_METHOD_LABELS: Record<string, string> = {
+  text: 'Text / Call',
+  email: 'Email',
+  venmo: 'Venmo',
+  other: 'Contact',
+}
 
 export const CONDITION_LABELS: Record<string, string> = {
   new: 'New / Never worn',
