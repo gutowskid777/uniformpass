@@ -44,7 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <p>Buy and sell school uniforms in your community.</p>
           <p className="mt-1">
             Questions, or need to take down a listing?{' '}
-            <a href="mailto:djg323@cornell.edu" className="text-indigo-600 hover:underline">Contact us</a>
+            <Link href="/contact" className="text-indigo-600 hover:underline">Contact us</Link>
           </p>
           <p className="mt-1 text-gray-400">© 2026 UniformPass. All rights reserved.</p>
         </footer>

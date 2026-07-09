@@ -36,6 +36,15 @@ export type Listing = {
   created_at: string
 }
 
+export type ContactMessage = {
+  id: string
+  name: string | null
+  email: string | null
+  message: string
+  status: 'new' | 'read' | 'done'
+  created_at: string
+}
+
 export type PickupRequest = {
   id: string
   name: string

@@ -81,8 +81,8 @@ export default function MyListingsPage() {
       )}
 
       <p className="text-xs text-gray-400 mt-8 text-center">
-        Saved on this device only. On a new phone or computer, email{' '}
-        <a href="mailto:djg323@cornell.edu" className="underline hover:text-gray-600">djg323@cornell.edu</a> and we&apos;ll help you manage a listing.
+        Saved on this device only. On a new phone or computer,{' '}
+        <Link href="/contact" className="underline hover:text-gray-600">contact us</Link> and we&apos;ll help you manage a listing.
       </p>
     </div>
   )

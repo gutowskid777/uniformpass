@@ -149,8 +149,8 @@ export default function ManageListingPage() {
       <div className="max-w-md mx-auto px-4 py-24 text-center">
         <div className="text-5xl mb-4">🔒</div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Manage link not valid</h1>
-        <p className="text-gray-500 mb-6">This link is missing or incorrect. Lost your link, or on a new device? Email us and we&apos;ll edit or take down your listing for you.</p>
-        <a href="mailto:djg323@cornell.edu" className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-full font-medium hover:bg-indigo-700 transition-colors">Email djg323@cornell.edu</a>
+        <p className="text-gray-500 mb-6">This link is missing or incorrect. Lost your link, or on a new device? Contact us and we&apos;ll edit or take down your listing for you.</p>
+        <Link href="/contact" className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-full font-medium hover:bg-indigo-700 transition-colors">Contact us</Link>
         <div className="mt-4"><Link href="/" className="text-sm text-indigo-600 hover:underline">Back to marketplace</Link></div>
       </div>
     )

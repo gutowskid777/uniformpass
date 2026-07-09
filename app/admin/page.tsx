@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase, type Listing, type PickupRequest, CONDITION_LABELS, CATEGORY_LABELS } from '@/lib/supabase'
+import { supabase, type Listing, type PickupRequest, type ContactMessage, CONDITION_LABELS, CATEGORY_LABELS } from '@/lib/supabase'
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'uniform2026'
 const PLACEHOLDER = 'https://placehold.co/100x100/e8e8f0/9999bb?text=?'
@@ -36,10 +36,13 @@ export default function AdminPage() {
   const [actionPending, setActionPending] = useState<string | null>(null)
   const [filter, setFilter] = useState<Status | 'all'>('all')
   const [counts, setCounts] = useState<Record<string, number>>({})
-  const [view, setView] = useState<'listings' | 'pickups'>('listings')
+  const [view, setView] = useState<'listings' | 'pickups' | 'messages'>('listings')
   const [pickups, setPickups] = useState<PickupRequest[]>([])
   const [pickupsLoading, setPickupsLoading] = useState(false)
   const [pickupsError, setPickupsError] = useState('')
+  const [messages, setMessages] = useState<ContactMessage[]>([])
+  const [messagesLoading, setMessagesLoading] = useState(false)
+  const [messagesError, setMessagesError] = useState('')
 
   useEffect(() => {
     if (sessionStorage.getItem('admin_authed') === '1') setAuthed(true)
@@ -123,8 +126,23 @@ export default function AdminPage() {
     setActionPending(null)
   }
 
+  const fetchMessages = async () => {
+    setMessagesLoading(true)
+    setMessagesError('')
+    try {
+      const res = await fetch('/api/contact', { headers: { 'x-admin-password': ADMIN_PASSWORD } })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'Failed to load messages')
+      setMessages(json.messages || [])
+    } catch (err: unknown) {
+      setMessagesError(err instanceof Error ? err.message : 'Failed to load messages')
+    }
+    setMessagesLoading(false)
+  }
+
   useEffect(() => {
     if (authed && view === 'pickups') fetchPickups()
+    if (authed && view === 'messages') fetchMessages()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authed, view])
 
@@ -178,20 +196,22 @@ export default function AdminPage() {
           <p className="text-sm text-gray-500 mt-0.5">
             {view === 'listings'
               ? `${counts.available || 0} available · ${counts.sold || 0} sold · ${counts.draft || 0} draft`
-              : `${pickups.filter(p => p.status === 'new').length} new · ${pickups.length} total pickup requests`}
+              : view === 'pickups'
+              ? `${pickups.filter(p => p.status === 'new').length} new · ${pickups.length} total pickup requests`
+              : `${messages.length} message${messages.length !== 1 ? 's' : ''}`}
           </p>
         </div>
         <button onClick={logout} className="text-sm text-gray-500 hover:text-gray-900 underline">Sign out</button>
       </div>
 
       {/* View toggle */}
-      <div className="flex gap-2 mb-6">
-        {(['listings', 'pickups'] as const).map(v => (
+      <div className="flex gap-2 mb-6 flex-wrap">
+        {(['listings', 'pickups', 'messages'] as const).map(v => (
           <button key={v} onClick={() => setView(v)}
             className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors ${
               view === v ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
             }`}>
-            {v === 'listings' ? 'Listings' : 'Pickup requests'}
+            {v === 'listings' ? 'Listings' : v === 'pickups' ? 'Pickup requests' : 'Messages'}
             {v === 'pickups' && pickups.some(p => p.status === 'new') && (
               <span className="ml-2 bg-indigo-600 text-white text-xs rounded-full px-1.5 py-0.5">
                 {pickups.filter(p => p.status === 'new').length}
@@ -333,6 +353,33 @@ export default function AdminPage() {
                     {PICKUP_STATUSES.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
                   </select>
                 </div>
+              </div>
+            ))}
+          </div>
+        )
+      )}
+
+      {view === 'messages' && (
+        messagesLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : messagesError ? (
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{messagesError}</div>
+        ) : messages.length === 0 ? (
+          <div className="text-center py-20 text-gray-500">No messages yet.</div>
+        ) : (
+          <div className="space-y-3">
+            {messages.map(m => (
+              <div key={m.id} className="bg-white rounded-xl border border-gray-200 p-4">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <p className="font-semibold text-gray-900">{m.name || 'Anonymous'}</p>
+                  <p className="text-xs text-gray-400">{new Date(m.created_at).toLocaleString()}</p>
+                </div>
+                {m.email && (
+                  <a href={`mailto:${m.email}`} className="text-sm text-indigo-600 hover:underline">{m.email}</a>
+                )}
+                <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">{m.message}</p>
               </div>
             ))}
           </div>
