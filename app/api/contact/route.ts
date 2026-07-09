@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server'
 // lost, then a best-effort email notification is sent via Resend if RESEND_API_KEY is set.
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || process.env.NEXT_PUBLIC_ADMIN_PASSWORD
-const CONTACT_TO = process.env.CONTACT_EMAIL_TO || 'djg323@cornell.edu'
+const CONTACT_TO = process.env.CONTACT_EMAIL_TO || 'gutowskidylan@gmail.com'
 const CONTACT_FROM = process.env.CONTACT_EMAIL_FROM || 'UniformPass <onboarding@resend.dev>'
 
 function admin() {
