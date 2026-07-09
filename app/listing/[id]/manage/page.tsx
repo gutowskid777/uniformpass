@@ -149,8 +149,9 @@ export default function ManageListingPage() {
       <div className="max-w-md mx-auto px-4 py-24 text-center">
         <div className="text-5xl mb-4">🔒</div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Manage link not valid</h1>
-        <p className="text-gray-500 mb-8">This link is missing or incorrect. Manage links are private — use the exact one you got when you posted.</p>
-        <Link href="/" className="bg-indigo-600 text-white px-6 py-3 rounded-full font-medium hover:bg-indigo-700 transition-colors">Back to marketplace</Link>
+        <p className="text-gray-500 mb-6">This link is missing or incorrect. Lost your link, or on a new device? Email us and we&apos;ll edit or take down your listing for you.</p>
+        <a href="mailto:djg323@cornell.edu" className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-full font-medium hover:bg-indigo-700 transition-colors">Email djg323@cornell.edu</a>
+        <div className="mt-4"><Link href="/" className="text-sm text-indigo-600 hover:underline">Back to marketplace</Link></div>
       </div>
     )
   }
@@ -278,7 +279,7 @@ export default function ManageListingPage() {
               value={form.contact_info} onChange={e => set('contact_info', e.target.value)}
               className="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
           </div>
-          <p className="text-xs text-gray-400 mt-1">Shown publicly on your listing. Photos and school aren’t editable here — delete and repost to change those.</p>
+          <p className="text-xs text-gray-400 mt-1">Shown publicly on your listing. Photos and school aren’t editable here. Delete and repost to change those.</p>
         </div>
       </div>
 

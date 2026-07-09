@@ -347,7 +347,7 @@ export default function NewListingPage() {
           <div>
             <h2 className="font-semibold text-gray-800">How buyers reach you</h2>
             <p className="text-sm text-gray-500 mt-0.5">
-              Buyers contact you directly and arrange payment (cash/Venmo) in person — nothing goes through the site.
+              Buyers contact you directly and arrange payment (cash/Venmo) in person. Nothing goes through the site.
               Listings with contact info sell much faster.
             </p>
           </div>

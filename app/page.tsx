@@ -83,7 +83,7 @@ export default function BrowsePage() {
         <div className="flex flex-col sm:flex-row">
           <div className="sm:w-52 shrink-0 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-6 flex flex-col items-center justify-center text-center">
             <div className="text-5xl font-extrabold leading-none">50%</div>
-            <div className="text-sm text-emerald-50 mt-2">of the profit — straight back to you</div>
+            <div className="text-sm text-emerald-50 mt-2">of the profit, straight back to you</div>
           </div>
           <div className="flex-1 p-6 flex flex-col justify-center">
             <p className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">

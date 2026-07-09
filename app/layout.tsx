@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://uniformpass.vercel.app'),
-  title: 'UniformPass — Buy & Sell School Uniforms',
+  title: 'UniformPass · Buy & Sell School Uniforms',
   description: 'Buy and sell used school uniforms and spirit wear right in your school community. No fees, meet up local.',
 }
 
@@ -42,6 +42,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="min-h-screen">{children}</main>
         <footer className="border-t border-gray-200 bg-white mt-16 py-8 text-center text-sm text-gray-500">
           <p>Buy and sell school uniforms in your community.</p>
+          <p className="mt-1">
+            Questions, or need to take down a listing?{' '}
+            <a href="mailto:djg323@cornell.edu" className="text-indigo-600 hover:underline">Contact us</a>
+          </p>
           <p className="mt-1 text-gray-400">© 2026 UniformPass. All rights reserved.</p>
         </footer>
       </body>

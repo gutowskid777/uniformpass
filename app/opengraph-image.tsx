@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'UniformPass — buy & sell school uniforms'
+export const alt = 'UniformPass · buy & sell school uniforms'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -34,7 +34,7 @@ export default function OpengraphImage() {
           UniformPass
         </div>
         <div style={{ fontSize: 40, marginTop: 24, opacity: 0.92 }}>
-          Buy &amp; sell school uniforms — no fees, meet up local
+          Buy &amp; sell school uniforms. No fees, meet up local.
         </div>
         <div style={{ fontSize: 26, marginTop: 28, opacity: 0.75 }}>
           SJR · Don Bosco · Bergen Catholic

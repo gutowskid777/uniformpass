@@ -134,7 +134,7 @@ export default function ListingDetailPage() {
 
           {listing.is_lot && (
             <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-lg px-4 py-2 text-sm font-medium mb-4">
-              📦 Lot listing — multiple items / sizes included
+              📦 Lot listing: multiple items / sizes included
             </div>
           )}
 
@@ -182,7 +182,7 @@ export default function ListingDetailPage() {
                 <p className="text-sm font-medium text-indigo-900 mb-2">Contact {listing.seller_name}</p>
                 <ContactAction method={listing.contact_method} info={listing.contact_info} />
                 <p className="text-xs text-indigo-500 mt-3">
-                  Message directly and arrange to meet up. Payment is cash or Venmo in person — never through this site.
+                  Message directly and arrange to meet up. Payment is cash or Venmo in person, never through this site.
                 </p>
               </div>
             ) : (
