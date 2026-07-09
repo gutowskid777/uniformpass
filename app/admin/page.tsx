@@ -9,7 +9,7 @@ const PLACEHOLDER = 'https://placehold.co/100x100/e8e8f0/9999bb?text=?'
 const STATUS_OPTIONS = ['available', 'sold', 'draft'] as const
 type Status = typeof STATUS_OPTIONS[number]
 
-const PICKUP_STATUSES = ['new', 'scheduled', 'picked_up', 'listed', 'done', 'declined'] as const
+const PICKUP_STATUSES = ['new', 'scheduled', 'picked_up', 'listed', 'done', 'declined', 'cancelled'] as const
 type PickupStatus = typeof PICKUP_STATUSES[number]
 
 const PICKUP_STATUS_STYLES: Record<string, string> = {
@@ -19,6 +19,7 @@ const PICKUP_STATUS_STYLES: Record<string, string> = {
   listed: 'bg-green-100 text-green-700',
   done: 'bg-gray-100 text-gray-500',
   declined: 'bg-red-100 text-red-500',
+  cancelled: 'bg-gray-100 text-gray-400',
 }
 
 const STATUS_STYLES: Record<Status, string> = {

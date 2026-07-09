@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { supabase, type School } from '@/lib/supabase'
 
 const STEPS = [
@@ -11,9 +11,9 @@ const STEPS = [
 ]
 
 export default function SellForMePage() {
+  const router = useRouter()
   const [schools, setSchools] = useState<School[]>([])
   const [submitting, setSubmitting] = useState(false)
-  const [done, setDone] = useState(false)
   const [error, setError] = useState('')
 
   const [form, setForm] = useState({
@@ -51,7 +51,11 @@ export default function SellForMePage() {
     if (!form.item_summary.trim()) return setError('Tell us roughly what you have.')
     setSubmitting(true)
     try {
+      const id = crypto.randomUUID()
+      const cancelToken = crypto.randomUUID()
       const { error: insertError } = await supabase.from('pickup_requests').insert({
+        id,
+        cancel_token: cancelToken,
         name: form.name.trim(),
         contact: form.contact.trim(),
         school_id: form.school_id && form.school_id !== 'other' ? form.school_id : null,
@@ -62,26 +66,12 @@ export default function SellForMePage() {
         notes: form.notes.trim() || null,
       })
       if (insertError) throw insertError
-      setDone(true)
+      localStorage.setItem(`uniformpass_pickup_${id}`, cancelToken)
+      router.push(`/pickup/${id}?token=${cancelToken}&new=1`)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong.')
       setSubmitting(false)
     }
-  }
-
-  if (done) {
-    return (
-      <div className="max-w-xl mx-auto px-4 py-24 text-center">
-        <div className="text-6xl mb-4">🎉</div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Got it! We&apos;ll be in touch.</h1>
-        <p className="text-gray-500 mb-8">
-          We&apos;ll reach out at <span className="font-medium text-gray-700">{form.contact}</span> to set up a pickup. Thanks for keeping uniforms out of the landfill.
-        </p>
-        <Link href="/" className="bg-indigo-600 text-white px-6 py-3 rounded-full font-medium hover:bg-indigo-700 transition-colors">
-          Back to marketplace
-        </Link>
-      </div>
-    )
   }
 
   return (

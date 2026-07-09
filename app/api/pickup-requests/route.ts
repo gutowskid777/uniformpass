@@ -37,7 +37,7 @@ export async function PATCH(req: Request) {
   if (!db) return NextResponse.json({ error: 'Server not configured — set SUPABASE_SERVICE_ROLE_KEY.' }, { status: 500 })
 
   const { id, status } = await req.json()
-  const allowed = ['new', 'scheduled', 'picked_up', 'listed', 'done', 'declined']
+  const allowed = ['new', 'scheduled', 'picked_up', 'listed', 'done', 'declined', 'cancelled']
   if (!id || !allowed.includes(status)) {
     return NextResponse.json({ error: 'bad request' }, { status: 400 })
   }
