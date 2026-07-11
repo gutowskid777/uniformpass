@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase'
 // submit do we ask for an account — their in-memory form + photos stay put, and we
 // finish the post the moment the account exists. No email in the path (password auth).
 export default function InlineAccountStep({
-  onCreated, onClose, heading = 'Almost done — create your account', blurb, cta = 'Create account & finish',
+  onCreated, onClose, heading = 'Almost done... create your account', blurb, cta = 'Create account & finish',
 }: {
   onCreated: (userId: string) => void
   onClose: () => void
@@ -35,7 +35,7 @@ export default function InlineAccountStep({
         const { data, error } = await supabase.auth.signUp({ email: em, password })
         if (error) {
           if (/registered|already/i.test(error.message)) {
-            setMode('signin'); setError('You already have an account — enter your password to finish.')
+            setMode('signin'); setError('You already have an account... enter your password to finish.')
           } else setError(error.message)
           return
         }
@@ -67,7 +67,7 @@ export default function InlineAccountStep({
             className="text-gray-400 hover:text-gray-600 text-2xl leading-none -mt-1">×</button>
         </div>
         <p className="text-sm text-gray-500 mb-4">
-          {blurb || 'Everything you entered is saved and waiting. Create a free account to finish — 10 seconds, no email to check.'}
+          {blurb || 'Everything you entered is saved and waiting. Create a free account to finish. 10 seconds, no email to check.'}
         </p>
         <form onSubmit={submit} className="space-y-3">
           <input type="email" value={email} onChange={e => setEmail(e.target.value)}

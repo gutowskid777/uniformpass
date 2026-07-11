@@ -66,7 +66,7 @@ export default function SchoolPicker({
             </button>
           ))}
           {q && matches.length === 0 && (
-            <p className="px-3 py-2 text-xs text-gray-400">No match — add it below.</p>
+            <p className="px-3 py-2 text-xs text-gray-400">No match... add it below.</p>
           )}
           {query.trim() && (
             <button

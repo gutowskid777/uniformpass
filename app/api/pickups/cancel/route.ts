@@ -38,7 +38,7 @@ export async function POST(req: Request) {
   if (action === 'cancel') {
     if (reqRow.status === 'cancelled') return NextResponse.json({ ok: true, status: 'cancelled' })
     if (LOCKED.includes(reqRow.status)) {
-      return NextResponse.json({ error: 'This pickup is already being handled — contact us to sort it out.' }, { status: 409 })
+      return NextResponse.json({ error: 'This pickup is already being handled... contact us to sort it out.' }, { status: 409 })
     }
     const { error } = await db.from('pickup_requests').update({ status: 'cancelled' }).eq('id', id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })

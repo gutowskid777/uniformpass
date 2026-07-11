@@ -434,8 +434,8 @@ export default function NewListingPage() {
         <InlineAccountStep
           onClose={() => setShowAccount(false)}
           onCreated={uid => { setShowAccount(false); doPost(uid) }}
-          heading="Almost done — create your account"
-          blurb="Your listing is filled in and waiting. Create a free account to post it and manage it anytime — 10 seconds, no email to check."
+          heading="Almost done... create your account"
+          blurb="Your listing is filled in and waiting. Create a free account to post it and manage it anytime. 10 seconds, no email to check."
           cta="Create account & post"
         />
       )}

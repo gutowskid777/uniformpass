@@ -7,11 +7,11 @@ import Link from 'next/link'
 type Req = { id: string; status: string; item_summary: string; school_name: string | null; created_at: string }
 
 const STATUS_LABEL: Record<string, string> = {
-  new: 'Received — we’ll be in touch',
+  new: 'Received... we’ll be in touch',
   scheduled: 'Pickup scheduled',
   picked_up: 'Picked up',
   listed: 'Listed for sale',
-  done: 'Sold — done',
+  done: 'Sold. Done.',
   declined: 'Declined',
   cancelled: 'Cancelled',
 }

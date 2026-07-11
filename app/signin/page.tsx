@@ -30,7 +30,7 @@ export default function SignInPage() {
           // Existing account → nudge to sign in instead of a scary error.
           if (/registered|already/i.test(error.message)) {
             setMode('signin')
-            setError('You already have an account — enter your password to sign in.')
+            setError('You already have an account... enter your password to sign in.')
           } else setError(error.message)
           return
         }
