@@ -5,9 +5,10 @@ import { loadOgFonts } from '@/lib/ogFonts'
 
 export const runtime = 'edge'
 
-// The digital flyer: one school-neutral 1080x1350 image (4:5, chat and feed
-// friendly) that a parent can save and drop in any group. No school names on
-// purpose... every school's families should feel invited.
+// The digital flyer. One job (per the GTM playbook): a parent in a school
+// group, 3 seconds, sees the two doors... need uniforms -> shop your school;
+// outgrown pile -> we pick it up, you get cash. School-neutral on purpose.
+// ~35 words total. Everything else lives on the site, not the flyer.
 
 const SIZE = { width: 1080, height: 1350 }
 
@@ -17,6 +18,18 @@ function Hanger({ size, color }: { size: number; color: string }) {
       <g fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M16 13 v-1.8 a2.3 2.3 0 1 0 -2.3 -2.3" />
         <path d="M16 13 L6 22 H26 Z" />
+      </g>
+    </svg>
+  )
+}
+
+function Cash({ size, color }: { size: number; color: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32">
+      <g fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="9" width="26" height="14" rx="2.5" />
+        <circle cx="16" cy="16" r="4" />
+        <path d="M7.5 13v6M24.5 13v6" />
       </g>
     </svg>
   )
@@ -36,18 +49,36 @@ async function qrDataUri(): Promise<string | null> {
   }
 }
 
-function TrustCheck({ label }: { label: string }) {
+function Door({ icon, question, line }: { icon: React.ReactNode; question: string; line: string }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      <svg viewBox="0 0 20 20" width="26" height="26">
-        <path
-          fill="#6EE7B7"
-          fillRule="evenodd"
-          d="M16.7 5.3a1 1 0 0 1 0 1.4l-7.5 7.5a1 1 0 0 1-1.4 0l-3.5-3.5a1 1 0 1 1 1.4-1.4l2.8 2.8 6.8-6.8a1 1 0 0 1 1.4 0Z"
-          clipRule="evenodd"
-        />
-      </svg>
-      <span style={{ fontSize: 27, fontWeight: 700 }}>{label}</span>
+    <div
+      style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        textAlign: 'center',
+        background: 'rgba(255,255,255,0.12)',
+        border: '2px solid rgba(255,255,255,0.28)',
+        borderRadius: 36,
+        padding: '44px 36px',
+      }}
+    >
+      <div
+        style={{
+          width: 108,
+          height: 108,
+          borderRadius: 999,
+          background: 'rgba(255,255,255,0.14)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {icon}
+      </div>
+      <div style={{ fontSize: 46, fontWeight: 900, letterSpacing: '-1px', marginTop: 26 }}>{question}</div>
+      <div style={{ fontSize: 29, lineHeight: 1.3, marginTop: 12, opacity: 0.92 }}>{line}</div>
     </div>
   )
 }
@@ -75,77 +106,52 @@ export async function GET() {
           <div style={{ fontSize: 40, fontWeight: 800, letterSpacing: '-1px' }}>UniformPass</div>
         </div>
 
-        {/* Headline */}
-        <div style={{ fontSize: 104, fontWeight: 900, letterSpacing: '-4px', lineHeight: 1.02, marginTop: 64 }}>
+        {/* Headline + one line */}
+        <div style={{ fontSize: 108, fontWeight: 900, letterSpacing: '-4px', lineHeight: 1.02, marginTop: 60 }}>
           Stop buying uniforms new.
         </div>
-        <div style={{ fontSize: 38, lineHeight: 1.35, marginTop: 28, opacity: 0.94, maxWidth: 900 }}>
-          Buy and sell used uniforms with families at your school. You just meet up.
+        <div style={{ fontSize: 37, lineHeight: 1.35, marginTop: 26, opacity: 0.94, maxWidth: 880 }}>
+          Buy and sell used uniforms with families at your school.
         </div>
 
-        {/* Buy + sell cards */}
-        <div style={{ display: 'flex', gap: 28, marginTop: 56 }}>
-          <div
-            style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              background: 'rgba(255,255,255,0.96)',
-              borderRadius: 32,
-              padding: '36px 40px',
-            }}
-          >
-            <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '3px', color: '#4338CA' }}>BUYING</div>
-            <div style={{ fontSize: 46, fontWeight: 900, lineHeight: 1.1, letterSpacing: '-1px', color: '#312E81', marginTop: 14 }}>
-              Exactly what you need.
-            </div>
-            <div style={{ fontSize: 27, lineHeight: 1.35, marginTop: 14, color: '#4B5563' }}>
-              One easy marketplace for your school&apos;s uniforms and merch. Your size, near you.
-            </div>
-          </div>
-
-          <div
-            style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              background: 'rgba(255,255,255,0.14)',
-              border: '2px solid rgba(255,255,255,0.35)',
-              borderRadius: 32,
-              padding: '36px 40px',
-            }}
-          >
-            <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '3px', color: '#C7D2FE' }}>SELLING</div>
-            <div style={{ fontSize: 46, fontWeight: 900, lineHeight: 1.1, letterSpacing: '-1px', marginTop: 14 }}>
-              You do nothing.
-            </div>
-            <div style={{ fontSize: 27, lineHeight: 1.35, marginTop: 14, opacity: 0.92 }}>
-              Hand off your outgrown pile... free pickup, and you get cash back.
-            </div>
-          </div>
+        {/* The two doors */}
+        <div style={{ display: 'flex', gap: 28, marginTop: 60 }}>
+          <Door
+            icon={<Hanger size={64} color="#FDE68A" />}
+            question="Need them?"
+            line="Shop your school."
+          />
+          <Door
+            icon={<Cash size={64} color="#FDE68A" />}
+            question="Outgrown?"
+            line="We pick up the pile. You get cash."
+          />
         </div>
 
-        {/* Trust row */}
-        <div style={{ display: 'flex', gap: 40, marginTop: 52, opacity: 0.95 }}>
-          <TrustCheck label="No fees" />
-          <TrustCheck label="No shipping" />
-          <TrustCheck label="Meet up locally in NJ" />
-        </div>
-
-        {/* URL + QR */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
+        {/* Close: QR + URL */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 40,
+            marginTop: 'auto',
+            background: '#ffffff',
+            borderRadius: 32,
+            padding: '34px 44px',
+          }}
+        >
+          {qr && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={qr} alt="" width={190} height={190} style={{ width: 190, height: 190 }} />
+          )}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ fontSize: 30, fontWeight: 700, opacity: 0.8 }}>Find your school at</div>
-            <div style={{ fontSize: 64, fontWeight: 900, letterSpacing: '-2px', color: '#FDE68A' }}>
+            <div style={{ fontSize: 60, fontWeight: 900, letterSpacing: '-2px', color: '#312E81' }}>
               uniformpass.shop
             </div>
-          </div>
-          {qr && (
-            <div style={{ display: 'flex', background: 'white', borderRadius: 24, padding: 12 }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={qr} alt="" width={168} height={168} style={{ width: 168, height: 168 }} />
+            <div style={{ fontSize: 27, fontWeight: 700, color: '#6B7280', marginTop: 10 }}>
+              Free · No fees · Local NJ parents
             </div>
-          )}
+          </div>
         </div>
       </div>
     ),

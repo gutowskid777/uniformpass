@@ -39,17 +39,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </svg>
               UniformPass
             </Link>
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <Link href="/sell-for-me" className="hidden sm:inline-flex text-sm font-semibold text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 px-3 py-1.5 rounded-full transition-colors">
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              <Link href="/sell-for-me" className="hidden sm:inline-flex items-center h-9 text-sm font-semibold text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 px-3.5 rounded-full transition-colors">
                 White Glove
               </Link>
-              <Link href="/my-listings" className="hidden sm:inline-flex text-sm font-semibold text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 px-3 py-1.5 rounded-full transition-colors">
+              <Link href="/my-listings" className="hidden sm:inline-flex items-center h-9 text-sm font-semibold text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 px-3.5 rounded-full transition-colors">
                 My Listings
               </Link>
               <AuthNav />
               <Link
                 href="/new"
-                className="bg-indigo-600 text-white text-sm font-semibold px-4 py-1.5 rounded-full hover:bg-indigo-700 transition-colors"
+                className="inline-flex items-center h-9 bg-indigo-600 text-white text-sm font-semibold px-4 rounded-full hover:bg-indigo-700 transition-colors"
               >
                 + Sell
               </Link>

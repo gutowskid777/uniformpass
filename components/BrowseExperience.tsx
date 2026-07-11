@@ -183,7 +183,17 @@ function ScopedHero({ theme, schoolId, liveCount }: { theme: SchoolTheme; school
       className="school-wash text-white"
       style={{ background: `linear-gradient(160deg, ${theme.primary} 0%, ${theme.primaryDark} 100%)` }}
     >
-      <div className="max-w-6xl mx-auto px-4 py-8 sm:py-14">
+      <div className="max-w-6xl mx-auto px-4 pt-4 pb-8 sm:pb-14">
+        {/* Exit the focused school view */}
+        <div className="flex justify-end mb-3">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1 text-[13px] font-bold text-white/70 hover:text-white px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors"
+          >
+            ← All schools
+          </Link>
+        </div>
+
         {/* Identity row: MINE + LOCAL in one glance */}
         <div className="flex items-center gap-3.5">
           <MonogramPatch theme={theme} size={72} />
@@ -198,14 +208,6 @@ function ScopedHero({ theme, schoolId, liveCount }: { theme: SchoolTheme; school
             theme={theme}
             buttonClassName="inline-flex items-center gap-1.5 text-sm font-bold px-4 py-2.5 rounded-full bg-white/15 border border-white/35 text-white hover:bg-white/25 transition-colors shrink-0"
           />
-          <Link
-            href="/"
-            aria-label={`Leave the ${theme.shortName} page, see all schools`}
-            title="All schools"
-            className="w-10 h-10 shrink-0 rounded-full bg-white/10 hover:bg-white/25 text-white/80 flex items-center justify-center text-base font-bold transition-colors"
-          >
-            ✕
-          </Link>
         </div>
 
         <h1 className="text-[34px] sm:text-6xl font-black tracking-tight leading-[1.05] mt-6 max-w-3xl">
