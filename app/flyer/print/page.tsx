@@ -106,10 +106,10 @@ export default async function FlyerPrintPage() {
                   Buying
                 </div>
                 <div style={{ fontSize: 32, fontWeight: 900, color: PRIMARY_DARK, letterSpacing: '-0.02em', marginTop: 8, lineHeight: 1.1 }}>
-                  Your school. Your sizes.
+                  Exactly what you need.
                 </div>
                 <div style={{ fontSize: 17, color: '#4B5563', marginTop: 8 }}>
-                  Blazers, polos, pants, spirit wear... from families near you.
+                  One easy marketplace for your school&apos;s uniforms and merch. Your size, near you.
                 </div>
               </div>
 
@@ -121,7 +121,7 @@ export default async function FlyerPrintPage() {
                   You do nothing.
                 </div>
                 <div style={{ fontSize: 17, color: 'rgba(255,255,255,0.85)', marginTop: 8, lineHeight: 1.4 }}>
-                  We pick up your pile, sell it, and send you half. Or list it yourself, free.
+                  Hand off your outgrown pile... free pickup, and you get cash back.
                 </div>
               </div>
             </div>

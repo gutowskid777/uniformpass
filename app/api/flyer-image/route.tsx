@@ -97,10 +97,10 @@ export async function GET() {
           >
             <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '3px', color: '#4338CA' }}>BUYING</div>
             <div style={{ fontSize: 46, fontWeight: 900, lineHeight: 1.1, letterSpacing: '-1px', color: '#312E81', marginTop: 14 }}>
-              Your school. Your sizes.
+              Exactly what you need.
             </div>
             <div style={{ fontSize: 27, lineHeight: 1.35, marginTop: 14, color: '#4B5563' }}>
-              Blazers, polos, pants, spirit wear... from families near you.
+              One easy marketplace for your school&apos;s uniforms and merch. Your size, near you.
             </div>
           </div>
 
@@ -120,7 +120,7 @@ export async function GET() {
               You do nothing.
             </div>
             <div style={{ fontSize: 27, lineHeight: 1.35, marginTop: 14, opacity: 0.92 }}>
-              We pick up your pile, sell it, and send you half. Or list it yourself, free.
+              Hand off your outgrown pile... free pickup, and you get cash back.
             </div>
           </div>
         </div>
