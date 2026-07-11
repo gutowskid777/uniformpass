@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase, type School } from '@/lib/supabase'
 import SchoolPicker from '@/components/SchoolPicker'
 import { useAuth } from '@/components/AuthProvider'
+import InlineAccountStep from '@/components/InlineAccountStep'
 
 const STEPS = [
   { icon: '📦', title: 'You gather the pile', body: 'Uniforms, gym clothes, or spirit wear. Any condition. Even one bag works.' },
@@ -14,8 +15,9 @@ const STEPS = [
 
 export default function SellForMePage() {
   const router = useRouter()
-  const { user, loading: authLoading } = useAuth()
+  const { user } = useAuth()
   const [schools, setSchools] = useState<School[]>([])
+  const [showAccount, setShowAccount] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
@@ -37,11 +39,6 @@ export default function SellForMePage() {
     })
   }, [])
 
-  // Login required to request a pickup.
-  useEffect(() => {
-    if (!authLoading && !user) router.replace('/signin?redirect=/sell-for-me')
-  }, [authLoading, user, router])
-
   // Prefill from the account's saved profile.
   useEffect(() => {
     if (!user) return
@@ -58,23 +55,18 @@ export default function SellForMePage() {
 
   const set = (key: string, value: string) => setForm(f => ({ ...f, [key]: value }))
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    if (!form.name.trim()) return setError('Please enter your name.')
-    if (!form.contact.trim()) return setError('Please enter a phone or email so we can reach you.')
-    if (!form.school_id) return setError('Please pick the school these are from.')
-    if (form.school_id === 'other' && !form.custom_school.trim()) return setError('Please type the school name.')
-    if (!form.town.trim()) return setError('Please enter your town so we can arrange pickup.')
-    if (!form.item_summary.trim()) return setError('Tell us roughly what you have.')
+  // The actual request — runs once we know who's asking (existing session or a
+  // just-created account). Form stays in memory, so nothing is re-entered.
+  const doSubmit = async (userId: string) => {
     setSubmitting(true)
+    setError('')
     try {
       const id = crypto.randomUUID()
       const cancelToken = crypto.randomUUID()
       const { error: insertError } = await supabase.from('pickup_requests').insert({
         id,
         cancel_token: cancelToken,
-        user_id: user?.id ?? null,
+        user_id: userId,
         name: form.name.trim(),
         contact: form.contact.trim(),
         school_id: form.school_id && form.school_id !== 'other' ? form.school_id : null,
@@ -87,15 +79,13 @@ export default function SellForMePage() {
       if (insertError) throw insertError
       localStorage.setItem(`uniformpass_pickup_${id}`, cancelToken)
       // Remember this seller's details for next time (account memory).
-      if (user) {
-        supabase.from('seller_profiles').upsert({
-          user_id: user.id,
-          name: form.name.trim(),
-          contact_info: form.contact.trim(),
-          town: form.town.trim(),
-          updated_at: new Date().toISOString(),
-        }).then(() => {})
-      }
+      supabase.from('seller_profiles').upsert({
+        user_id: userId,
+        name: form.name.trim(),
+        contact_info: form.contact.trim(),
+        town: form.town.trim(),
+        updated_at: new Date().toISOString(),
+      }).then(() => {})
       // Notify the operator (best-effort — the request is already saved).
       fetch('/api/pickups/notify', {
         method: 'POST',
@@ -117,8 +107,17 @@ export default function SellForMePage() {
     }
   }
 
-  if (authLoading || !user) {
-    return <div className="max-w-2xl mx-auto px-4 py-24 text-center text-gray-400">Loading…</div>
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    if (!form.name.trim()) return setError('Please enter your name.')
+    if (!form.contact.trim()) return setError('Please enter a phone or email so we can reach you.')
+    if (!form.school_id) return setError('Please pick the school these are from.')
+    if (form.school_id === 'other' && !form.custom_school.trim()) return setError('Please type the school name.')
+    if (!form.town.trim()) return setError('Please enter your town so we can arrange pickup.')
+    if (!form.item_summary.trim()) return setError('Tell us roughly what you have.')
+    if (!user) { setShowAccount(true); return }  // deferred account creation
+    doSubmit(user.id)
   }
 
   return (
@@ -209,6 +208,16 @@ export default function SellForMePage() {
           No obligation. We&apos;ll confirm the details before we come by.
         </p>
       </form>
+
+      {showAccount && (
+        <InlineAccountStep
+          onClose={() => setShowAccount(false)}
+          onCreated={uid => { setShowAccount(false); doSubmit(uid) }}
+          heading="Almost done — create your account"
+          blurb="Your request is filled in and waiting. Create a free account to send it and track your pickup — 10 seconds, no email to check."
+          cta="Create account & send"
+        />
+      )}
     </div>
   )
 }

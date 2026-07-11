@@ -58,16 +58,21 @@ Scope summary: listing create, browse/filter by school/category/gender/size/cond
 
 **DECISIONS locked this session (Dylan):**
 1. **Auth → email + PASSWORD**, not magic link. Signup logs in immediately, no email in the critical path (kills the "email never came" failure + the Microsoft Safe-Links problem). Email confirmation: **OFF for now** (Dylan is fine without it) — but it's a **project-wide Supabase toggle SHARED WITH ORBIT**; confirm Orbit doesn't need confirmation before flipping. Password reset (needs email) deferred.
-2. **Login is REQUIRED to post** — hard-gate `/new` + `/sell-for-me` → redirect to `/signin` when logged out; RLS on `listings` + `pickup_requests` INSERT → require `auth.uid() = user_id` (replaces the current PUBLIC `with check (true)` insert policies). This OVERRIDES the UX study's "don't build accounts" rec — Dylan's explicit call.
+2. **Login is REQUIRED to post — via SEAMLESS deferred account creation, NOT an upfront gate.** The user fills the whole form first; only on submit does an `InlineAccountStep` modal ask for email+password (form + photos stay in memory, so nothing is re-entered), then the post completes with the new/existing user's id. RLS on `listings` + `pickup_requests` INSERT → require `auth.uid() = user_id` (replaces the current PUBLIC `with check (true)` insert policies). This OVERRIDES the UX study's "don't build accounts" rec — Dylan's explicit call.
 3. **Drop `/recover`** (study idea) — accounts make it obsolete.
 
-**BUILD QUEUE (agreed, not yet built):**
-- Email + password auth (rewrite `/signin`, use `signUp`/`signInWithPassword`).
-- Login gate on `/new` + `/sell-for-me` + RLS owner-insert (Task 4 enforcement).
-- **Account memory** — new `profiles` table (user_id, name, contact_method, contact_info, town); save on first post, prefill every form after.
-- **Town REQUIRED** on `/sell-for-me` (currently optional).
-- **School search aliases** — "saint"↔"st", acronyms (SJR, AHA=Academy of the Holy Angels, IHA=Immaculate Heart Academy, DBP, BC). Current `SchoolPicker` only does `name.includes(query)` — no aliases/normalization. Study item C2. Needs an alias source (new `schools.aliases text[]` seeded, or a client acronym map).
-- **Pickup request → emails Dylan** — mirror the `/api/contact` Resend pattern (`CONTACT_EMAIL_TO`, `RESEND_API_KEY`) on new pickup insert.
+**SHIPPED 2026-07-11 (pushed to prod):**
+- ✅ Email + password auth (`/signin` rewritten; `signUp`/`signInWithPassword`) + `InlineAccountStep` deferred-signup modal.
+- ✅ Seamless forced-login on `/new` + `/sell-for-me` (fill first → account on submit → post).
+- ✅ `seller_profiles` table (user_id, name, contact_method, contact_info, city, state, town) — saved on post, prefilled on every form after.
+- ✅ Town REQUIRED on `/sell-for-me`.
+- ✅ School fuzzy search (`lib/schoolSearch.ts`): saint↔st, acronyms (sjr/aha/iha/bc/dbp/shp/pc), nicknames (bosco/seton/angels).
+- ✅ Pickup request → emails operator (`/api/pickups/notify`, Resend).
+
+**STILL TO DO:**
+- **RLS owner-insert backstop** — drop the PUBLIC `with check(true)` insert policies on `listings` + `pickup_requests`, replace with `to authenticated with check (auth.uid() = user_id)`. Apply AFTER confirming a live logged-in post works. (`listing_tokens` PUBLIC insert can stay.)
+- **My Listings rework** (Dylan, 2026-07-11) — account-based; show the user's pickup_requests too, let the owner **edit/cancel** them, and those edits must be visible to the operator in `/admin`. Currently `/my-listings` is localStorage-only and pickups are cancel-via-token only.
+- **DEPENDENCIES/flags:** email-confirmation must be OFF in Supabase (shared w/ Orbit) or deferred signup can't auto-login; `RESEND_API_KEY` must be in Vercel env or pickup/contact emails fail silently.
 
 **SHIPPED this session:** C1 mobile bottom-nav (`components/BottomNav.tsx` + `layout.tsx`) — Browse/Sell-for-me were `hidden sm:block`, so the consignment moat was invisible on phones (the launch audience's device). Now a 4-tab thumb bar `<sm`.
 

@@ -6,6 +6,7 @@ import imageCompression from 'browser-image-compression'
 import { supabase, type School, SIZES, US_STATES, PAYMENT_OPTIONS, CONTACT_METHODS } from '@/lib/supabase'
 import SchoolPicker from '@/components/SchoolPicker'
 import { useAuth } from '@/components/AuthProvider'
+import InlineAccountStep from '@/components/InlineAccountStep'
 
 const MAX_PHOTOS = 8
 const MAX_FILE_SIZE_MB = 15 // fallback cap only used if compression can't decode a file
@@ -13,8 +14,9 @@ const LAST_DESC_KEY = 'uniformpass_last_description'
 
 export default function NewListingPage() {
   const router = useRouter()
-  const { user, loading: authLoading } = useAuth()
+  const { user } = useAuth()
   const [schools, setSchools] = useState<School[]>([])
+  const [showAccount, setShowAccount] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [compressing, setCompressing] = useState(false)
   const [error, setError] = useState('')
@@ -50,11 +52,6 @@ export default function NewListingPage() {
     const saved = localStorage.getItem(LAST_DESC_KEY)
     if (saved) setLastDescription(saved)
   }, [])
-
-  // Login required to post.
-  useEffect(() => {
-    if (!authLoading && !user) router.replace('/signin?redirect=/new')
-  }, [authLoading, user, router])
 
   // Prefill contact/location from the account's saved profile.
   useEffect(() => {
@@ -111,7 +108,7 @@ export default function NewListingPage() {
     setPhotoPreviews(prev => { URL.revokeObjectURL(prev[index]); return prev.filter((_, i) => i !== index) })
   }
 
-  const buildPayload = (listingId: string, photoUrls: string[], status: string) => ({
+  const buildPayload = (listingId: string, photoUrls: string[], status: string, userId: string) => ({
     id: listingId,
     school_id: form.school_id === 'other' ? null : form.school_id,
     school_name: form.school_id === 'other' ? form.custom_school.trim() : form.school_name,
@@ -131,7 +128,7 @@ export default function NewListingPage() {
     contact_info: form.contact_info.trim() || null,
     photos: photoUrls,
     status,
-    user_id: user?.id ?? null,
+    user_id: userId,
   })
 
   const validate = (requireLocation = true) => {
@@ -158,40 +155,36 @@ export default function NewListingPage() {
     return urls
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    const err = validate()
-    if (err) return setError(err)
+  // The actual post — runs once we know who the seller is (existing session, or a
+  // just-created account). Form + photos are still in memory, so nothing is re-entered.
+  const doPost = async (userId: string) => {
     setSubmitting(true)
+    setError('')
     try {
       const listingId = crypto.randomUUID()
       const photoUrls = await uploadPhotos(listingId)
       const { error: insertError } = await supabase
         .from('listings')
-        .insert(buildPayload(listingId, photoUrls, 'available'))
+        .insert(buildPayload(listingId, photoUrls, 'available', userId))
       if (insertError) throw insertError
       // Remember this seller's details for next time (account memory).
-      if (user) {
-        supabase.from('seller_profiles').upsert({
-          user_id: user.id,
-          name: form.seller_name.trim(),
-          contact_method: form.contact_info.trim() ? form.contact_method : null,
-          contact_info: form.contact_info.trim() || null,
-          city: form.location_city.trim(),
-          state: form.location_state,
-          updated_at: new Date().toISOString(),
-        }).then(() => {})
-      }
+      supabase.from('seller_profiles').upsert({
+        user_id: userId,
+        name: form.seller_name.trim(),
+        contact_method: form.contact_info.trim() ? form.contact_method : null,
+        contact_info: form.contact_info.trim() || null,
+        city: form.location_city.trim(),
+        state: form.location_state,
+        updated_at: new Date().toISOString(),
+      }).then(() => {})
       // Save description for reuse
       if (form.description.trim()) localStorage.setItem(LAST_DESC_KEY, form.description.trim())
-      // Create a secret manage token so the seller can edit / take down later (no account needed)
+      // Secret manage token (belt-and-suspenders alongside the account).
       const manageToken = crypto.randomUUID()
       const { error: tokenError } = await supabase
         .from('listing_tokens')
         .insert({ listing_id: listingId, token: manageToken })
       if (tokenError) {
-        // Listing is still posted; just fall back to the public page if the token failed.
         router.push(`/listing/${listingId}`)
         return
       }
@@ -203,8 +196,13 @@ export default function NewListingPage() {
     }
   }
 
-  if (authLoading || !user) {
-    return <div className="max-w-2xl mx-auto px-4 py-24 text-center text-gray-400">Loading…</div>
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    const err = validate()
+    if (err) return setError(err)
+    if (!user) { setShowAccount(true); return }  // deferred account creation
+    doPost(user.id)
   }
 
   return (
@@ -428,9 +426,19 @@ export default function NewListingPage() {
         </button>
 
         <p className="text-center text-xs text-gray-400">
-          No accounts, no fees. Buyers reach out directly and you meet up to complete the sale.
+          Free to post. Buyers reach out directly and you meet up to complete the sale.
         </p>
       </form>
+
+      {showAccount && (
+        <InlineAccountStep
+          onClose={() => setShowAccount(false)}
+          onCreated={uid => { setShowAccount(false); doPost(uid) }}
+          heading="Almost done — create your account"
+          blurb="Your listing is filled in and waiting. Create a free account to post it and manage it anytime — 10 seconds, no email to check."
+          cta="Create account & post"
+        />
+      )}
     </div>
   )
 }
