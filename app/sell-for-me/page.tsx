@@ -1,17 +1,32 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase, type School } from '@/lib/supabase'
+import { getTheme } from '@/lib/schoolTheme'
 import SchoolPicker from '@/components/SchoolPicker'
 import { useAuth } from '@/components/AuthProvider'
 import InlineAccountStep from '@/components/InlineAccountStep'
 
 const STEPS = [
-  { icon: '📦', title: 'You gather the pile', body: 'Uniforms, gym clothes, or spirit wear. Any condition. Even one bag works.' },
-  { icon: '🚗', title: 'We pick it up', body: 'We schedule a quick pickup near you. Hand it off and you’re done.' },
-  { icon: '💵', title: 'We sell it, you keep 50%', body: 'We photograph, list, and sell it all. You get half the profit.' },
+  { icon: '📦', title: 'You gather the pile', body: 'Bag it up. Any condition, even one bag works.' },
+  { icon: '🚗', title: 'We pick it up', body: 'We come to you. Hand it off and you’re done.' },
+  { icon: '💵', title: 'You keep 50%', body: 'We photograph, list, and sell it all. You get half.' },
 ]
+
+// One tap instead of "how many items?": a busy parent knows the SHAPE of the
+// pile, not the count. The est number is what the operator sees in admin.
+const PILE_SIZES = [
+  { label: 'A few', summary: 'A few items', est: 5 },
+  { label: 'A grocery bag', summary: 'A grocery bag of uniforms', est: 15 },
+  { label: 'A few bags', summary: 'A few bags of uniforms', est: 35 },
+  { label: 'A closet-full', summary: 'A closet-full of uniforms', est: 60 },
+]
+
+// DECISION FOR DYLAN: drop Mom's first name + a real photo in here. A face and
+// a name are the strongest unblock for "who's coming to my house." Until then
+// the card runs with the warm-but-generic local-parent version.
+const OPERATOR: { name: string; photo: string } = { name: '', photo: '' }
 
 export default function SellForMePage() {
   const router = useRouter()
@@ -20,6 +35,8 @@ export default function SellForMePage() {
   const [showAccount, setShowAccount] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [pile, setPile] = useState('')
+  const autoSummary = useRef('')
 
   const [form, setForm] = useState({
     name: '',
@@ -39,6 +56,16 @@ export default function SellForMePage() {
     })
   }, [])
 
+  // Arriving from a school-scoped link: the school is already chosen.
+  useEffect(() => {
+    if (schools.length === 0) return
+    const params = new URLSearchParams(window.location.search)
+    const sid = params.get('school_id') || getTheme(params.get('school'))?.dbId || ''
+    if (!sid) return
+    const match = schools.find(s => s.id === sid)
+    if (match) setForm(f => (f.school_id ? f : { ...f, school_id: match.id, school_name: match.name }))
+  }, [schools])
+
   // Prefill from the account's saved profile.
   useEffect(() => {
     if (!user) return
@@ -54,6 +81,21 @@ export default function SellForMePage() {
   }, [user])
 
   const set = (key: string, value: string) => setForm(f => ({ ...f, [key]: value }))
+
+  // Tapping a pile size fills the numbers; it also drafts the summary line
+  // unless the parent already typed their own.
+  const pickPile = (chip: (typeof PILE_SIZES)[number]) => {
+    setPile(chip.label)
+    setForm(f => {
+      const keepTyped = f.item_summary.trim() && f.item_summary !== autoSummary.current
+      autoSummary.current = chip.summary
+      return {
+        ...f,
+        est_items: String(chip.est),
+        item_summary: keepTyped ? f.item_summary : chip.summary,
+      }
+    })
+  }
 
   // The actual request — runs once we know who's asking (existing session or a
   // just-created account). Form stays in memory, so nothing is re-entered.
@@ -115,49 +157,89 @@ export default function SellForMePage() {
     if (!form.school_id) return setError('Please pick the school these are from.')
     if (form.school_id === 'other' && !form.custom_school.trim()) return setError('Please type the school name.')
     if (!form.town.trim()) return setError('Please enter your town so we can arrange pickup.')
-    if (!form.item_summary.trim()) return setError('Tell us roughly what you have.')
+    if (!form.item_summary.trim()) return setError('Tap a pile size, or tell us what you have.')
     if (!user) { setShowAccount(true); return }  // deferred account creation
     doSubmit(user.id)
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
-      {/* Hero */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
-          We&apos;ll sell your uniforms for you.
+    <div className="max-w-2xl mx-auto px-4 py-8">
+      {/* Money hero: the deal, in numbers you can read across the room.
+          TUNABLE: the worked example ($60 for a 20-item bag) is illustrative.
+          Dylan sets the real math. */}
+      <div className="rounded-3xl bg-gradient-to-br from-emerald-600 to-emerald-800 text-white px-6 py-8 sm:px-10 sm:py-12 mb-8">
+        <div className="flex items-end gap-8">
+          <div>
+            <div className="text-7xl font-black leading-none tracking-tight">50%</div>
+            <div className="text-emerald-100 font-bold mt-1.5">you keep</div>
+          </div>
+          <div>
+            <div className="text-7xl font-black leading-none tracking-tight">$0</div>
+            <div className="text-emerald-100 font-bold mt-1.5">effort</div>
+          </div>
+        </div>
+        <h1 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight mt-7">
+          You keep 50%. You do nothing.
         </h1>
-        <p className="text-gray-500 text-lg mt-3">
-          Have a pile headed for the trash? Hand it off and keep <span className="font-semibold text-indigo-700">50% of the profit</span>. We do everything else.
+        <p className="text-lg sm:text-xl text-emerald-50 mt-3 leading-snug">
+          A bag of 20 uniforms is about <span className="text-2xl sm:text-3xl font-black text-white">$60</span> back in your pocket.
         </p>
       </div>
 
       {/* How it works */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
         {STEPS.map((s, i) => (
-          <div key={i} className="bg-white rounded-xl border border-gray-200 p-5">
-            <div className="text-3xl mb-2">{s.icon}</div>
-            <p className="font-semibold text-gray-900">{i + 1}. {s.title}</p>
-            <p className="text-sm text-gray-500 mt-1 leading-relaxed">{s.body}</p>
+          <div key={i} className="bg-white rounded-2xl border border-gray-200 p-4 flex sm:flex-col items-center sm:items-start gap-4 sm:gap-2">
+            <div className="text-4xl shrink-0">{s.icon}</div>
+            <div>
+              <p className="font-extrabold text-gray-900 leading-tight">{i + 1}. {s.title}</p>
+              <p className="text-[13px] text-gray-500 mt-0.5 leading-relaxed">{s.body}</p>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Form */}
+      {/* Who's coming to my house: the #1 blocker, answered before the form. */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-5 mb-8 flex items-start gap-4">
+        {OPERATOR.photo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={OPERATOR.photo} alt={OPERATOR.name || 'Your pickup parent'} className="w-16 h-16 rounded-full object-cover shrink-0" />
+        ) : (
+          <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#047857" strokeWidth="1.8" className="w-9 h-9" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0" />
+            </svg>
+          </div>
+        )}
+        <div className="min-w-0">
+          <p className="text-lg font-extrabold text-gray-900 leading-tight">
+            {OPERATOR.name ? `${OPERATOR.name} picks it up.` : 'A local parent picks it up.'}
+          </p>
+          <p className="text-[15px] text-gray-600 mt-1.5 leading-relaxed">
+            Not a courier. We&apos;re a Bergen County family that got tired of $80 uniforms.
+            We text before we come, you hand off the bag, and that&apos;s it.
+          </p>
+          <p className="inline-flex items-center gap-1.5 mt-2.5 text-[13px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1">
+            ✓ Verified by UniformPass
+          </p>
+        </div>
+      </div>
+
+      {/* Form: finishable one-handed, thumb only */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-          <h2 className="font-semibold text-gray-800">Request a pickup</h2>
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-5">
+          <h2 className="text-xl font-extrabold text-gray-900">Get your free pickup</h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Your name *</label>
               <input type="text" placeholder="Maria R." value={form.name} onChange={e => set('name', e.target.value)}
-                className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                className="w-full rounded-lg border-gray-300 text-sm focus:ring-emerald-500 focus:border-emerald-500" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Phone or email *</label>
               <input type="text" placeholder="(201) 555-0134" value={form.contact} onChange={e => set('contact', e.target.value)}
-                className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                className="w-full rounded-lg border-gray-300 text-sm focus:ring-emerald-500 focus:border-emerald-500" />
             </div>
           </div>
 
@@ -171,29 +253,48 @@ export default function SellForMePage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Your town * <span className="text-gray-400 font-normal">(for pickup)</span></label>
               <input type="text" placeholder="Montvale" value={form.town} onChange={e => set('town', e.target.value)}
-                className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                className="w-full rounded-lg border-gray-300 text-sm focus:ring-emerald-500 focus:border-emerald-500" />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">What do you have? *</label>
-            <textarea rows={3} placeholder="e.g. ~15 SJR polos and dress pants, a few Bosco gym shirts, one blazer size 16"
+            <label className="block text-sm font-medium text-gray-700 mb-2">How much is there? *</label>
+            <div className="grid grid-cols-2 gap-2">
+              {PILE_SIZES.map(chip => (
+                <button
+                  key={chip.label}
+                  type="button"
+                  onClick={() => pickPile(chip)}
+                  className={`py-3.5 px-3 rounded-xl border-2 text-[15px] font-bold transition-colors ${
+                    pile === chip.label
+                      ? 'border-emerald-600 bg-emerald-50 text-emerald-900'
+                      : 'border-gray-200 text-gray-700 hover:border-gray-400'
+                  }`}
+                >
+                  {chip.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              What&apos;s in the pile? <span className="text-gray-400 font-normal">(optional... rough is fine)</span>
+            </label>
+            <textarea rows={2} placeholder="e.g. SJR polos and dress pants, a few gym shirts, one blazer"
               value={form.item_summary} onChange={e => set('item_summary', e.target.value)}
-              className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+              className="w-full rounded-lg border-gray-300 text-sm focus:ring-emerald-500 focus:border-emerald-500" />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Roughly how many items? <span className="text-gray-400 font-normal">(optional)</span></label>
-            <input type="number" min="0" placeholder="20" value={form.est_items} onChange={e => set('est_items', e.target.value)}
-              className="w-full sm:w-40 rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Anything else? <span className="text-gray-400 font-normal">(optional)</span></label>
+          <details className="group">
+            <summary className="text-sm font-medium text-gray-500 cursor-pointer list-none">
+              <span className="underline underline-offset-2 decoration-gray-300">Anything else?</span>
+              <span className="text-gray-400 font-normal"> (pickup times, condition notes...)</span>
+            </summary>
             <textarea rows={2} placeholder="Best times for pickup, condition notes, etc."
               value={form.notes} onChange={e => set('notes', e.target.value)}
-              className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
-          </div>
+              className="w-full mt-2 rounded-lg border-gray-300 text-sm focus:ring-emerald-500 focus:border-emerald-500" />
+          </details>
         </div>
 
         {error && (
@@ -201,9 +302,12 @@ export default function SellForMePage() {
         )}
 
         <button type="submit" disabled={submitting}
-          className="w-full bg-indigo-600 text-white font-semibold py-3.5 rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-colors text-lg">
-          {submitting ? 'Sending...' : 'Request my pickup'}
+          className="w-full bg-emerald-600 text-white font-extrabold py-4 rounded-2xl hover:bg-emerald-700 disabled:opacity-50 transition-colors text-xl">
+          {submitting ? 'Sending...' : 'Get my free pickup'}
         </button>
+        <p className="text-center text-sm text-gray-500">
+          You&apos;re paid within a few days of each sale, not when everything sells.
+        </p>
         <p className="text-center text-xs text-gray-400">
           No obligation. We&apos;ll confirm the details before we come by.
         </p>
@@ -213,8 +317,8 @@ export default function SellForMePage() {
         <InlineAccountStep
           onClose={() => setShowAccount(false)}
           onCreated={uid => { setShowAccount(false); doSubmit(uid) }}
-          heading="Almost done — create your account"
-          blurb="Your request is filled in and waiting. Create a free account to send it and track your pickup — 10 seconds, no email to check."
+          heading="Almost done... create your account"
+          blurb="Your request is filled in and waiting. Create a free account to send it and track your pickup. 10 seconds, no email to check."
           cta="Create account & send"
         />
       )}
