@@ -167,6 +167,13 @@ export default function ListingDetailPage() {
             <Row label="Posted" value={new Date(listing.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} />
           </div>
 
+          {listing.user_id && (
+            <Link href={`/seller/${listing.user_id}`}
+              className="inline-flex items-center gap-1 mb-6 text-sm font-semibold text-indigo-700 hover:underline">
+              See everything {listing.seller_name} is selling →
+            </Link>
+          )}
+
           {/* Comments */}
           {listing.description && (
             <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">

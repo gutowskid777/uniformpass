@@ -33,6 +33,7 @@ export type Listing = {
   photos: string[]
   status: 'available' | 'pending' | 'sold' | 'draft'
   is_verified: boolean
+  user_id: string | null
   created_at: string
 }
 

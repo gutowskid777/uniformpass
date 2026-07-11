@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Link from 'next/link'
+import AuthProvider from '@/components/AuthProvider'
+import AuthNav from '@/components/AuthNav'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -15,21 +17,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={inter.className}>
+        <AuthProvider>
         <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
           <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
             <Link href="/" className="font-extrabold text-xl text-indigo-700 tracking-tight">
               UniformPass
             </Link>
             <div className="flex items-center gap-3 sm:gap-4">
-              <Link href="/" className="text-sm text-gray-600 hover:text-gray-900 hidden sm:block">
-                Browse
-              </Link>
               <Link href="/sell-for-me" className="text-sm text-gray-600 hover:text-gray-900 hidden sm:block">
                 Sell it for me
               </Link>
-              <Link href="/my-listings" className="text-sm text-gray-600 hover:text-gray-900">
+              <Link href="/my-listings" className="text-sm text-gray-600 hover:text-gray-900 hidden sm:block">
                 My Listings
               </Link>
+              <AuthNav />
               <Link
                 href="/new"
                 className="bg-indigo-600 text-white text-sm font-medium px-4 py-1.5 rounded-full hover:bg-indigo-700 transition-colors"
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </p>
           <p className="mt-1 text-gray-400">© 2026 UniformPass. All rights reserved.</p>
         </footer>
+        </AuthProvider>
       </body>
     </html>
   )

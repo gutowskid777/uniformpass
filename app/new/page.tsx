@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import imageCompression from 'browser-image-compression'
 import { supabase, type School, SIZES, US_STATES, PAYMENT_OPTIONS, CONTACT_METHODS } from '@/lib/supabase'
 import SchoolPicker from '@/components/SchoolPicker'
+import { useAuth } from '@/components/AuthProvider'
 
 const MAX_PHOTOS = 8
 const MAX_FILE_SIZE_MB = 15 // fallback cap only used if compression can't decode a file
@@ -12,6 +14,7 @@ const LAST_DESC_KEY = 'uniformpass_last_description'
 
 export default function NewListingPage() {
   const router = useRouter()
+  const { user } = useAuth()
   const [schools, setSchools] = useState<School[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [compressing, setCompressing] = useState(false)
@@ -108,6 +111,7 @@ export default function NewListingPage() {
     contact_info: form.contact_info.trim() || null,
     photos: photoUrls,
     status,
+    user_id: user?.id ?? null,
   })
 
   const validate = (requireLocation = true) => {
@@ -173,6 +177,13 @@ export default function NewListingPage() {
         <h1 className="text-3xl font-bold text-gray-900 mb-1">Post a Listing</h1>
         <p className="text-gray-500">List your uniform in under 3 minutes.</p>
       </div>
+
+      {!user && (
+        <div className="mb-6 rounded-xl bg-indigo-50 border border-indigo-100 px-4 py-3 text-sm flex items-center justify-between gap-3">
+          <span className="text-indigo-900">Sign in to manage your listings from any device and get a seller page buyers can browse.</span>
+          <Link href="/signin?redirect=/new" className="shrink-0 font-semibold text-indigo-700 hover:underline">Sign in</Link>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
 

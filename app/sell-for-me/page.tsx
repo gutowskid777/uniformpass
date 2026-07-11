@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase, type School } from '@/lib/supabase'
 import SchoolPicker from '@/components/SchoolPicker'
+import { useAuth } from '@/components/AuthProvider'
 
 const STEPS = [
   { icon: '📦', title: 'You gather the pile', body: 'Uniforms, gym clothes, or spirit wear. Any condition. Even one bag works.' },
@@ -13,6 +14,7 @@ const STEPS = [
 
 export default function SellForMePage() {
   const router = useRouter()
+  const { user } = useAuth()
   const [schools, setSchools] = useState<School[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -52,6 +54,7 @@ export default function SellForMePage() {
       const { error: insertError } = await supabase.from('pickup_requests').insert({
         id,
         cancel_token: cancelToken,
+        user_id: user?.id ?? null,
         name: form.name.trim(),
         contact: form.contact.trim(),
         school_id: form.school_id && form.school_id !== 'other' ? form.school_id : null,
