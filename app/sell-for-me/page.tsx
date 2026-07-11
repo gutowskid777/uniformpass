@@ -159,9 +159,9 @@ export default function SellForMePage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      {/* The White Glove promise, one line. */}
+      {/* The Auto Sell promise, one line. */}
       <div className="rounded-3xl bg-gradient-to-br from-emerald-600 to-emerald-800 text-white px-6 py-10 sm:px-10 sm:py-14 mb-8 text-center">
-        <p className="text-[11px] font-extrabold tracking-[0.18em] text-emerald-200 uppercase">White Glove · Free pickup</p>
+        <p className="text-[11px] font-extrabold tracking-[0.18em] text-emerald-200 uppercase">Auto Sell · Free pickup</p>
         <h1 className="text-5xl sm:text-6xl font-black tracking-tight leading-none mt-4">
           You do nothing.
         </h1>

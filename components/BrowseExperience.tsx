@@ -89,13 +89,13 @@ export default function BrowseExperience({ schoolCode }: { schoolCode?: string |
   return (
     <div>
       {theme ? (
-        <ScopedHero theme={theme} schoolId={schoolId} liveCount={liveCount} />
+        <ScopedHero theme={theme} liveCount={liveCount} />
       ) : (
         <UnscopedHero schools={schools} onPickSchool={s => { setSchoolId(s.id) }} />
       )}
 
       <div className="max-w-6xl mx-auto px-4 pt-6 pb-8">
-        <ConsignmentBand />
+        <ConsignmentBand schoolId={theme ? schoolId : ''} />
 
         {/* Grid heading */}
         <h2 id="browse" className="scroll-mt-4 text-2xl sm:text-[26px] font-extrabold tracking-tight text-gray-900 mb-4">
@@ -177,7 +177,7 @@ export default function BrowseExperience({ schoolCode }: { schoolCode?: string |
 
 /* ---------------- Scoped hero: the arrival moment ---------------- */
 
-function ScopedHero({ theme, schoolId, liveCount }: { theme: SchoolTheme; schoolId: string; liveCount: number | null }) {
+function ScopedHero({ theme, liveCount }: { theme: SchoolTheme; liveCount: number | null }) {
   return (
     <section
       className="school-wash text-white"
@@ -229,25 +229,7 @@ function ScopedHero({ theme, schoolId, liveCount }: { theme: SchoolTheme; school
           </p>
         )}
 
-        {/* One obvious next tap (and its mirror) */}
-        <div className="mt-7 flex flex-col sm:flex-row gap-3 sm:max-w-2xl">
-          <a
-            href="#browse"
-            className="flex-1 text-center bg-white font-extrabold text-lg px-6 py-4 rounded-2xl hover:opacity-90 transition-opacity"
-            style={{ color: theme.primaryDark }}
-          >
-            Shop {theme.shortName} uniforms
-          </a>
-          <Link
-            href={`/sell-for-me${schoolId ? `?school_id=${schoolId}` : ''}`}
-            className="flex-1 text-center font-extrabold text-lg px-6 py-4 rounded-2xl hover:opacity-90 transition-opacity"
-            style={{ background: theme.accent, color: theme.accentInk }}
-          >
-            Sell your pile, keep 50%
-          </Link>
-        </div>
-
-        <p className="mt-5 text-[13px] font-medium text-white/75">
+        <p className="mt-6 text-[13px] font-medium text-white/75">
           No fees · No shipping · Meet up locally in NJ
         </p>
       </div>
@@ -453,16 +435,16 @@ function ColdStart({ theme }: { theme: SchoolTheme }) {
 
 /* ---------------- Shared pieces ---------------- */
 
-// The concierge service, named: White Glove. Lead with the do-nothing promise.
-function ConsignmentBand() {
+// The concierge service, named: Auto Sell. Lead with the do-nothing promise.
+function ConsignmentBand({ schoolId }: { schoolId?: string }) {
   return (
     <div className="mb-6 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 text-white px-6 py-6 sm:px-8 sm:py-7 flex flex-col sm:flex-row sm:items-center gap-4">
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] font-extrabold tracking-[0.18em] text-emerald-200 uppercase">White Glove</p>
+        <p className="text-[11px] font-extrabold tracking-[0.18em] text-emerald-200 uppercase">Auto Sell</p>
         <p className="text-2xl sm:text-3xl font-black tracking-tight leading-tight mt-1">You do nothing.</p>
         <p className="text-emerald-50 text-[15px] mt-1">We pick up your pile, sell it, and send you half.</p>
       </div>
-      <Link href="/sell-for-me"
+      <Link href={`/sell-for-me${schoolId ? `?school_id=${schoolId}` : ''}`}
         className="shrink-0 text-center bg-white text-emerald-800 text-lg font-extrabold px-6 py-3.5 rounded-2xl hover:bg-emerald-50 transition-colors">
         Get a free pickup
       </Link>

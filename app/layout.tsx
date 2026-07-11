@@ -41,7 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </Link>
             <div className="flex items-center gap-2 sm:gap-2.5">
               <Link href="/sell-for-me" className="hidden sm:inline-flex items-center h-9 text-sm font-semibold text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 px-3.5 rounded-full transition-colors">
-                White Glove
+                Auto Sell
               </Link>
               <Link href="/my-listings" className="hidden sm:inline-flex items-center h-9 text-sm font-semibold text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 px-3.5 rounded-full transition-colors">
                 My Listings
