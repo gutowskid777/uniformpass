@@ -1,5 +1,5 @@
 # School Uniform Resale Platform — Context
-# Last updated: 2026-07-08
+# Last updated: 2026-07-11
 
 ## What It Is
 
@@ -14,9 +14,9 @@
 ## Stack
 
 - Next.js 14 (App Router) + Tailwind + TypeScript
-- Supabase (Postgres + Storage) — YC credits applied
-- Vercel (free tier, not yet deployed)
-- No auth in MVP: sellers include contact info in listing, buyers reach out directly
+- Supabase (Postgres + Storage + **Auth**) — **project SHARED with the Orbit project** (same `auth.users` pool). Project id `cfqornklplyvdgiuptgj`.
+- Vercel — **LIVE in prod, auto-deploys on push to `main`**
+- **Auth: accounts now REQUIRED to post** (see 2026-07-11 session below). Buyers still browse + contact sellers with no account.
 
 ## Key Files
 
@@ -48,6 +48,32 @@
 
 Scope summary: listing create, browse/filter by school/category/gender/size/condition, detail page, admin panel. Out of scope for MVP: in-app payments, seller accounts, concierge pickup, books/gear, charity lots.
 
+## 2026-07-11 Session — accounts, domain, email, enforcement
+
+**Domain (DONE, live):** `uniformpass.shop` bought at Namecheap, added in Vercel, **Valid + SSL, serving prod.** DNS: `A @ 76.76.21.21`, `CNAME www → cname.vercel-dns.com`. (Namecheap default parking records had to be removed — they were causing `ENOTFOUND`.) `uniformpass.vercel.app` still works too.
+
+**Email (DONE):** Resend domain `uniformpass.shop` **verified** (DKIM/SPF/DMARC + `send` MX at Namecheap; Mail Settings switched to Custom MX). Supabase Auth SMTP → host `smtp.resend.com`, sender `no-reply@uniformpass.shop`, name UniformPass. Supabase Auth URL config → Site URL `https://uniformpass.shop`, redirect `https://uniformpass.shop/**`. **Verified delivering to external domains** (Gmail lands clean, one-click works). **Known issue:** strict `.edu` Microsoft/Office365 tenants (e.g. Cornell) quarantine the mail AND Safe-Links pre-scan burns the one-time magic-link token → user's own click 403s. NOT the launch audience (personal Gmail/Yahoo/iCloud), so not a blocker — but it's why we're dropping magic links (below).
+
+**Accounts (built earlier, being changed):** magic-link auth exists (AuthProvider + /signin + AuthNav). `listings` + `pickup_requests` carry nullable `user_id`. Seller profiles at `/seller/[id]`.
+
+**DECISIONS locked this session (Dylan):**
+1. **Auth → email + PASSWORD**, not magic link. Signup logs in immediately, no email in the critical path (kills the "email never came" failure + the Microsoft Safe-Links problem). Email confirmation: **OFF for now** (Dylan is fine without it) — but it's a **project-wide Supabase toggle SHARED WITH ORBIT**; confirm Orbit doesn't need confirmation before flipping. Password reset (needs email) deferred.
+2. **Login is REQUIRED to post** — hard-gate `/new` + `/sell-for-me` → redirect to `/signin` when logged out; RLS on `listings` + `pickup_requests` INSERT → require `auth.uid() = user_id` (replaces the current PUBLIC `with check (true)` insert policies). This OVERRIDES the UX study's "don't build accounts" rec — Dylan's explicit call.
+3. **Drop `/recover`** (study idea) — accounts make it obsolete.
+
+**BUILD QUEUE (agreed, not yet built):**
+- Email + password auth (rewrite `/signin`, use `signUp`/`signInWithPassword`).
+- Login gate on `/new` + `/sell-for-me` + RLS owner-insert (Task 4 enforcement).
+- **Account memory** — new `profiles` table (user_id, name, contact_method, contact_info, town); save on first post, prefill every form after.
+- **Town REQUIRED** on `/sell-for-me` (currently optional).
+- **School search aliases** — "saint"↔"st", acronyms (SJR, AHA=Academy of the Holy Angels, IHA=Immaculate Heart Academy, DBP, BC). Current `SchoolPicker` only does `name.includes(query)` — no aliases/normalization. Study item C2. Needs an alias source (new `schools.aliases text[]` seeded, or a client acronym map).
+- **Pickup request → emails Dylan** — mirror the `/api/contact` Resend pattern (`CONTACT_EMAIL_TO`, `RESEND_API_KEY`) on new pickup insert.
+
+**SHIPPED this session:** C1 mobile bottom-nav (`components/BottomNav.tsx` + `layout.tsx`) — Browse/Sell-for-me were `hidden sm:block`, so the consignment moat was invisible on phones (the launch audience's device). Now a 4-tab thumb bar `<sm`.
+
+## UX / IA Study (docs/ux-study/, 2026-07-10)
+Ground-up UX redesign: 13 persona sims → one ideal IA → diffed vs. current code → prioritized CRITICAL/HIGH/NICE change list. Headline moves: school-as-spine (`/s/[slug]` hubs + type-ahead), elevate the moat, ambient trust modules, convert dead-ends to lead capture. Top-5 buildable: C1 (mobile nav ✅ done) · C2 (school type-ahead + hubs) · C3 (empty-state → waitlist) · C4 (per-listing OG cards) · C5 (sell-for-me trust + payout math). See `05-gap-and-change-list.md` for the full ranked list. Note: study argues AGAINST forced accounts — Dylan overrode (decision #2 above).
+
 ## Current Status (2026-07-08)
 
 Consignment + contact build complete. `npm run build` passes (8 routes). Local smoke test: all pages 200, consignment form insert verified against live DB (201), PII read-back correctly blocked, API auth returns 401/500 as designed. **Deploy status: confirm — projects.json said not-yet-deployed but memory notes auto-deploy-on-push.**
@@ -59,7 +85,7 @@ Consignment + contact build complete. `npm run build` passes (8 routes). Local s
 - New `listing_tokens` table (listing_id PK → listings, token uuid). RLS: **insert-only for PUBLIC, no SELECT** — secret manage tokens readable only via service role. `on delete cascade` from listings.
 - **RLS rule for this project:** insert policies must target `PUBLIC` (`with check (true)`), NOT `to anon` — the REST role doesn't match `anon`-scoped policies here (the working listings policy is PUBLIC).
 
-### Self-serve management (no accounts)
+### Self-serve management (no accounts) — being superseded by accounts (2026-07-11)
 Sellers get a secret manage link at post time (`/listing/[id]/manage?token=…`); token also saved to localStorage so the public page shows a "Manage your listing" button on the same device. All edit/delete actions go through `/api/listings/manage` which verifies the token with the service role. Photos + school aren't editable there (delete + repost to change).
 
 ### PostgREST gotcha (documented so we don't re-debug it)
@@ -69,11 +95,11 @@ Insert-only tables work with `supabase-js .insert()` (sends `Prefer: return=mini
 
 1. **🔴 ROTATE `SUPABASE_SERVICE_ROLE_KEY`** — it's SET in Vercel and working (manage + pickup routes verified live), BUT Dylan screenshotted it into a chat = possible leak. Regenerate in Supabase → Settings → API, then update Vercel env + `.env.local`. Service role = full DB access, so do this soon.
 2. **Admin password** — currently `uniform2026` via `NEXT_PUBLIC_ADMIN_PASSWORD`. Change for mom in `.env.local` + Vercel.
-3. **Domain** — register `uniformpass.com` before heavy marketing (currently live at uniformpass.vercel.app).
+3. ~~**Domain**~~ — ✅ DONE: `uniformpass.shop` live + SSL (see 2026-07-11 session).
 4. **Seed inventory** — list Dylan's donation stock, flag it Verified in admin.
 
 ## Live
-Production: **https://uniformpass.vercel.app** (auto-deploys on push to main). GitHub: gutowskid777/uniformpass. Vercel project `uniformpass` (prj_k78oaKd4rdiHJHX9nhlOAPIsRBUu, team_RdQ4Fy1VqvfIWjtMSJIACSAH).
+Production: **https://uniformpass.shop** (primary, SSL) + **https://uniformpass.vercel.app** (both auto-deploy on push to main). GitHub: gutowskid777/uniformpass. Vercel project `uniformpass` (prj_k78oaKd4rdiHJHX9nhlOAPIsRBUu, team_RdQ4Fy1VqvfIWjtMSJIACSAH). Supabase project `cfqornklplyvdgiuptgj` (shared w/ Orbit).
 
 ## Brand
 

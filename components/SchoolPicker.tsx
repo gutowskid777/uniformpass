@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import type { School } from '@/lib/supabase'
+import { searchSchools } from '@/lib/schoolSearch'
 
 type Val = { school_id: string; school_name: string; custom_school: string }
 
@@ -31,8 +32,8 @@ export default function SchoolPicker({
     return () => document.removeEventListener('mousedown', h)
   }, [])
 
-  const q = query.trim().toLowerCase()
-  const matches = (q ? schools.filter(s => s.name.toLowerCase().includes(q)) : schools).slice(0, 8)
+  const q = query.trim()
+  const matches = searchSchools(schools, q).slice(0, 8)
 
   const pick = (s: School) => {
     onChange({ school_id: s.id, school_name: s.name, custom_school: '' })

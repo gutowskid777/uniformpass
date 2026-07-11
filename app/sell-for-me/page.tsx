@@ -14,7 +14,7 @@ const STEPS = [
 
 export default function SellForMePage() {
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [schools, setSchools] = useState<School[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -37,6 +37,25 @@ export default function SellForMePage() {
     })
   }, [])
 
+  // Login required to request a pickup.
+  useEffect(() => {
+    if (!authLoading && !user) router.replace('/signin?redirect=/sell-for-me')
+  }, [authLoading, user, router])
+
+  // Prefill from the account's saved profile.
+  useEffect(() => {
+    if (!user) return
+    supabase.from('seller_profiles').select('*').eq('user_id', user.id).maybeSingle().then(({ data }) => {
+      if (!data) return
+      setForm(f => ({
+        ...f,
+        name: f.name || data.name || '',
+        contact: f.contact || data.contact_info || '',
+        town: f.town || data.town || '',
+      }))
+    })
+  }, [user])
+
   const set = (key: string, value: string) => setForm(f => ({ ...f, [key]: value }))
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,6 +65,7 @@ export default function SellForMePage() {
     if (!form.contact.trim()) return setError('Please enter a phone or email so we can reach you.')
     if (!form.school_id) return setError('Please pick the school these are from.')
     if (form.school_id === 'other' && !form.custom_school.trim()) return setError('Please type the school name.')
+    if (!form.town.trim()) return setError('Please enter your town so we can arrange pickup.')
     if (!form.item_summary.trim()) return setError('Tell us roughly what you have.')
     setSubmitting(true)
     try {
@@ -66,11 +86,39 @@ export default function SellForMePage() {
       })
       if (insertError) throw insertError
       localStorage.setItem(`uniformpass_pickup_${id}`, cancelToken)
+      // Remember this seller's details for next time (account memory).
+      if (user) {
+        supabase.from('seller_profiles').upsert({
+          user_id: user.id,
+          name: form.name.trim(),
+          contact_info: form.contact.trim(),
+          town: form.town.trim(),
+          updated_at: new Date().toISOString(),
+        }).then(() => {})
+      }
+      // Notify the operator (best-effort — the request is already saved).
+      fetch('/api/pickups/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          contact: form.contact.trim(),
+          school: form.school_id === 'other' ? form.custom_school.trim() : form.school_name,
+          town: form.town.trim(),
+          item_summary: form.item_summary.trim(),
+          est_items: form.est_items || null,
+          notes: form.notes.trim() || null,
+        }),
+      }).catch(() => {})
       router.push(`/pickup/${id}?token=${cancelToken}&new=1`)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong.')
       setSubmitting(false)
     }
+  }
+
+  if (authLoading || !user) {
+    return <div className="max-w-2xl mx-auto px-4 py-24 text-center text-gray-400">Loading…</div>
   }
 
   return (
@@ -122,7 +170,7 @@ export default function SellForMePage() {
                 onChange={v => setForm(f => ({ ...f, ...v }))} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Your town <span className="text-gray-400 font-normal">(for pickup)</span></label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Your town * <span className="text-gray-400 font-normal">(for pickup)</span></label>
               <input type="text" placeholder="Montvale" value={form.town} onChange={e => set('town', e.target.value)}
                 className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
             </div>

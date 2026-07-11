@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import imageCompression from 'browser-image-compression'
 import { supabase, type School, SIZES, US_STATES, PAYMENT_OPTIONS, CONTACT_METHODS } from '@/lib/supabase'
 import SchoolPicker from '@/components/SchoolPicker'
@@ -14,7 +13,7 @@ const LAST_DESC_KEY = 'uniformpass_last_description'
 
 export default function NewListingPage() {
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [schools, setSchools] = useState<School[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [compressing, setCompressing] = useState(false)
@@ -51,6 +50,27 @@ export default function NewListingPage() {
     const saved = localStorage.getItem(LAST_DESC_KEY)
     if (saved) setLastDescription(saved)
   }, [])
+
+  // Login required to post.
+  useEffect(() => {
+    if (!authLoading && !user) router.replace('/signin?redirect=/new')
+  }, [authLoading, user, router])
+
+  // Prefill contact/location from the account's saved profile.
+  useEffect(() => {
+    if (!user) return
+    supabase.from('seller_profiles').select('*').eq('user_id', user.id).maybeSingle().then(({ data }) => {
+      if (!data) return
+      setForm(f => ({
+        ...f,
+        seller_name: f.seller_name || data.name || '',
+        contact_method: data.contact_method || f.contact_method,
+        contact_info: f.contact_info || data.contact_info || '',
+        location_city: f.location_city || data.city || '',
+        location_state: f.location_state || data.state || '',
+      }))
+    })
+  }, [user])
 
   const set = (key: string, value: string | boolean) => setForm(f => ({ ...f, [key]: value }))
 
@@ -151,6 +171,18 @@ export default function NewListingPage() {
         .from('listings')
         .insert(buildPayload(listingId, photoUrls, 'available'))
       if (insertError) throw insertError
+      // Remember this seller's details for next time (account memory).
+      if (user) {
+        supabase.from('seller_profiles').upsert({
+          user_id: user.id,
+          name: form.seller_name.trim(),
+          contact_method: form.contact_info.trim() ? form.contact_method : null,
+          contact_info: form.contact_info.trim() || null,
+          city: form.location_city.trim(),
+          state: form.location_state,
+          updated_at: new Date().toISOString(),
+        }).then(() => {})
+      }
       // Save description for reuse
       if (form.description.trim()) localStorage.setItem(LAST_DESC_KEY, form.description.trim())
       // Create a secret manage token so the seller can edit / take down later (no account needed)
@@ -171,19 +203,16 @@ export default function NewListingPage() {
     }
   }
 
+  if (authLoading || !user) {
+    return <div className="max-w-2xl mx-auto px-4 py-24 text-center text-gray-400">Loading…</div>
+  }
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-1">Post a Listing</h1>
         <p className="text-gray-500">List your uniform in under 3 minutes.</p>
       </div>
-
-      {!user && (
-        <div className="mb-6 rounded-xl bg-indigo-50 border border-indigo-100 px-4 py-3 text-sm flex items-center justify-between gap-3">
-          <span className="text-indigo-900">Sign in to manage your listings from any device and get a seller page buyers can browse.</span>
-          <Link href="/signin?redirect=/new" className="shrink-0 font-semibold text-indigo-700 hover:underline">Sign in</Link>
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
 

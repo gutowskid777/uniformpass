@@ -60,6 +60,17 @@ export type PickupRequest = {
   created_at: string
 }
 
+export type SellerProfile = {
+  user_id: string
+  name: string | null
+  contact_method: string | null
+  contact_info: string | null
+  city: string | null
+  state: string | null
+  town: string | null
+  updated_at: string
+}
+
 export const SIZES = [
   'XS', 'S', 'M', 'L', 'XL', 'XXL',
   '0', '2', '4', '6', '8', '10', '12', '14', '16', '18', '20',
