@@ -13,3 +13,23 @@
     opacity: 0.55;
   }
 }
+
+/* Scoped arrival: a short settle-in so the page feels tuned to your school. */
+@keyframes schoolwash {
+  from {
+    filter: saturate(0.25) brightness(1.1);
+  }
+  to {
+    filter: saturate(1) brightness(1);
+  }
+}
+
+.school-wash {
+  animation: schoolwash 0.28s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .school-wash {
+    animation: none;
+  }
+}

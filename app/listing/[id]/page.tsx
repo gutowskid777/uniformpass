@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase, type Listing, CONDITION_LABELS, CATEGORY_LABELS, GENDER_LABELS, PAYMENT_OPTIONS, CONTACT_METHOD_LABELS } from '@/lib/supabase'
+import { themeForSchoolId, themeForSchoolName, scopedPath } from '@/lib/schoolTheme'
+import { priceSlash } from '@/lib/retailPrices'
+import SharePanel from '@/components/SharePanel'
 
 const PLACEHOLDER = 'https://placehold.co/800x600/e8e8f0/9999bb?text=No+photo'
 
@@ -62,18 +65,29 @@ export default function ListingDetailPage() {
     .filter(Boolean)
     .join(', ')
 
+  const theme = themeForSchoolId(listing.school_id) || themeForSchoolName(listing.school_name)
+  const slash = priceSlash(listing.price, listing.item_type, listing.category)
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
-      <div className="flex items-center justify-between mb-6">
-        <Link href="/" className="text-sm text-indigo-600 hover:underline">
-          ← Back to listings
+      <div className="flex items-center justify-between gap-3 mb-6">
+        <Link href={theme ? scopedPath(theme.code) : '/'} className="text-sm text-indigo-600 hover:underline">
+          ← {theme ? `${theme.shortName} listings` : 'Back to listings'}
         </Link>
-        {manageToken && (
-          <Link href={`/listing/${id}/manage?token=${manageToken}`}
-            className="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-1.5 rounded-full transition-colors">
-            Manage your listing
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          <SharePanel
+            kind="listing"
+            theme={theme}
+            listing={{ id: listing.id, itemType: listing.item_type, price: listing.price, schoolName: listing.school_name }}
+            buttonClassName="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 hover:border-gray-500 px-4 py-1.5 rounded-full transition-colors"
+          />
+          {manageToken && (
+            <Link href={`/listing/${id}/manage?token=${manageToken}`}
+              className="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-1.5 rounded-full transition-colors">
+              Manage your listing
+            </Link>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -121,9 +135,19 @@ export default function ListingDetailPage() {
                 </span>
               )}
             </div>
-            <p className="text-2xl font-bold text-indigo-700">
-              {listing.price === 0 ? 'Free' : `$${listing.price}`}
-            </p>
+            <div className="text-right shrink-0">
+              {slash && (
+                <p className="text-sm text-gray-400 line-through">${slash.retail} new</p>
+              )}
+              <p className="text-4xl font-black leading-none" style={{ color: theme?.primary ?? '#4338CA' }}>
+                {listing.price === 0 ? 'Free' : `$${listing.price}`}
+              </p>
+              {slash && (
+                <span className="inline-block mt-2 bg-green-600 text-white text-[13px] font-bold px-2.5 py-1 rounded-full">
+                  You save ${slash.save}
+                </span>
+              )}
+            </div>
           </div>
 
           {listing.status === 'sold' && (
@@ -184,19 +208,31 @@ export default function ListingDetailPage() {
 
           {/* Contact seller */}
           {listing.status !== 'sold' && (
-            listing.contact_info ? (
-              <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
-                <p className="text-sm font-medium text-indigo-900 mb-2">Contact {listing.seller_name}</p>
-                <ContactAction method={listing.contact_method} info={listing.contact_info} />
-                <p className="text-xs text-indigo-500 mt-3">
-                  Message directly and arrange to meet up. Payment is cash or Venmo in person, never through this site.
-                </p>
+            <>
+              {/* Safety, right where the fear spikes */}
+              <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 mb-3">
+                <p className="text-[13px] font-bold text-gray-700">Meeting up, the safe way</p>
+                <ul className="text-[13px] text-gray-600 mt-1 space-y-0.5">
+                  <li>Meet in public, in daylight.</li>
+                  <li>Pay on pickup, never a deposit.</li>
+                  <li>Contact details stay masked until you reach out.</li>
+                </ul>
               </div>
-            ) : (
-              <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-sm text-indigo-700">
-                This seller hasn&apos;t listed contact info. Check the comments above, or reach out through your school community.
-              </div>
-            )
+
+              {listing.contact_info ? (
+                <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
+                  <p className="text-sm font-medium text-indigo-900 mb-2">Contact {listing.seller_name}</p>
+                  <ContactAction method={listing.contact_method} info={listing.contact_info} seller={listing.seller_name} />
+                  <p className="text-xs text-indigo-500 mt-3">
+                    Message directly and arrange to meet up. Payment is cash or Venmo in person, never through this site.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-sm text-indigo-700">
+                  This seller hasn&apos;t listed contact info. Check the comments above, or reach out through your school community.
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -204,29 +240,56 @@ export default function ListingDetailPage() {
   )
 }
 
-function ContactAction({ method, info }: { method: string | null; info: string }) {
+// Privacy = trust: never dump the raw phone/email as page text. Show a masked
+// preview; the tap opens the native app prefilled with the real value.
+function maskContact(method: string | null, info: string): string {
+  if (method === 'text') {
+    const digits = info.replace(/\D/g, '')
+    return digits.length >= 4 ? `(•••) •••-${digits.slice(-4)}` : '•••'
+  }
+  if (method === 'email') {
+    const [user, domain] = info.split('@')
+    if (!domain) return '•••'
+    return `${user.slice(0, 1)}•••@${domain}`
+  }
+  if (method === 'venmo') {
+    const handle = info.replace(/^@/, '')
+    return `@${handle.slice(0, 2)}•••`
+  }
+  return info
+}
+
+function ContactAction({ method, info, seller }: { method: string | null; info: string; seller: string }) {
   const label = CONTACT_METHOD_LABELS[method || 'other'] || 'Contact'
+  const firstName = (seller || 'the seller').split(' ')[0]
+
   let href: string | null = null
-  if (method === 'text') href = `sms:${info.replace(/[^\d+]/g, '')}`
-  else if (method === 'email') href = `mailto:${info}`
-  else if (method === 'venmo') href = `https://venmo.com/u/${info.replace(/^@/, '')}`
+  let action = `Contact ${firstName}`
+  if (method === 'text') { href = `sms:${info.replace(/[^\d+]/g, '')}`; action = `Text ${firstName}` }
+  else if (method === 'email') { href = `mailto:${info}`; action = `Email ${firstName}` }
+  else if (method === 'venmo') { href = `https://venmo.com/u/${info.replace(/^@/, '')}`; action = `Venmo ${firstName}` }
 
-  const inner = (
-    <>
-      <span className="text-xs uppercase tracking-wide text-indigo-400 font-semibold">{label}</span>
-      <span className="text-base font-semibold text-indigo-800 break-all">{info}</span>
-    </>
-  )
-
-  if (href) {
+  if (!href) {
+    // "Other" contact (e.g. Instagram): there is no app link, so the value
+    // itself is the only way through... show it plainly.
     return (
-      <a href={href} target={method === 'venmo' ? '_blank' : undefined} rel="noopener noreferrer"
-        className="flex flex-col bg-white border border-indigo-200 rounded-lg px-4 py-3 hover:border-indigo-400 hover:shadow-sm transition-all">
-        {inner}
-      </a>
+      <div className="flex flex-col bg-white border border-indigo-200 rounded-lg px-4 py-3">
+        <span className="text-xs uppercase tracking-wide text-indigo-400 font-semibold">{label}</span>
+        <span className="text-base font-semibold text-indigo-800 break-all">{info}</span>
+      </div>
     )
   }
-  return <div className="flex flex-col bg-white border border-indigo-200 rounded-lg px-4 py-3">{inner}</div>
+
+  return (
+    <a href={href} target={method === 'venmo' ? '_blank' : undefined} rel="noopener noreferrer"
+      className="flex items-center justify-between gap-3 bg-indigo-600 text-white rounded-xl px-5 py-4 hover:bg-indigo-700 transition-colors">
+      <span className="flex flex-col min-w-0">
+        <span className="text-lg font-bold leading-tight">{action}</span>
+        <span className="text-[13px] text-indigo-200 mt-0.5">{label} · {maskContact(method, info)}</span>
+      </span>
+      <span className="text-xl shrink-0" aria-hidden>→</span>
+    </a>
+  )
 }
 
 function Row({ label, value }: { label: string; value: string }) {
