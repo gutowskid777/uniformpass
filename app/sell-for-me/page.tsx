@@ -159,13 +159,15 @@ export default function SellForMePage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      {/* Money hero: one number, one promise. */}
+      {/* The White Glove promise, one line. */}
       <div className="rounded-3xl bg-gradient-to-br from-emerald-600 to-emerald-800 text-white px-6 py-10 sm:px-10 sm:py-14 mb-8 text-center">
-        <div className="text-8xl sm:text-9xl font-black leading-none tracking-tight">50%</div>
-        <div className="text-emerald-100 font-bold text-lg mt-2">is yours</div>
-        <h1 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight mt-6">
-          You keep 50%. You do nothing.
+        <p className="text-[11px] font-extrabold tracking-[0.18em] text-emerald-200 uppercase">White Glove · Free pickup</p>
+        <h1 className="text-5xl sm:text-6xl font-black tracking-tight leading-none mt-4">
+          You do nothing.
         </h1>
+        <p className="text-lg sm:text-xl text-emerald-50 mt-4">
+          We pick up your pile, sell it, and send you half.
+        </p>
       </div>
 
       {/* Bag → pickup → money */}
@@ -177,24 +179,6 @@ export default function SellForMePage() {
             <p className="text-[13px] text-gray-500 leading-snug">{s.body}</p>
           </div>
         ))}
-      </div>
-
-      {/* Who's coming to my house: the #1 blocker, answered before the form. */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-8 text-center">
-        <div className="w-20 h-20 mx-auto rounded-full bg-emerald-100 flex items-center justify-center">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#047857" strokeWidth="1.8" className="w-11 h-11" aria-hidden>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0" />
-          </svg>
-        </div>
-        <p className="text-xl font-extrabold text-gray-900 leading-tight mt-4">
-          A local parent picks it up.
-        </p>
-        <p className="text-[15px] text-gray-600 mt-2 leading-relaxed max-w-sm mx-auto">
-          Not a courier... a nearby parent. We text before we come, you hand off the bag, done.
-        </p>
-        <p className="inline-flex items-center gap-1.5 mt-3 text-[13px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1">
-          ✓ Verified by UniformPass
-        </p>
       </div>
 
       {/* Form: finishable one-handed, thumb only */}

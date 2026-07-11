@@ -95,25 +95,12 @@ export default function BrowseExperience({ schoolCode }: { schoolCode?: string |
       )}
 
       <div className="max-w-6xl mx-auto px-4 pt-6 pb-8">
-        {!theme && <ConsignmentBand />}
+        <ConsignmentBand />
 
         {/* Grid heading */}
-        <div id="browse" className="scroll-mt-4 flex items-end justify-between gap-3 mb-3">
-          <h2 className="text-2xl sm:text-[26px] font-extrabold tracking-tight text-gray-900">
-            {theme ? `Fresh from ${theme.shortName} families` : 'Browse uniforms'}
-          </h2>
-          {theme && (
-            <Link href="/" className="text-sm font-semibold text-gray-500 hover:text-gray-800 whitespace-nowrap pb-0.5">
-              All schools →
-            </Link>
-          )}
-        </div>
-
-        {/* Verified, explained at first sight */}
-        <p className="flex items-center gap-2 text-[13px] text-gray-600 mb-4">
-          <span className="bg-indigo-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shrink-0">✓ Verified</span>
-          means a real person inspected it and listed it.
-        </p>
+        <h2 id="browse" className="scroll-mt-4 text-2xl sm:text-[26px] font-extrabold tracking-tight text-gray-900 mb-4">
+          {theme ? `Fresh from ${theme.shortName} families` : 'Browse uniforms'}
+        </h2>
 
         {/* Filter bar */}
         <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 shadow-sm">
@@ -179,15 +166,10 @@ export default function BrowseExperience({ schoolCode }: { schoolCode?: string |
             </div>
           )
         ) : (
-          <>
-            <p className="text-sm text-gray-500 mb-4">{listings.length} listing{listings.length !== 1 ? 's' : ''}</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {listings.map(listing => <ListingCard key={listing.id} listing={listing} />)}
-            </div>
-          </>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {listings.map(listing => <ListingCard key={listing.id} listing={listing} />)}
+          </div>
         )}
-
-        {theme && <div className="mt-10"><ConsignmentBand /></div>}
       </div>
     </div>
   )
@@ -216,6 +198,14 @@ function ScopedHero({ theme, schoolId, liveCount }: { theme: SchoolTheme; school
             theme={theme}
             buttonClassName="inline-flex items-center gap-1.5 text-sm font-bold px-4 py-2.5 rounded-full bg-white/15 border border-white/35 text-white hover:bg-white/25 transition-colors shrink-0"
           />
+          <Link
+            href="/"
+            aria-label={`Leave the ${theme.shortName} page, see all schools`}
+            title="All schools"
+            className="w-10 h-10 shrink-0 rounded-full bg-white/10 hover:bg-white/25 text-white/80 flex items-center justify-center text-base font-bold transition-colors"
+          >
+            ✕
+          </Link>
         </div>
 
         <h1 className="text-[34px] sm:text-6xl font-black tracking-tight leading-[1.05] mt-6 max-w-3xl">
@@ -461,27 +451,19 @@ function ColdStart({ theme }: { theme: SchoolTheme }) {
 
 /* ---------------- Shared pieces ---------------- */
 
+// The concierge service, named: White Glove. Lead with the do-nothing promise.
 function ConsignmentBand() {
   return (
-    <div className="mb-8 rounded-2xl bg-white border border-gray-200 shadow-sm overflow-hidden">
-      <div className="flex flex-col sm:flex-row">
-        <div className="sm:w-52 shrink-0 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-6 flex flex-col items-center justify-center text-center">
-          <div className="text-5xl font-extrabold leading-none">50%</div>
-          <div className="text-sm text-emerald-50 mt-2">of the profit, straight back to you</div>
-        </div>
-        <div className="flex-1 p-6 flex flex-col justify-center">
-          <p className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">
-            Got a pile of old uniforms? Turn them into cash.
-          </p>
-          <p className="text-gray-600 mt-1.5">
-            We pick up, photograph, list, and sell it all. Zero work on your end.
-          </p>
-          <Link href="/sell-for-me"
-            className="self-start inline-flex items-center gap-1.5 mt-4 bg-indigo-600 text-white font-semibold px-5 py-2.5 rounded-full hover:bg-indigo-700 transition-colors">
-            Request a free pickup <span aria-hidden>→</span>
-          </Link>
-        </div>
+    <div className="mb-6 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 text-white px-6 py-6 sm:px-8 sm:py-7 flex flex-col sm:flex-row sm:items-center gap-4">
+      <div className="flex-1 min-w-0">
+        <p className="text-[11px] font-extrabold tracking-[0.18em] text-emerald-200 uppercase">White Glove</p>
+        <p className="text-2xl sm:text-3xl font-black tracking-tight leading-tight mt-1">You do nothing.</p>
+        <p className="text-emerald-50 text-[15px] mt-1">We pick up your pile, sell it, and send you half.</p>
       </div>
+      <Link href="/sell-for-me"
+        className="shrink-0 text-center bg-white text-emerald-800 text-lg font-extrabold px-6 py-3.5 rounded-2xl hover:bg-emerald-50 transition-colors">
+        Get a free pickup
+      </Link>
     </div>
   )
 }

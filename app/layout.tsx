@@ -30,20 +30,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
         <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
           <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-            <Link href="/" className="font-extrabold text-xl text-indigo-700 tracking-tight">
+            <Link href="/" className="flex items-center gap-2 font-extrabold text-xl text-indigo-700 tracking-tight">
+              <svg viewBox="0 0 32 32" className="w-6 h-6" aria-hidden>
+                <g fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M16 13 v-1.8 a2.3 2.3 0 1 0 -2.3 -2.3" />
+                  <path d="M16 13 L6 22 H26 Z" />
+                </g>
+              </svg>
               UniformPass
             </Link>
-            <div className="flex items-center gap-3 sm:gap-4">
-              <Link href="/sell-for-me" className="text-sm text-gray-600 hover:text-gray-900 hidden sm:block">
-                Sell it for me
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <Link href="/sell-for-me" className="hidden sm:inline-flex text-sm font-semibold text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 px-3 py-1.5 rounded-full transition-colors">
+                White Glove
               </Link>
-              <Link href="/my-listings" className="text-sm text-gray-600 hover:text-gray-900 hidden sm:block">
+              <Link href="/my-listings" className="hidden sm:inline-flex text-sm font-semibold text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 px-3 py-1.5 rounded-full transition-colors">
                 My Listings
               </Link>
               <AuthNav />
               <Link
                 href="/new"
-                className="bg-indigo-600 text-white text-sm font-medium px-4 py-1.5 rounded-full hover:bg-indigo-700 transition-colors"
+                className="bg-indigo-600 text-white text-sm font-semibold px-4 py-1.5 rounded-full hover:bg-indigo-700 transition-colors"
               >
                 + Sell
               </Link>

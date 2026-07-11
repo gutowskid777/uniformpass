@@ -117,10 +117,10 @@ export async function GET() {
           >
             <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '3px', color: '#C7D2FE' }}>SELLING</div>
             <div style={{ fontSize: 46, fontWeight: 900, lineHeight: 1.1, letterSpacing: '-1px', marginTop: 14 }}>
-              Keep 50%. Do nothing.
+              You do nothing.
             </div>
             <div style={{ fontSize: 27, lineHeight: 1.35, marginTop: 14, opacity: 0.92 }}>
-              We pick up your outgrown pile and sell it for you. Or list it yourself, free.
+              We pick up your pile, sell it, and send you half. Or list it yourself, free.
             </div>
           </div>
         </div>

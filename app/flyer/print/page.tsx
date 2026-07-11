@@ -118,10 +118,10 @@ export default async function FlyerPrintPage() {
                   Selling
                 </div>
                 <div style={{ fontSize: 32, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', marginTop: 8, lineHeight: 1.1 }}>
-                  Keep 50%. Do nothing.
+                  You do nothing.
                 </div>
                 <div style={{ fontSize: 17, color: 'rgba(255,255,255,0.85)', marginTop: 8, lineHeight: 1.4 }}>
-                  We pick up your outgrown pile and sell it for you. Or list it yourself, free.
+                  We pick up your pile, sell it, and send you half. Or list it yourself, free.
                 </div>
               </div>
             </div>
