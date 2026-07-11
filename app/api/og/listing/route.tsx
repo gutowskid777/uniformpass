@@ -115,7 +115,7 @@ export async function GET(req: NextRequest) {
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 22, marginTop: 'auto' }}>
             {slash && (
               <span style={{ fontSize: 46, fontWeight: 700, color: '#9CA3AF', textDecoration: 'line-through' }}>
-                ${slash.retail}
+                {`$${slash.retail}`}
               </span>
             )}
             <span style={{ fontSize: 108, fontWeight: 900, color: primary, letterSpacing: '-3px', lineHeight: 1 }}>
@@ -136,7 +136,7 @@ export async function GET(req: NextRequest) {
                 marginTop: 18,
               }}
             >
-              You save ${slash.save}
+              {`You save $${slash.save}`}
             </div>
           )}
 

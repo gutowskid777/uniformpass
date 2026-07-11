@@ -120,7 +120,7 @@ export async function GET(req: NextRequest) {
 
         {/* Hook */}
         <div style={{ fontSize: 36, lineHeight: 1.3, marginTop: 48, opacity: 0.95, maxWidth: 1000 }}>
-          Skip the $80 uniform. Buy and sell with {theme.shortName} families near you.
+          {`Skip the $80 uniform. Buy and sell with ${theme.shortName} families near you.`}
         </div>
 
         {/* Bottom: proof chips + wordmark */}
@@ -137,7 +137,7 @@ export async function GET(req: NextRequest) {
                 fontWeight: 700,
               }}
             >
-              Verified by UniformPass · {theme.town}
+              {`Verified by UniformPass · ${theme.town}`}
             </div>
             {count !== null && count >= 3 && (
               <div
@@ -152,7 +152,7 @@ export async function GET(req: NextRequest) {
                   fontWeight: 800,
                 }}
               >
-                {count} listed right now
+                {`${count} listed right now`}
               </div>
             )}
           </div>
