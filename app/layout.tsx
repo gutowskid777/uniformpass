@@ -4,6 +4,7 @@ import './globals.css'
 import Link from 'next/link'
 import AuthProvider from '@/components/AuthProvider'
 import AuthNav from '@/components/AuthNav'
+import BottomNav from '@/components/BottomNav'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -40,7 +41,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </div>
         </header>
-        <main className="min-h-screen">{children}</main>
+        <main className="min-h-screen pb-16 sm:pb-0">{children}</main>
+        <BottomNav />
         <footer className="border-t border-gray-200 bg-white mt-16 py-8 text-center text-sm text-gray-500">
           <p>Buy and sell school uniforms in your community.</p>
           <p className="mt-1">
