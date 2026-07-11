@@ -379,24 +379,13 @@ function ColdStart({ theme }: { theme: SchoolTheme }) {
         <MonogramPatch theme={theme} size={64} />
       </div>
       <h2 className="text-[26px] sm:text-4xl font-black tracking-tight leading-tight mt-5" style={{ color: theme.ink }}>
-        {theme.shortName} uniforms are just getting started here.
+        {theme.shortName} is just getting started.
       </h2>
-      <p className="text-gray-600 text-base sm:text-lg mt-3 max-w-md mx-auto">
-        Be the first family in... or get a ping the moment {theme.shortName} gear lands.
-      </p>
 
-      <div className="mt-7 max-w-sm mx-auto space-y-3">
-        <Link
-          href="/new"
-          className="block w-full text-center text-white font-extrabold text-lg px-6 py-4 rounded-2xl hover:opacity-90 transition-opacity"
-          style={{ background: theme.primary }}
-        >
-          Be the first to sell
-        </Link>
-
+      <div className="mt-6 max-w-sm mx-auto">
         {state === 'done' ? (
           <p className="text-[15px] font-semibold text-green-700 bg-green-50 border border-green-200 rounded-2xl px-4 py-3.5">
-            You&apos;re on the list. We&apos;ll email you when {theme.shortName} uniforms are listed.
+            You&apos;re on the list.
           </p>
         ) : (
           <form onSubmit={notify} className="flex gap-2">
@@ -411,24 +400,21 @@ function ColdStart({ theme }: { theme: SchoolTheme }) {
             <button
               type="submit"
               disabled={state === 'sending'}
-              className="shrink-0 font-bold text-[15px] px-5 py-3.5 rounded-2xl border-2 disabled:opacity-50 transition-colors"
-              style={{ borderColor: theme.primary, color: theme.primary }}
+              className="shrink-0 font-bold text-[15px] px-5 py-3.5 rounded-2xl text-white disabled:opacity-50 transition-opacity hover:opacity-90"
+              style={{ background: theme.primary }}
             >
               {state === 'sending' ? 'Saving...' : 'Notify me'}
             </button>
           </form>
         )}
         {state === 'error' && (
-          <p className="text-[13px] text-red-600">That didn&apos;t go through. Check the email and try again.</p>
+          <p className="text-[13px] text-red-600 mt-2">That didn&apos;t go through. Check the email and try again.</p>
         )}
       </div>
 
-      <p className="text-[15px] text-gray-600 mt-8 max-w-md mx-auto">
-        Got a whole pile? We pick it up and sell it for you... you keep 50%.{' '}
-        <Link href="/sell-for-me" className="font-bold underline underline-offset-2" style={{ color: theme.ink }}>
-          Get a free pickup
-        </Link>
-      </p>
+      <Link href="/new" className="inline-block mt-5 text-[15px] font-bold underline underline-offset-2" style={{ color: theme.ink }}>
+        Or be the first to sell →
+      </Link>
     </div>
   )
 }

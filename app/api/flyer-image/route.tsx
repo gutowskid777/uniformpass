@@ -114,17 +114,17 @@ export async function GET() {
           Buy and sell used uniforms with families at your school.
         </div>
 
-        {/* The two doors */}
+        {/* The two doors: the marketplace, or the do-nothing pickup */}
         <div style={{ display: 'flex', gap: 28, marginTop: 60 }}>
           <Door
             icon={<Hanger size={64} color="#FDE68A" />}
-            question="Need them?"
-            line="Shop your school."
+            question="Buy and sell"
+            line="Your school's marketplace for uniforms and merch."
           />
           <Door
             icon={<Cash size={64} color="#FDE68A" />}
-            question="Outgrown?"
-            line="We pick up the pile. You get cash."
+            question="Auto Sell"
+            line="We pick up your pile. You get cash."
           />
         </div>
 
