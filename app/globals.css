@@ -6,4 +6,10 @@
   body {
     @apply bg-gray-50 text-gray-900;
   }
+  /* Lighter placeholders so example text doesn't read as a filled-in value */
+  input::placeholder,
+  textarea::placeholder {
+    color: #9ca3af;
+    opacity: 0.55;
+  }
 }

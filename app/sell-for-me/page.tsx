@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase, type School } from '@/lib/supabase'
+import SchoolPicker from '@/components/SchoolPicker'
 
 const STEPS = [
   { icon: '📦', title: 'You gather the pile', body: 'Uniforms, gym clothes, or spirit wear. Any condition. Even one bag works.' },
@@ -35,11 +36,6 @@ export default function SellForMePage() {
   }, [])
 
   const set = (key: string, value: string) => setForm(f => ({ ...f, [key]: value }))
-
-  const handleSchoolChange = (schoolId: string) => {
-    const school = schools.find(s => s.id === schoolId)
-    setForm(f => ({ ...f, school_id: schoolId, school_name: school?.name || '' }))
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -118,17 +114,9 @@ export default function SellForMePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">School *</label>
-              <select required value={form.school_id} onChange={e => handleSchoolChange(e.target.value)}
-                className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                <option value="">Select a school...</option>
-                {schools.map(s => <option key={s.id} value={s.id}>{s.name} ({s.state})</option>)}
-                <option value="other">Other — not listed</option>
-              </select>
-              {form.school_id === 'other' && (
-                <input type="text" placeholder="Type the school name"
-                  value={form.custom_school} onChange={e => set('custom_school', e.target.value)}
-                  className="w-full mt-2 rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
-              )}
+              <SchoolPicker schools={schools}
+                value={{ school_id: form.school_id, school_name: form.school_name, custom_school: form.custom_school }}
+                onChange={v => setForm(f => ({ ...f, ...v }))} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Your town <span className="text-gray-400 font-normal">(for pickup)</span></label>

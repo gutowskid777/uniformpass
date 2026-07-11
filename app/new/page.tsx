@@ -2,16 +2,19 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import imageCompression from 'browser-image-compression'
 import { supabase, type School, SIZES, US_STATES, PAYMENT_OPTIONS, CONTACT_METHODS } from '@/lib/supabase'
+import SchoolPicker from '@/components/SchoolPicker'
 
-const MAX_PHOTOS = 4
-const MAX_FILE_SIZE_MB = 5
+const MAX_PHOTOS = 8
+const MAX_FILE_SIZE_MB = 15 // fallback cap only used if compression can't decode a file
 const LAST_DESC_KEY = 'uniformpass_last_description'
 
 export default function NewListingPage() {
   const router = useRouter()
   const [schools, setSchools] = useState<School[]>([])
   const [submitting, setSubmitting] = useState(false)
+  const [compressing, setCompressing] = useState(false)
   const [error, setError] = useState('')
   const [photoFiles, setPhotoFiles] = useState<File[]>([])
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([])
@@ -57,24 +60,27 @@ export default function NewListingPage() {
     }))
   }
 
-  const handleSchoolChange = (schoolId: string) => {
-    const school = schools.find(s => s.id === schoolId)
-    setForm(f => ({ ...f, school_id: schoolId, school_name: school?.name || '' }))
-  }
-
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
-    const remaining = MAX_PHOTOS - photoFiles.length
-    const toAdd = files.slice(0, remaining).filter(f => {
-      if (f.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-        setError(`${f.name} is too large (max ${MAX_FILE_SIZE_MB}MB)`)
-        return false
-      }
-      return true
-    })
-    setPhotoFiles(prev => [...prev, ...toAdd])
-    setPhotoPreviews(prev => [...prev, ...toAdd.map(f => URL.createObjectURL(f))])
     e.target.value = ''
+    const picked = files.slice(0, MAX_PHOTOS - photoFiles.length)
+    if (picked.length === 0) return
+    setError('')
+    setCompressing(true)
+    const out: File[] = []
+    for (const f of picked) {
+      try {
+        // Shrink big phone photos in-browser → fast uploads, no size wall.
+        const c = await imageCompression(f, { maxSizeMB: 1, maxWidthOrHeight: 1600, useWebWorker: true })
+        out.push(c)
+      } catch {
+        if (f.size <= MAX_FILE_SIZE_MB * 1024 * 1024) out.push(f)
+        else setError(`${f.name} is too large (max ${MAX_FILE_SIZE_MB}MB)`)
+      }
+    }
+    setPhotoFiles(prev => [...prev, ...out])
+    setPhotoPreviews(prev => [...prev, ...out.map(f => URL.createObjectURL(f))])
+    setCompressing(false)
   }
 
   const removePhoto = (index: number) => {
@@ -176,17 +182,9 @@ export default function NewListingPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">School *</label>
-            <select required value={form.school_id} onChange={e => handleSchoolChange(e.target.value)}
-              className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-              <option value="">Select a school...</option>
-              {schools.map(s => <option key={s.id} value={s.id}>{s.name} ({s.state})</option>)}
-              <option value="other">Other — my school isn&apos;t listed</option>
-            </select>
-            {form.school_id === 'other' && (
-              <input type="text" placeholder="Type your school name"
-                value={form.custom_school} onChange={e => set('custom_school', e.target.value)}
-                className="w-full mt-2 rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
-            )}
+            <SchoolPicker schools={schools}
+              value={{ school_id: form.school_id, school_name: form.school_name, custom_school: form.custom_school }}
+              onChange={v => setForm(f => ({ ...f, ...v }))} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -284,14 +282,20 @@ export default function NewListingPage() {
               </div>
             ))}
             {photoFiles.length < MAX_PHOTOS && (
-              <label className="w-24 h-32 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition-colors">
-                <span className="text-2xl text-gray-400">+</span>
-                <span className="text-xs text-gray-400 mt-1">Add photo</span>
-                <input type="file" accept="image/*" multiple onChange={handlePhotoChange} className="hidden" />
+              <label className={`w-24 h-32 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center transition-colors ${compressing ? 'opacity-60 cursor-wait' : 'cursor-pointer hover:border-indigo-400 hover:bg-indigo-50'}`}>
+                {compressing ? (
+                  <span className="text-xs text-gray-500">Adding…</span>
+                ) : (
+                  <>
+                    <span className="text-2xl text-gray-400">+</span>
+                    <span className="text-xs text-gray-400 mt-1">Add photo</span>
+                  </>
+                )}
+                <input type="file" accept="image/*" multiple disabled={compressing} onChange={handlePhotoChange} className="hidden" />
               </label>
             )}
           </div>
-          <p className="text-xs text-gray-400">JPG or PNG, max {MAX_FILE_SIZE_MB}MB each</p>
+          <p className="text-xs text-gray-400">Add up to {MAX_PHOTOS}. Big phone photos are shrunk automatically.</p>
         </div>
 
         {/* Price, location, payment */}
@@ -378,7 +382,7 @@ export default function NewListingPage() {
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{error}</div>
         )}
 
-        <button type="submit" disabled={submitting}
+        <button type="submit" disabled={submitting || compressing}
           className="w-full bg-indigo-600 text-white font-semibold py-3.5 rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-colors text-lg">
           {submitting ? 'Posting...' : 'Post listing'}
         </button>
