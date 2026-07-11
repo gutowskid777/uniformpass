@@ -9,9 +9,18 @@ import BottomNav from '@/components/BottomNav'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://uniformpass.vercel.app'),
+  metadataBase: new URL('https://uniformpass.shop'),
   title: 'UniformPass · Buy & Sell School Uniforms',
   description: 'Buy and sell used school uniforms and spirit wear right in your school community. No fees, meet up local.',
+  openGraph: {
+    title: 'UniformPass · Buy & Sell School Uniforms',
+    description: 'Skip the $80 uniform. Buy and sell with families at your school. No fees, no shipping, meet up local.',
+    images: ['/api/og'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: ['/api/og'],
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -44,7 +53,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="min-h-screen pb-16 sm:pb-0">{children}</main>
         <BottomNav />
         <footer className="border-t border-gray-200 bg-white mt-16 py-8 text-center text-sm text-gray-500">
-          <p>Buy and sell school uniforms in your community.</p>
+          <p className="font-medium text-gray-600">No fees · No shipping · No account to browse · Meet up local · NJ-based</p>
+          <p className="mt-2">
+            Spread the word:{' '}
+            <Link href="/flyer" className="text-indigo-600 hover:underline font-medium">print a school flyer</Link>
+          </p>
           <p className="mt-1">
             Questions, or need to take down a listing?{' '}
             <Link href="/contact" className="text-indigo-600 hover:underline">Contact us</Link>
