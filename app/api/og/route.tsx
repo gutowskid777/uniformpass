@@ -1,6 +1,7 @@
 import { ImageResponse } from 'next/og'
 import type { NextRequest } from 'next/server'
 import { getTheme, type SchoolTheme } from '@/lib/schoolTheme'
+import { loadOgFonts } from '@/lib/ogFonts'
 import MonogramPatch from '@/components/MonogramPatch'
 
 export const runtime = 'edge'
@@ -43,6 +44,7 @@ function Hanger({ size, color }: { size: number; color: string }) {
 
 export async function GET(req: NextRequest) {
   const theme = getTheme(req.nextUrl.searchParams.get('school'))
+  const fonts = await loadOgFonts()
 
   if (!theme) {
     // Generic card: the whole-app preview.
@@ -60,6 +62,7 @@ export async function GET(req: NextRequest) {
             color: 'white',
             padding: '0 80px',
             textAlign: 'center',
+            fontFamily: 'Inter',
           }}
         >
           <Hanger size={110} color="#ffffff" />
@@ -86,7 +89,7 @@ export async function GET(req: NextRequest) {
           </div>
         </div>
       ),
-      { ...SIZE },
+      { ...SIZE, fonts },
     )
   }
 
@@ -103,6 +106,7 @@ export async function GET(req: NextRequest) {
           background: `linear-gradient(150deg, ${theme.primary} 0%, ${theme.primaryDark} 100%)`,
           color: 'white',
           padding: 64,
+          fontFamily: 'Inter',
         }}
       >
         {/* Top: patch + school identity */}
@@ -163,6 +167,6 @@ export async function GET(req: NextRequest) {
         </div>
       </div>
     ),
-    { ...SIZE },
+    { ...SIZE, fonts },
   )
 }

@@ -56,7 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <p className="font-medium text-gray-600">No fees · No shipping · No account to browse · Meet up local · NJ-based</p>
           <p className="mt-2">
             Spread the word:{' '}
-            <Link href="/flyer" className="text-indigo-600 hover:underline font-medium">print a school flyer</Link>
+            <Link href="/flyer" className="text-indigo-600 hover:underline font-medium">share the flyer</Link>
           </p>
           <p className="mt-1">
             Questions, or need to take down a listing?{' '}

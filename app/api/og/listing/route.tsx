@@ -2,6 +2,7 @@ import { ImageResponse } from 'next/og'
 import type { NextRequest } from 'next/server'
 import { themeForSchoolId, themeForSchoolName } from '@/lib/schoolTheme'
 import { priceSlash } from '@/lib/retailPrices'
+import { loadOgFonts } from '@/lib/ogFonts'
 import MonogramPatch from '@/components/MonogramPatch'
 
 export const runtime = 'edge'
@@ -46,6 +47,7 @@ export async function GET(req: NextRequest) {
     return Response.redirect(new URL('/api/og', req.url), 302)
   }
 
+  const fonts = await loadOgFonts()
   const theme = themeForSchoolId(listing.school_id) || themeForSchoolName(listing.school_name)
   const primary = theme?.primary ?? '#4F46E5'
   const primaryDark = theme?.primaryDark ?? '#312E81'
@@ -55,7 +57,7 @@ export async function GET(req: NextRequest) {
 
   return new ImageResponse(
     (
-      <div style={{ height: '100%', width: '100%', display: 'flex', background: '#ffffff' }}>
+      <div style={{ height: '100%', width: '100%', display: 'flex', background: '#ffffff', fontFamily: 'Inter' }}>
         {/* Left: the item photo (or a themed panel) */}
         {photo ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -142,8 +144,16 @@ export async function GET(req: NextRequest) {
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 34 }}>
             {listing.is_verified ? (
-              <div style={{ display: 'flex', alignItems: 'center', fontSize: 23, fontWeight: 700, color: '#374151' }}>
-                ✓ Verified by UniformPass
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 23, fontWeight: 700, color: '#374151' }}>
+                <svg viewBox="0 0 20 20" width="24" height="24">
+                  <path
+                    fill="#4F46E5"
+                    fillRule="evenodd"
+                    d="M16.7 5.3a1 1 0 0 1 0 1.4l-7.5 7.5a1 1 0 0 1-1.4 0l-3.5-3.5a1 1 0 1 1 1.4-1.4l2.8 2.8 6.8-6.8a1 1 0 0 1 1.4 0Z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Verified by UniformPass
               </div>
             ) : (
               <div style={{ display: 'flex' }} />
@@ -153,6 +163,6 @@ export async function GET(req: NextRequest) {
         </div>
       </div>
     ),
-    { ...SIZE },
+    { ...SIZE, fonts },
   )
 }

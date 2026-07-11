@@ -1,57 +1,55 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { SCHOOL_CODES, SCHOOL_THEMES } from '@/lib/schoolTheme'
-import MonogramPatch from '@/components/MonogramPatch'
+import SharePanel from '@/components/SharePanel'
 
 export const metadata: Metadata = {
-  title: 'Print a school flyer · UniformPass',
+  title: 'The UniformPass flyer · save and share',
   robots: { index: false },
 }
 
-// Flyer picker: one tap to the school's print-ready sheet.
-export default function FlyerIndexPage() {
+// The digital flyer: one school-neutral image to drop in any parent group.
+// Save it, or share it with the ready-made message. Paper version linked below.
+export default function FlyerPage() {
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
+    <div className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 leading-tight">
-        Print a flyer for your school.
+        The flyer.
       </h1>
-      <p className="text-gray-600 mt-3 text-lg">
-        One letter-size page with a QR code straight to your school&apos;s uniforms.
-        Pin it at pickup, the parish hall, the gym lobby.
+      <p className="text-gray-600 mt-2 text-lg">
+        Save the image and drop it in a parent group with the message below.
+        One flyer for every school... nobody feels left out.
       </p>
 
-      <div className="mt-8 space-y-3">
-        {SCHOOL_CODES.map(code => {
-          const t = SCHOOL_THEMES[code]
-          return (
-            <Link
-              key={code}
-              href={`/flyer/${code}`}
-              className="flex items-center gap-4 bg-white border border-gray-200 rounded-2xl p-4 hover:shadow-md transition-shadow"
-            >
-              <MonogramPatch theme={t} size={56} />
-              <div className="flex-1 min-w-0">
-                <p className="text-lg font-extrabold text-gray-900 leading-tight">{t.fullName}</p>
-                <p className="text-sm text-gray-500">{t.town}</p>
-              </div>
-              <span className="text-sm font-bold text-gray-400" aria-hidden>→</span>
-            </Link>
-          )
-        })}
-        <Link
-          href="/flyer/all"
-          className="flex items-center gap-4 bg-white border border-gray-200 rounded-2xl p-4 hover:shadow-md transition-shadow"
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/api/flyer-image"
+        alt="UniformPass flyer: skip the $80 uniform, buy and sell with families at your school"
+        className="w-full rounded-2xl shadow-lg mt-6 border border-gray-200"
+        style={{ aspectRatio: '1080 / 1350' }}
+      />
+
+      <div className="mt-6 space-y-2">
+        <a
+          href="/api/flyer-image"
+          download="uniformpass-flyer.png"
+          className="block w-full text-center py-4 rounded-2xl bg-gray-900 text-white text-lg font-bold hover:bg-black transition-colors"
         >
-          <div className="w-14 h-14 rounded-xl bg-gray-900 text-white flex items-center justify-center text-xl font-black shrink-0">
-            All
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-lg font-extrabold text-gray-900 leading-tight">Every school</p>
-            <p className="text-sm text-gray-500">The general UniformPass flyer</p>
-          </div>
-          <span className="text-sm font-bold text-gray-400" aria-hidden>→</span>
-        </Link>
+          Save image
+        </a>
+        <SharePanel
+          kind="school"
+          theme={null}
+          buttonClassName="w-full inline-flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-gray-300 text-gray-800 text-lg font-bold hover:border-gray-500 transition-colors"
+        />
       </div>
+
+      <p className="text-sm text-gray-500 mt-6 text-center">
+        Pinning it on a real corkboard?{' '}
+        <Link href="/flyer/print" className="font-semibold text-indigo-600 underline underline-offset-2">
+          Print the paper version
+        </Link>{' '}
+        ... letter size, with tear-off tabs.
+      </p>
     </div>
   )
 }
