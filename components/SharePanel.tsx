@@ -80,15 +80,19 @@ export default function SharePanel(props: ShareProps) {
         style={props.buttonStyle}
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5" aria-hidden>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M7.2 10.9a3 3 0 1 0 0 2.2m0-2.2 9.6-4.8m-9.6 7 9.6 4.8m0 0a3 3 0 1 0 2.7-1.7 3 3 0 0 0-2.7 1.7Zm2.7-13.6a3 3 0 1 1-2.7 1.7" />
+          <circle cx="6" cy="12" r="2.6" />
+          <circle cx="17.5" cy="5.5" r="2.6" />
+          <circle cx="17.5" cy="18.5" r="2.6" />
+          <path strokeLinecap="round" d="m8.4 10.7 6.8-3.9M8.4 13.3l6.8 3.9" />
         </svg>
         Share
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center" role="dialog" aria-modal="true" aria-label="Share">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} />
-          <div className="relative w-full sm:max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-5 sm:p-6 max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-[70] overflow-y-auto" role="dialog" aria-modal="true" aria-label="Share">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setOpen(false)} />
+          <div className="relative flex min-h-full items-end sm:items-center justify-center">
+          <div className="relative w-full sm:max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-5 sm:p-6 sm:my-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">
                 {props.kind === 'listing' ? 'Share this find' : 'Share with your school'}
@@ -150,6 +154,7 @@ export default function SharePanel(props: ShareProps) {
                 {copied ? 'Copied. Go paste it in the group chat.' : 'Copy message + link'}
               </button>
             </div>
+          </div>
           </div>
         </div>
       )}

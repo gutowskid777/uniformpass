@@ -9,9 +9,9 @@ import { useAuth } from '@/components/AuthProvider'
 import InlineAccountStep from '@/components/InlineAccountStep'
 
 const STEPS = [
-  { icon: '📦', title: 'You gather the pile', body: 'Bag it up. Any condition, even one bag works.' },
-  { icon: '🚗', title: 'We pick it up', body: 'We come to you. Hand it off and you’re done.' },
-  { icon: '💵', title: 'You keep 50%', body: 'We photograph, list, and sell it all. You get half.' },
+  { icon: '🛍️', title: 'Bag it up', body: 'Any condition. One bag works.' },
+  { icon: '🚗', title: 'We pick it up', body: 'A local parent comes to you.' },
+  { icon: '💵', title: 'You get paid', body: 'Cash or Venmo. Half is yours.' },
 ]
 
 // One tap instead of "how many items?": a busy parent knows the SHAPE of the
@@ -22,11 +22,6 @@ const PILE_SIZES = [
   { label: 'A few bags', summary: 'A few bags of uniforms', est: 35 },
   { label: 'A closet-full', summary: 'A closet-full of uniforms', est: 60 },
 ]
-
-// DECISION FOR DYLAN: drop Mom's first name + a real photo in here. A face and
-// a name are the strongest unblock for "who's coming to my house." Until then
-// the card runs with the warm-but-generic local-parent version.
-const OPERATOR: { name: string; photo: string } = { name: '', photo: '' }
 
 export default function SellForMePage() {
   const router = useRouter()
@@ -164,65 +159,42 @@ export default function SellForMePage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      {/* Money hero: the deal, in numbers you can read across the room.
-          TUNABLE: the worked example ($60 for a 20-item bag) is illustrative.
-          Dylan sets the real math. */}
-      <div className="rounded-3xl bg-gradient-to-br from-emerald-600 to-emerald-800 text-white px-6 py-8 sm:px-10 sm:py-12 mb-8">
-        <div className="flex items-end gap-8">
-          <div>
-            <div className="text-7xl font-black leading-none tracking-tight">50%</div>
-            <div className="text-emerald-100 font-bold mt-1.5">you keep</div>
-          </div>
-          <div>
-            <div className="text-7xl font-black leading-none tracking-tight">$0</div>
-            <div className="text-emerald-100 font-bold mt-1.5">effort</div>
-          </div>
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight mt-7">
+      {/* Money hero: one number, one promise. */}
+      <div className="rounded-3xl bg-gradient-to-br from-emerald-600 to-emerald-800 text-white px-6 py-10 sm:px-10 sm:py-14 mb-8 text-center">
+        <div className="text-8xl sm:text-9xl font-black leading-none tracking-tight">50%</div>
+        <div className="text-emerald-100 font-bold text-lg mt-2">is yours</div>
+        <h1 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight mt-6">
           You keep 50%. You do nothing.
         </h1>
-        <p className="text-lg sm:text-xl text-emerald-50 mt-3 leading-snug">
-          A bag of 20 uniforms is about <span className="text-2xl sm:text-3xl font-black text-white">$60</span> back in your pocket.
-        </p>
       </div>
 
-      {/* How it works */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+      {/* Bag → pickup → money */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-8">
         {STEPS.map((s, i) => (
-          <div key={i} className="bg-white rounded-2xl border border-gray-200 p-4 flex sm:flex-col items-center sm:items-start gap-4 sm:gap-2">
-            <div className="text-4xl shrink-0">{s.icon}</div>
-            <div>
-              <p className="font-extrabold text-gray-900 leading-tight">{i + 1}. {s.title}</p>
-              <p className="text-[13px] text-gray-500 mt-0.5 leading-relaxed">{s.body}</p>
-            </div>
+          <div key={i} className="bg-white rounded-2xl border border-gray-200 px-2 py-5 sm:p-5 flex flex-col items-center text-center gap-2">
+            <div className="text-5xl">{s.icon}</div>
+            <p className="font-extrabold text-gray-900 leading-tight text-[15px] sm:text-base">{s.title}</p>
+            <p className="text-[13px] text-gray-500 leading-snug">{s.body}</p>
           </div>
         ))}
       </div>
 
       {/* Who's coming to my house: the #1 blocker, answered before the form. */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-5 mb-8 flex items-start gap-4">
-        {OPERATOR.photo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={OPERATOR.photo} alt={OPERATOR.name || 'Your pickup parent'} className="w-16 h-16 rounded-full object-cover shrink-0" />
-        ) : (
-          <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#047857" strokeWidth="1.8" className="w-9 h-9" aria-hidden>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0" />
-            </svg>
-          </div>
-        )}
-        <div className="min-w-0">
-          <p className="text-lg font-extrabold text-gray-900 leading-tight">
-            {OPERATOR.name ? `${OPERATOR.name} picks it up.` : 'A local parent picks it up.'}
-          </p>
-          <p className="text-[15px] text-gray-600 mt-1.5 leading-relaxed">
-            Not a courier. We&apos;re a Bergen County family that got tired of $80 uniforms.
-            We text before we come, you hand off the bag, and that&apos;s it.
-          </p>
-          <p className="inline-flex items-center gap-1.5 mt-2.5 text-[13px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1">
-            ✓ Verified by UniformPass
-          </p>
+      <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-8 text-center">
+        <div className="w-20 h-20 mx-auto rounded-full bg-emerald-100 flex items-center justify-center">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#047857" strokeWidth="1.8" className="w-11 h-11" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0" />
+          </svg>
         </div>
+        <p className="text-xl font-extrabold text-gray-900 leading-tight mt-4">
+          A local parent picks it up.
+        </p>
+        <p className="text-[15px] text-gray-600 mt-2 leading-relaxed max-w-sm mx-auto">
+          Not a courier... a nearby parent. We text before we come, you hand off the bag, done.
+        </p>
+        <p className="inline-flex items-center gap-1.5 mt-3 text-[13px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1">
+          ✓ Verified by UniformPass
+        </p>
       </div>
 
       {/* Form: finishable one-handed, thumb only */}

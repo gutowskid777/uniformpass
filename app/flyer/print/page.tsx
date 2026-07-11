@@ -20,7 +20,7 @@ const PRIMARY_DARK = '#312E81'
 const ACCENT = '#C7D2FE'
 const WASH = '#EEF2FF'
 
-const TRUST_ITEMS = ['No fees', 'No shipping', 'Meet up local', 'Run by NJ parents']
+const TRUST_ITEMS = ['No fees', 'No shipping', 'Meet up locally in NJ']
 
 function Check({ color }: { color: string }) {
   return (
@@ -79,10 +79,10 @@ export default async function FlyerPrintPage() {
           {/* Headline */}
           <div style={{ marginTop: 34 }}>
             <div style={{ fontSize: 64, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.0, color: '#111827' }}>
-              Skip the $80 uniform.
+              Stop buying uniforms new.
             </div>
             <div style={{ fontSize: 22, color: '#374151', marginTop: 14, lineHeight: 1.4, maxWidth: 660 }}>
-              Buy and sell used uniforms with families from your school. No fees, no shipping... you just meet up.
+              Buy and sell used uniforms with families from your school. You just meet up.
             </div>
           </div>
 
@@ -105,15 +105,11 @@ export default async function FlyerPrintPage() {
                 <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.1em', color: PRIMARY_DARK, textTransform: 'uppercase' }}>
                   Buying
                 </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginTop: 8 }}>
-                  <span style={{ fontSize: 34, fontWeight: 700, color: '#9CA3AF', textDecoration: 'line-through' }}>$80</span>
-                  <span style={{ fontSize: 56, fontWeight: 900, color: PRIMARY, letterSpacing: '-0.02em' }}>$15</span>
-                  <span style={{ background: '#16A34A', color: '#fff', fontSize: 17, fontWeight: 800, borderRadius: 999, padding: '6px 14px' }}>
-                    You save $65
-                  </span>
+                <div style={{ fontSize: 32, fontWeight: 900, color: PRIMARY_DARK, letterSpacing: '-0.02em', marginTop: 8, lineHeight: 1.1 }}>
+                  Your school. Your sizes.
                 </div>
                 <div style={{ fontSize: 17, color: '#4B5563', marginTop: 8 }}>
-                  Blazers, polos, pants, spirit wear... listed by local families.
+                  Blazers, polos, pants, spirit wear... from families near you.
                 </div>
               </div>
 
@@ -121,11 +117,11 @@ export default async function FlyerPrintPage() {
                 <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.1em', color: ACCENT, textTransform: 'uppercase' }}>
                   Selling
                 </div>
-                <div style={{ fontSize: 34, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', marginTop: 8, lineHeight: 1.1 }}>
+                <div style={{ fontSize: 32, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', marginTop: 8, lineHeight: 1.1 }}>
                   Keep 50%. Do nothing.
                 </div>
                 <div style={{ fontSize: 17, color: 'rgba(255,255,255,0.85)', marginTop: 8, lineHeight: 1.4 }}>
-                  Outgrown pile? We pick it up, sell it for you, and you get half. Free pickup.
+                  We pick up your outgrown pile and sell it for you. Or list it yourself, free.
                 </div>
               </div>
             </div>

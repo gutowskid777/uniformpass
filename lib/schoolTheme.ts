@@ -1,11 +1,7 @@
 // Per-school theming for the 3 beachhead schools. Front-end only, no DB migration.
 // The school (color, monogram, name) is the hero: a scoped link re-dresses the app.
-//
-// DECISION FOR DYLAN: the hexes below are PLACEHOLDERS in the right family
-// (SJR Green Knights = green + gold, Don Bosco Ironmen = dark green + silver,
-// Bergen Catholic Crusaders = crimson + gold). Confirm the exact shades.
-// SJR and Don Bosco are both green, so they are deliberately pushed apart:
-// SJR = brighter forest green with GOLD, DBP = near-black pine with SILVER.
+// Colors confirmed by Dylan 2026-07-11: SJR dark green + old gold, Don Bosco
+// maroon + white, Bergen Catholic scarlet + gold.
 
 export type SchoolTheme = {
   code: string
@@ -36,12 +32,12 @@ export const SCHOOL_THEMES: Record<string, SchoolTheme> = {
     dbId: '2d1b3d72-d736-494a-b459-485cd2c13407',
     town: 'Montvale, NJ',
     mascot: 'Green Knights',
-    primary: '#0E4D2C',
-    primaryDark: '#093A20',
-    accent: '#E3B23C',
+    primary: '#00563F',
+    primaryDark: '#003D2C',
+    accent: '#C5A253',
     accentInk: '#3A2B06',
-    wash: '#EDF4EF',
-    ink: '#0A2E1B',
+    wash: '#EBF3EF',
+    ink: '#073826',
   },
   dbp: {
     code: 'dbp',
@@ -52,12 +48,12 @@ export const SCHOOL_THEMES: Record<string, SchoolTheme> = {
     dbId: 'eb333a9c-e42e-4e42-a675-f6ea4b1b5c2a',
     town: 'Ramsey, NJ',
     mascot: 'Ironmen',
-    primary: '#132E23',
-    primaryDark: '#0C2018',
-    accent: '#C7CFD6',
-    accentInk: '#1B242B',
-    wash: '#EDF1EF',
-    ink: '#10241C',
+    primary: '#6D1A36',
+    primaryDark: '#4E1127',
+    accent: '#FFFFFF',
+    accentInk: '#6D1A36',
+    wash: '#F6EDF1',
+    ink: '#4E1127',
   },
   bc: {
     code: 'bc',
@@ -68,12 +64,12 @@ export const SCHOOL_THEMES: Record<string, SchoolTheme> = {
     dbId: '2773881e-9063-4b78-acc6-87014eb73522',
     town: 'Oradell, NJ',
     mascot: 'Crusaders',
-    primary: '#7A1E2D',
-    primaryDark: '#5C1622',
-    accent: '#E3B23C',
-    accentInk: '#3A2B06',
-    wash: '#F7EEEC',
-    ink: '#4A1219',
+    primary: '#C8102E',
+    primaryDark: '#8F0A22',
+    accent: '#FFB81C',
+    accentInk: '#4A3305',
+    wash: '#FBEDEF',
+    ink: '#74081C',
   },
 }
 

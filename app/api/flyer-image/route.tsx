@@ -77,10 +77,10 @@ export async function GET() {
 
         {/* Headline */}
         <div style={{ fontSize: 104, fontWeight: 900, letterSpacing: '-4px', lineHeight: 1.02, marginTop: 64 }}>
-          Skip the $80 uniform.
+          Stop buying uniforms new.
         </div>
         <div style={{ fontSize: 38, lineHeight: 1.35, marginTop: 28, opacity: 0.94, maxWidth: 900 }}>
-          Buy and sell used uniforms with families at your school. No fees, no shipping... you just meet up.
+          Buy and sell used uniforms with families at your school. You just meet up.
         </div>
 
         {/* Buy + sell cards */}
@@ -96,24 +96,11 @@ export async function GET() {
             }}
           >
             <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '3px', color: '#4338CA' }}>BUYING</div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 18, marginTop: 14 }}>
-              <span style={{ fontSize: 44, fontWeight: 700, color: '#9CA3AF', textDecoration: 'line-through' }}>$80</span>
-              <span style={{ fontSize: 84, fontWeight: 900, color: '#312E81', letterSpacing: '-2px' }}>$15</span>
+            <div style={{ fontSize: 46, fontWeight: 900, lineHeight: 1.1, letterSpacing: '-1px', color: '#312E81', marginTop: 14 }}>
+              Your school. Your sizes.
             </div>
-            <div
-              style={{
-                display: 'flex',
-                alignSelf: 'flex-start',
-                background: '#16A34A',
-                color: 'white',
-                fontSize: 26,
-                fontWeight: 800,
-                borderRadius: 999,
-                padding: '10px 24px',
-                marginTop: 12,
-              }}
-            >
-              You save $65
+            <div style={{ fontSize: 27, lineHeight: 1.35, marginTop: 14, color: '#4B5563' }}>
+              Blazers, polos, pants, spirit wear... from families near you.
             </div>
           </div>
 
@@ -129,21 +116,20 @@ export async function GET() {
             }}
           >
             <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '3px', color: '#C7D2FE' }}>SELLING</div>
-            <div style={{ fontSize: 52, fontWeight: 900, lineHeight: 1.08, letterSpacing: '-1px', marginTop: 14 }}>
+            <div style={{ fontSize: 46, fontWeight: 900, lineHeight: 1.1, letterSpacing: '-1px', marginTop: 14 }}>
               Keep 50%. Do nothing.
             </div>
             <div style={{ fontSize: 27, lineHeight: 1.35, marginTop: 14, opacity: 0.92 }}>
-              We pick up your outgrown pile, sell it, and you get half. Free pickup.
+              We pick up your outgrown pile and sell it for you. Or list it yourself, free.
             </div>
           </div>
         </div>
 
         {/* Trust row */}
-        <div style={{ display: 'flex', gap: 34, marginTop: 52, opacity: 0.95 }}>
+        <div style={{ display: 'flex', gap: 40, marginTop: 52, opacity: 0.95 }}>
           <TrustCheck label="No fees" />
           <TrustCheck label="No shipping" />
-          <TrustCheck label="Meet up local" />
-          <TrustCheck label="Run by NJ parents" />
+          <TrustCheck label="Meet up locally in NJ" />
         </div>
 
         {/* URL + QR */}

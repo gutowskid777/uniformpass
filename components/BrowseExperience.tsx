@@ -256,7 +256,7 @@ function ScopedHero({ theme, schoolId, liveCount }: { theme: SchoolTheme; school
         </div>
 
         <p className="mt-5 text-[13px] font-medium text-white/75">
-          No fees · No shipping · Meet up local · Verified by UniformPass
+          No fees · No shipping · Meet up locally in NJ
         </p>
       </div>
     </section>
@@ -345,7 +345,7 @@ function UnscopedHero({ schools, onPickSchool }: { schools: School[]; onPickScho
           )}
         </div>
 
-        {/* The 3 beachhead schools, one tap each */}
+        {/* The 3 beachhead schools, one tap each... plus everyone else */}
         <div className="grid grid-cols-3 gap-3 mt-5 sm:max-w-xl">
           {SCHOOL_CODES.map(code => {
             const t = SCHOOL_THEMES[code]
@@ -361,9 +361,12 @@ function UnscopedHero({ schools, onPickSchool }: { schools: School[]; onPickScho
             )
           })}
         </div>
+        <p className="mt-3 text-[13px] font-semibold text-indigo-200 sm:max-w-xl">
+          + 40 more NJ schools... search yours above.
+        </p>
 
         <p className="mt-6 text-[13px] font-medium text-indigo-200">
-          No fees · No shipping · No account to browse · Meet up local · NJ-based
+          No fees · No shipping · Meet up locally in NJ
         </p>
       </div>
     </section>

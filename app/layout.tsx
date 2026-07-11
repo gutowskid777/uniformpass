@@ -53,7 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="min-h-screen pb-16 sm:pb-0">{children}</main>
         <BottomNav />
         <footer className="border-t border-gray-200 bg-white mt-16 py-8 text-center text-sm text-gray-500">
-          <p className="font-medium text-gray-600">No fees · No shipping · No account to browse · Meet up local · NJ-based</p>
+          <p className="font-medium text-gray-600">No fees · No shipping · No account to browse · Meet up locally in NJ</p>
           <p className="mt-2">
             Spread the word:{' '}
             <Link href="/flyer" className="text-indigo-600 hover:underline font-medium">share the flyer</Link>
