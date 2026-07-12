@@ -57,9 +57,10 @@ export default function MyListingsPage() {
         }),
       ])
 
-      if (listingResult.error) throw new Error(listingResult.error.message)
+      if (listingResult.error) throw new Error('We couldn’t load your listings right now. Try refreshing.')
       const pickupJson = await pickupResponse.json()
-      if (!pickupResponse.ok) throw new Error(pickupJson.error || 'Could not load pickup requests.')
+      // Never surface raw server/config errors to users; keep it generic + actionable.
+      if (!pickupResponse.ok) throw new Error('We couldn’t load your pickup requests. Try refreshing or signing in again.')
       if (!active) return
 
       const foundListings = listingResult.data || []
