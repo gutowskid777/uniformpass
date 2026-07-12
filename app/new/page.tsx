@@ -329,7 +329,7 @@ export default function NewListingPage() {
                     <span className="text-xs text-gray-400 mt-1">Add photo</span>
                   </>
                 )}
-                <input type="file" accept="image/*" multiple disabled={compressing} onChange={handlePhotoChange} className="hidden" />
+                <input type="file" accept="image/*" capture="environment" multiple disabled={compressing} onChange={handlePhotoChange} className="hidden" />
               </label>
             )}
           </div>
