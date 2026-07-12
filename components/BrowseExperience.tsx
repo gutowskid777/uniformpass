@@ -2,8 +2,10 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase, type Listing, type School, CONDITION_LABELS, CATEGORY_LABELS, GENDER_LABELS, SIZES } from '@/lib/supabase'
 import { searchSchools } from '@/lib/schoolSearch'
+import VerifiedBadge from '@/components/VerifiedBadge'
 
 const PLACEHOLDER = 'https://placehold.co/400x533/e8e8f0/9999bb?text=No+photo'
 
@@ -12,16 +14,38 @@ const PLACEHOLDER = 'https://placehold.co/400x533/e8e8f0/9999bb?text=No+photo'
 // docs/archive/school-sections-2026-07-11 if we ever bring them back.)
 
 export default function BrowseExperience() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [listings, setListings] = useState<Listing[]>([])
   const [schools, setSchools] = useState<School[]>([])
   const [loading, setLoading] = useState(true)
 
-  const [schoolId, setSchoolId] = useState('')
-  const [category, setCategory] = useState('')
-  const [gender, setGender] = useState('')
-  const [size, setSize] = useState('')
-  const [condition, setCondition] = useState('')
+  const [schoolId, setSchoolId] = useState(() => searchParams.get('school') || '')
+  const [category, setCategory] = useState(() => searchParams.get('category') || '')
+  const [gender, setGender] = useState(() => searchParams.get('gender') || '')
+  const [size, setSize] = useState(() => searchParams.get('size') || '')
+  const [condition, setCondition] = useState(() => searchParams.get('condition') || '')
+  const [search, setSearch] = useState(() => searchParams.get('q') || '')
   const [showFilters, setShowFilters] = useState(false)
+
+  useEffect(() => {
+    setSchoolId(searchParams.get('school') || '')
+    setCategory(searchParams.get('category') || '')
+    setGender(searchParams.get('gender') || '')
+    setSize(searchParams.get('size') || '')
+    setCondition(searchParams.get('condition') || '')
+    setSearch(searchParams.get('q') || '')
+  }, [searchParams])
+
+  const updateUrl = (updates: Record<string, string>) => {
+    const params = new URLSearchParams(searchParams.toString())
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value) params.set(key, value)
+      else params.delete(key)
+    })
+    const query = params.toString()
+    router.replace(query ? `/?${query}` : '/', { scroll: false })
+  }
 
   useEffect(() => {
     supabase.from('schools').select('*').order('name').then(({ data }) => {
@@ -51,12 +75,24 @@ export default function BrowseExperience() {
   useEffect(() => { fetchListings() }, [fetchListings])
 
   const activeFilters = [schoolId, category, gender, size, condition].filter(Boolean).length
-  const clearFilters = () => { setSchoolId(''); setCategory(''); setGender(''); setSize(''); setCondition('') }
+  const clearFilters = () => {
+    setSchoolId(''); setCategory(''); setGender(''); setSize(''); setCondition('')
+    updateUrl({ school: '', category: '', gender: '', size: '', condition: '' })
+  }
   const schoolName = schoolId ? (schools.find(s => s.id === schoolId)?.name ?? '') : ''
 
   return (
     <div>
-      <Hero schools={schools} onPickSchool={s => setSchoolId(s.id)} />
+      <Hero
+        schools={schools}
+        query={search}
+        onQueryChange={value => { setSearch(value); updateUrl({ q: value }) }}
+        onPickSchool={s => {
+          setSchoolId(s.id)
+          setSearch(s.name)
+          updateUrl({ school: s.id, q: s.name })
+        }}
+      />
 
       <div className="max-w-6xl mx-auto px-4 pt-6 pb-8">
         <ConsignmentBand />
@@ -78,23 +114,23 @@ export default function BrowseExperience() {
           </div>
 
           <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 ${!showFilters ? 'hidden sm:grid' : 'grid'}`}>
-            <select value={schoolId} onChange={e => setSchoolId(e.target.value)} className="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+            <select value={schoolId} onChange={e => { setSchoolId(e.target.value); updateUrl({ school: e.target.value }) }} className="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
               <option value="">All Schools</option>
               {schools.map(s => <option key={s.id} value={s.id}>{s.name} ({s.state})</option>)}
             </select>
-            <select value={category} onChange={e => setCategory(e.target.value)} className="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+            <select value={category} onChange={e => { setCategory(e.target.value); updateUrl({ category: e.target.value }) }} className="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
               <option value="">All Categories</option>
               {Object.entries(CATEGORY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
-            <select value={gender} onChange={e => setGender(e.target.value)} className="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+            <select value={gender} onChange={e => { setGender(e.target.value); updateUrl({ gender: e.target.value }) }} className="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
               <option value="">All</option>
               {Object.entries(GENDER_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
-            <select value={size} onChange={e => setSize(e.target.value)} className="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+            <select value={size} onChange={e => { setSize(e.target.value); updateUrl({ size: e.target.value }) }} className="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
               <option value="">All Sizes</option>
               {SIZES.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
-            <select value={condition} onChange={e => setCondition(e.target.value)} className="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+            <select value={condition} onChange={e => { setCondition(e.target.value); updateUrl({ condition: e.target.value }) }} className="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
               <option value="">Any Condition</option>
               {Object.entries(CONDITION_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
@@ -126,12 +162,16 @@ export default function BrowseExperience() {
 
 /* ---------------- Hero: one headline, one search ---------------- */
 
-function Hero({ schools, onPickSchool }: { schools: School[]; onPickSchool: (s: School) => void }) {
-  const [q, setQ] = useState('')
+function Hero({ schools, query, onQueryChange, onPickSchool }: {
+  schools: School[]
+  query: string
+  onQueryChange: (value: string) => void
+  onPickSchool: (s: School) => void
+}) {
   const [focused, setFocused] = useState(false)
   const boxRef = useRef<HTMLDivElement>(null)
 
-  const results = q.trim() ? searchSchools(schools, q).slice(0, 6) : []
+  const results = query.trim() ? searchSchools(schools, query).slice(0, 6) : []
 
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
@@ -143,7 +183,6 @@ function Hero({ schools, onPickSchool }: { schools: School[]; onPickSchool: (s: 
 
   const pick = (s: School) => {
     onPickSchool(s)
-    setQ(s.name)
     setFocused(false)
     document.getElementById('browse')?.scrollIntoView({ behavior: 'smooth' })
   }
@@ -162,8 +201,8 @@ function Hero({ schools, onPickSchool }: { schools: School[]; onPickSchool: (s: 
           <input
             id="school-finder"
             type="text"
-            value={q}
-            onChange={e => setQ(e.target.value)}
+            value={query}
+            onChange={e => onQueryChange(e.target.value)}
             onFocus={() => setFocused(true)}
             placeholder={'Find your school... try "SJR" or "Bosco"'}
             autoComplete="off"
@@ -327,9 +366,7 @@ function ListingCard({ listing }: { listing: Listing }) {
           </span>
         )}
         {listing.is_verified && (
-          <span className="absolute bottom-2 right-2 bg-indigo-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm">
-            ✓ Verified
-          </span>
+          <span className="absolute bottom-2 right-2"><VerifiedBadge compact /></span>
         )}
       </div>
 

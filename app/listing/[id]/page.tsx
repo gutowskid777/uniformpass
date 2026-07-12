@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase, type Listing, CONDITION_LABELS, CATEGORY_LABELS, GENDER_LABELS, PAYMENT_OPTIONS, CONTACT_METHOD_LABELS } from '@/lib/supabase'
 import SharePanel from '@/components/SharePanel'
+import VerifiedBadge from '@/components/VerifiedBadge'
 
 const PLACEHOLDER = 'https://placehold.co/800x600/e8e8f0/9999bb?text=No+photo'
 
@@ -125,9 +126,7 @@ export default function ListingDetailPage() {
               <p className="text-sm text-gray-500 font-medium">{listing.school_name}</p>
               <h1 className="text-2xl font-bold text-gray-900 mt-0.5">{listing.item_type}</h1>
               {listing.is_verified && (
-                <span className="inline-flex items-center gap-1 mt-2 text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-600 text-white">
-                  ✓ Verified by UniformPass
-                </span>
+                <span className="inline-flex mt-2"><VerifiedBadge /></span>
               )}
             </div>
             <p className="text-4xl font-black leading-none text-indigo-700 shrink-0">
