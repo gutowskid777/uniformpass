@@ -56,7 +56,9 @@ export type PickupRequest = {
   item_summary: string
   est_items: number | null
   notes: string | null
-  status: 'new' | 'scheduled' | 'picked_up' | 'listed' | 'done' | 'declined'
+  user_id: string | null
+  cancel_token: string
+  status: 'new' | 'scheduled' | 'picked_up' | 'listed' | 'done' | 'declined' | 'cancelled'
   created_at: string
 }
 

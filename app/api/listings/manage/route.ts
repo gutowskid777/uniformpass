@@ -42,18 +42,34 @@ export async function POST(req: Request) {
   let body
   try { body = await req.json() } catch { return NextResponse.json({ error: 'bad request' }, { status: 400 }) }
   const { action, listingId, token, updates } = body || {}
-  if (!listingId || !token) return NextResponse.json({ error: 'missing listing or token' }, { status: 400 })
+  const authorization = req.headers.get('authorization') || ''
+  const jwt = authorization.match(/^Bearer\s+(.+)$/i)?.[1]
+  if (!listingId || (!token && !jwt)) return NextResponse.json({ error: 'missing listing or token' }, { status: 400 })
 
   // Verify the token belongs to this listing
-  const { data: tok } = await db
-    .from('listing_tokens')
-    .select('listing_id')
-    .eq('listing_id', listingId)
-    .eq('token', token)
-    .maybeSingle()
-  if (!tok) return NextResponse.json({ error: 'This manage link is invalid or expired.' }, { status: 403 })
+  let tok = null
+  if (token) {
+    const result = await db
+      .from('listing_tokens')
+      .select('listing_id')
+      .eq('listing_id', listingId)
+      .eq('token', token)
+      .maybeSingle()
+    tok = result.data
+  }
+
+  let ownerListing = null
+  if (!tok && jwt) {
+    const { data: { user } } = await db.auth.getUser(jwt)
+    if (user) {
+      const { data } = await db.from('listings').select('*').eq('id', listingId).maybeSingle()
+      if (data?.user_id === user.id) ownerListing = data
+    }
+  }
+  if (!tok && !ownerListing) return NextResponse.json({ error: 'This manage link is invalid or expired.' }, { status: 403 })
 
   if (action === 'load') {
+    if (ownerListing) return NextResponse.json({ listing: ownerListing })
     const { data, error } = await db.from('listings').select('*').eq('id', listingId).single()
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ listing: data })
