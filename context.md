@@ -1,5 +1,11 @@
 # School Uniform Resale Platform — Context
-# Last updated: 2026-07-11
+# Last updated: 2026-07-11 (Fable session merged + deployed)
+
+## 2026-07-11 FABLE session — flyer + share engine + simplicity pivot (merged to main)
+- **Shipped:** digital flyer `/flyer` (`/api/flyer-image`, 1080x1350, QR decode-verified) + paper `/flyer/print` (letter, tear tabs) · SharePanel (native share + paste messages + real OG preview) · per-listing OG cards (`app/listing/[id]/layout.tsx` + `/api/og/listing`) · site OG thumbnail matches flyer ("Outgrown uniforms are money." + Auto Sell / Buy-and-sell doors) · consignment renamed **Auto Sell** (band on homepage, nav, mobile tab) · sell-for-me reskin (do-nothing hero, pile-size chips; account/submit flow untouched) · masked contact chooser + safe-meetup lines on listing detail · header pill polish · Inter fonts bundled for all satori renders (`lib/ogFonts.ts`).
+- **Removed by Dylan's call:** per-school sections (`/s/[code]`, themed heroes, monogram tiles) → archived with restore notes in `docs/archive/school-sections-2026-07-11/`; "You save $X" price-slash (no invented retail anchors). School colors confirmed + kept in `lib/schoolTheme.ts` (SJR #00563F/#C5A253 · DBP #6D1A36/#FFF · BC #C8102E/#FFB81C); listing OG still uses them.
+- **INCIDENT (resolved):** Supabase legacy API keys got disabled during Dylan's key rotation → prod data-dead + Vercel builds failing ("Invalid supabaseUrl"). Dylan re-enabled legacy keys; Claude re-set `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` in Vercel (production+preview, live-tested against DB). Gotcha: `vercel env pull` REDACTS encrypted values to ""... never trust it for inspection.
+- **Deliberate migration still owed:** move BOTH apps (UniformPass + Orbit, shared Supabase) to new-style publishable/secret keys in one sitting, then disable legacy for good. Service-role key rotation task still open.
 
 ## What It Is
 
@@ -10,6 +16,7 @@
 - **The moat = concierge consignment.** `/sell-for-me` lets anyone request a pickup of a pile of uniforms/spirit wear. Dylan/mom picks it up, lists it, sells it, and pays the owner 50% of profit. Requests land in the admin "Pickup requests" tab. Operator-listed inventory can be flagged **"Verified by UniformPass"** (badge on cards + detail).
 - **Beachhead:** 3-school NJ cluster — St. Joseph Regional (Montvale), Don Bosco Prep (Ramsey), Bergen Catholic (Oradell). All already seeded (44 schools total in DB).
 - **Long-term (deferred):** general spirit wear for any school, college merch resale, party/one-off wear.
+- **GTM angle, parked (bk-73):** if it gains momentum, pitch/market it as a way to find VINTAGE school stuff (old spirit wear, retro gear) — catchier/more shareable hook than "buy/sell used uniforms." Not a v1 feature, just a future positioning angle.
 
 ## Stack
 
