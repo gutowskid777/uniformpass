@@ -4,8 +4,6 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase, type Listing, CONDITION_LABELS, CATEGORY_LABELS, GENDER_LABELS, PAYMENT_OPTIONS, CONTACT_METHOD_LABELS } from '@/lib/supabase'
-import { themeForSchoolId, themeForSchoolName, scopedPath } from '@/lib/schoolTheme'
-import { priceSlash } from '@/lib/retailPrices'
 import SharePanel from '@/components/SharePanel'
 
 const PLACEHOLDER = 'https://placehold.co/800x600/e8e8f0/9999bb?text=No+photo'
@@ -65,19 +63,16 @@ export default function ListingDetailPage() {
     .filter(Boolean)
     .join(', ')
 
-  const theme = themeForSchoolId(listing.school_id) || themeForSchoolName(listing.school_name)
-  const slash = priceSlash(listing.price, listing.item_type, listing.category)
-
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
       <div className="flex items-center justify-between gap-3 mb-6">
-        <Link href={theme ? scopedPath(theme.code) : '/'} className="text-sm text-indigo-600 hover:underline">
-          ← {theme ? `${theme.shortName} listings` : 'Back to listings'}
+        <Link href="/" className="text-sm text-indigo-600 hover:underline">
+          ← Back to listings
         </Link>
         <div className="flex items-center gap-2">
           <SharePanel
             kind="listing"
-            theme={theme}
+            theme={null}
             listing={{ id: listing.id, itemType: listing.item_type, price: listing.price, schoolName: listing.school_name }}
             buttonClassName="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 hover:border-gray-500 px-4 py-1.5 rounded-full transition-colors"
           />
@@ -135,19 +130,9 @@ export default function ListingDetailPage() {
                 </span>
               )}
             </div>
-            <div className="text-right shrink-0">
-              {slash && (
-                <p className="text-sm text-gray-400 line-through">${slash.retail} new</p>
-              )}
-              <p className="text-4xl font-black leading-none" style={{ color: theme?.primary ?? '#4338CA' }}>
-                {listing.price === 0 ? 'Free' : `$${listing.price}`}
-              </p>
-              {slash && (
-                <span className="inline-block mt-2 bg-green-600 text-white text-[13px] font-bold px-2.5 py-1 rounded-full">
-                  You save ${slash.save}
-                </span>
-              )}
-            </div>
+            <p className="text-4xl font-black leading-none text-indigo-700 shrink-0">
+              {listing.price === 0 ? 'Free' : `$${listing.price}`}
+            </p>
           </div>
 
           {listing.status === 'sold' && (

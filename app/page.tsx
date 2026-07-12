@@ -1,26 +1,5 @@
-import type { Metadata } from 'next'
 import BrowseExperience from '@/components/BrowseExperience'
-import { getTheme, scopedUrl } from '@/lib/schoolTheme'
 
-// Server shell for the browse experience. A school-scoped link (/?school=sjr)
-// re-dresses the page AND the link preview to that school.
-
-type Props = { searchParams: { school?: string } }
-
-export function generateMetadata({ searchParams }: Props): Metadata {
-  const theme = getTheme(searchParams.school)
-  if (!theme) return {}
-  const title = `${theme.fullName} Uniform Exchange · UniformPass`
-  const description = `Skip the $80 uniform. Buy and sell used ${theme.shortName} uniforms with local families. No fees, no shipping, meet up local.`
-  const image = `/api/og?school=${theme.code}`
-  return {
-    title,
-    description,
-    openGraph: { title, description, images: [image], url: scopedUrl(theme.code) },
-    twitter: { card: 'summary_large_image', title, description, images: [image] },
-  }
-}
-
-export default function BrowsePage({ searchParams }: Props) {
-  return <BrowseExperience schoolCode={searchParams.school ?? null} />
+export default function BrowsePage() {
+  return <BrowseExperience />
 }

@@ -1,7 +1,6 @@
 import { ImageResponse } from 'next/og'
 import type { NextRequest } from 'next/server'
 import { themeForSchoolId, themeForSchoolName } from '@/lib/schoolTheme'
-import { priceSlash } from '@/lib/retailPrices'
 import { loadOgFonts } from '@/lib/ogFonts'
 import MonogramPatch from '@/components/MonogramPatch'
 
@@ -52,7 +51,6 @@ export async function GET(req: NextRequest) {
   const primary = theme?.primary ?? '#4F46E5'
   const primaryDark = theme?.primaryDark ?? '#312E81'
   const photo = listing.photos?.[0] || null
-  const slash = priceSlash(listing.price, listing.item_type, listing.category)
   const priceLabel = listing.price === 0 ? 'Free' : `$${listing.price}`
 
   return new ImageResponse(
@@ -114,33 +112,11 @@ export async function GET(req: NextRequest) {
             {listing.is_lot ? 'Lot · multiple sizes' : `Size ${listing.size}`}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 22, marginTop: 'auto' }}>
-            {slash && (
-              <span style={{ fontSize: 46, fontWeight: 700, color: '#9CA3AF', textDecoration: 'line-through' }}>
-                {`$${slash.retail}`}
-              </span>
-            )}
+          <div style={{ display: 'flex', alignItems: 'baseline', marginTop: 'auto' }}>
             <span style={{ fontSize: 108, fontWeight: 900, color: primary, letterSpacing: '-3px', lineHeight: 1 }}>
               {priceLabel}
             </span>
           </div>
-          {slash && (
-            <div
-              style={{
-                display: 'flex',
-                alignSelf: 'flex-start',
-                background: '#16A34A',
-                color: 'white',
-                fontSize: 30,
-                fontWeight: 800,
-                borderRadius: 999,
-                padding: '10px 28px',
-                marginTop: 18,
-              }}
-            >
-              {`You save $${slash.save}`}
-            </div>
-          )}
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 34 }}>
             {listing.is_verified ? (

@@ -78,11 +78,11 @@ export default async function FlyerPrintPage() {
 
           {/* Headline */}
           <div style={{ marginTop: 34 }}>
-            <div style={{ fontSize: 64, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.0, color: '#111827' }}>
-              Stop buying uniforms new.
+            <div style={{ fontSize: 62, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.0, color: '#111827' }}>
+              Outgrown uniforms are money.
             </div>
             <div style={{ fontSize: 22, color: '#374151', marginTop: 14, lineHeight: 1.4, maxWidth: 660 }}>
-              Buy and sell used uniforms with families from your school. You just meet up.
+              We turn your pile into cash... or shop your school&apos;s used listings.
             </div>
           </div>
 
@@ -99,29 +99,29 @@ export default async function FlyerPrintPage() {
               </div>
             </div>
 
-            {/* Offer cards */}
+            {/* Offer cards: Auto Sell leads */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 20 }}>
-              <div style={{ background: WASH, borderRadius: 24, padding: '24px 28px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.1em', color: PRIMARY_DARK, textTransform: 'uppercase' }}>
-                  Buying
-                </div>
-                <div style={{ fontSize: 32, fontWeight: 900, color: PRIMARY_DARK, letterSpacing: '-0.02em', marginTop: 8, lineHeight: 1.1 }}>
-                  Exactly what you need.
-                </div>
-                <div style={{ fontSize: 17, color: '#4B5563', marginTop: 8 }}>
-                  One easy marketplace for your school&apos;s uniforms and merch. Your size, near you.
-                </div>
-              </div>
-
               <div style={{ background: PRIMARY_DARK, borderRadius: 24, padding: '24px 28px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.1em', color: ACCENT, textTransform: 'uppercase' }}>
-                  Selling
+                  Auto Sell
                 </div>
                 <div style={{ fontSize: 32, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', marginTop: 8, lineHeight: 1.1 }}>
                   You do nothing.
                 </div>
                 <div style={{ fontSize: 17, color: 'rgba(255,255,255,0.85)', marginTop: 8, lineHeight: 1.4 }}>
-                  Hand off your outgrown pile... free pickup, and you get cash back.
+                  We pick up your pile. You get cash.
+                </div>
+              </div>
+
+              <div style={{ background: WASH, borderRadius: 24, padding: '24px 28px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.1em', color: PRIMARY_DARK, textTransform: 'uppercase' }}>
+                  Buy and sell
+                </div>
+                <div style={{ fontSize: 32, fontWeight: 900, color: PRIMARY_DARK, letterSpacing: '-0.02em', marginTop: 8, lineHeight: 1.1 }}>
+                  Exactly what you need.
+                </div>
+                <div style={{ fontSize: 17, color: '#4B5563', marginTop: 8 }}>
+                  Your school&apos;s marketplace for uniforms and merch.
                 </div>
               </div>
             </div>

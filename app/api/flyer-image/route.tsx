@@ -49,7 +49,7 @@ async function qrDataUri(): Promise<string | null> {
   }
 }
 
-function Door({ icon, question, line }: { icon: React.ReactNode; question: string; line: string }) {
+function Door({ icon, question, line, highlight }: { icon: React.ReactNode; question: string; line: string; highlight?: boolean }) {
   return (
     <div
       style={{
@@ -58,8 +58,8 @@ function Door({ icon, question, line }: { icon: React.ReactNode; question: strin
         flexDirection: 'column',
         alignItems: 'center',
         textAlign: 'center',
-        background: 'rgba(255,255,255,0.12)',
-        border: '2px solid rgba(255,255,255,0.28)',
+        background: highlight ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.10)',
+        border: highlight ? '3px solid #FDE68A' : '2px solid rgba(255,255,255,0.28)',
         borderRadius: 36,
         padding: '44px 36px',
       }}
@@ -106,25 +106,26 @@ export async function GET() {
           <div style={{ fontSize: 40, fontWeight: 800, letterSpacing: '-1px' }}>UniformPass</div>
         </div>
 
-        {/* Headline + one line */}
-        <div style={{ fontSize: 108, fontWeight: 900, letterSpacing: '-4px', lineHeight: 1.02, marginTop: 60 }}>
-          Stop buying uniforms new.
+        {/* Headline + one line: seller-first, the pile is the money */}
+        <div style={{ fontSize: 104, fontWeight: 900, letterSpacing: '-4px', lineHeight: 1.02, marginTop: 60 }}>
+          Outgrown uniforms are money.
         </div>
-        <div style={{ fontSize: 37, lineHeight: 1.35, marginTop: 26, opacity: 0.94, maxWidth: 880 }}>
-          Buy and sell used uniforms with families at your school.
+        <div style={{ fontSize: 37, lineHeight: 1.35, marginTop: 26, opacity: 0.94, maxWidth: 900 }}>
+          We turn your pile into cash... or shop your school&apos;s used listings.
         </div>
 
-        {/* The two doors: the marketplace, or the do-nothing pickup */}
+        {/* The two doors: the do-nothing pickup leads */}
         <div style={{ display: 'flex', gap: 28, marginTop: 60 }}>
+          <Door
+            highlight
+            icon={<Cash size={64} color="#FDE68A" />}
+            question="Auto Sell"
+            line="We pick up your pile. You get cash."
+          />
           <Door
             icon={<Hanger size={64} color="#FDE68A" />}
             question="Buy and sell"
             line="Your school's marketplace for uniforms and merch."
-          />
-          <Door
-            icon={<Cash size={64} color="#FDE68A" />}
-            question="Auto Sell"
-            line="We pick up your pile. You get cash."
           />
         </div>
 

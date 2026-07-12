@@ -42,24 +42,12 @@ function Hanger({ size, color }: { size: number; color: string }) {
   )
 }
 
-function Cash({ size, color }: { size: number; color: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 32 32">
-      <g fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="9" width="26" height="14" rx="2.5" />
-        <circle cx="16" cy="16" r="4" />
-        <path d="M7.5 13v6M24.5 13v6" />
-      </g>
-    </svg>
-  )
-}
-
 export async function GET(req: NextRequest) {
   const theme = getTheme(req.nextUrl.searchParams.get('school'))
   const fonts = await loadOgFonts()
 
   if (!theme) {
-    // Generic card: the site thumbnail, same language as the flyer.
+    // Generic card: the whole-app preview.
     return new ImageResponse(
       (
         <div
@@ -68,63 +56,36 @@ export async function GET(req: NextRequest) {
             width: '100%',
             display: 'flex',
             flexDirection: 'column',
-            background: 'linear-gradient(160deg, #312E81 0%, #4338CA 55%, #4F46E5 100%)',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(135deg, #312E81 0%, #4F46E5 100%)',
             color: 'white',
-            padding: 56,
+            padding: '0 80px',
+            textAlign: 'center',
             fontFamily: 'Inter',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Hanger size={36} color="#ffffff" />
-            <div style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-1px' }}>UniformPass</div>
+          <Hanger size={110} color="#ffffff" />
+          <div style={{ fontSize: 96, fontWeight: 800, letterSpacing: '-3px', lineHeight: 1, marginTop: 12 }}>
+            UniformPass
           </div>
-
-          <div style={{ fontSize: 78, fontWeight: 900, letterSpacing: '-3px', lineHeight: 1.04, marginTop: 34 }}>
-            Outgrown uniforms are money.
+          <div style={{ fontSize: 40, marginTop: 26, opacity: 0.94 }}>
+            Skip the $80 uniform. Buy and sell with families at your school.
           </div>
-
-          <div style={{ display: 'flex', gap: 20, marginTop: 40 }}>
-            <div
-              style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 18,
-                background: 'rgba(255,255,255,0.18)',
-                border: '3px solid #FDE68A',
-                borderRadius: 26,
-                padding: '22px 28px',
-              }}
-            >
-              <Cash size={48} color="#FDE68A" />
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <div style={{ fontSize: 32, fontWeight: 900, letterSpacing: '-1px' }}>Auto Sell</div>
-                <div style={{ fontSize: 21, opacity: 0.92, marginTop: 4 }}>We pick up your pile. You get cash.</div>
-              </div>
-            </div>
-            <div
-              style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 18,
-                background: 'rgba(255,255,255,0.10)',
-                border: '2px solid rgba(255,255,255,0.28)',
-                borderRadius: 26,
-                padding: '22px 28px',
-              }}
-            >
-              <Hanger size={48} color="#FDE68A" />
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <div style={{ fontSize: 32, fontWeight: 900, letterSpacing: '-1px' }}>Buy and sell</div>
-                <div style={{ fontSize: 21, opacity: 0.92, marginTop: 4 }}>Your school&apos;s uniform marketplace.</div>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
-            <div style={{ fontSize: 26, fontWeight: 700, opacity: 0.85 }}>Free · No fees · Local NJ parents</div>
-            <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: '-1px', color: '#FDE68A' }}>uniformpass.shop</div>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 14,
+              marginTop: 40,
+              background: 'rgba(255,255,255,0.14)',
+              borderRadius: 999,
+              padding: '12px 30px',
+              fontSize: 26,
+              fontWeight: 700,
+            }}
+          >
+            No fees · No shipping · Meet up local · NJ
           </div>
         </div>
       ),
