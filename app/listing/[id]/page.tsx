@@ -199,7 +199,6 @@ export default function ListingDetailPage() {
                 <ul className="text-[13px] text-gray-600 mt-1 space-y-0.5">
                   <li>Meet in public, in daylight.</li>
                   <li>Pay on pickup, never a deposit.</li>
-                  <li>Contact details stay masked until you reach out.</li>
                 </ul>
               </div>
 
@@ -224,21 +223,14 @@ export default function ListingDetailPage() {
   )
 }
 
-// Privacy = trust: never dump the raw phone/email as page text. Show a masked
-// preview; the tap opens the native app prefilled with the real value.
-function maskContact(method: string | null, info: string): string {
+// Show the seller's real contact plainly — the tap-to-text/email link carries it anyway,
+// and the buyer (a parent) just wants to see it. Pretty-print a 10-digit US phone.
+function formatContact(method: string | null, info: string): string {
   if (method === 'text') {
-    const digits = info.replace(/\D/g, '')
-    return digits.length >= 4 ? `(•••) •••-${digits.slice(-4)}` : '•••'
-  }
-  if (method === 'email') {
-    const [user, domain] = info.split('@')
-    if (!domain) return '•••'
-    return `${user.slice(0, 1)}•••@${domain}`
-  }
-  if (method === 'venmo') {
-    const handle = info.replace(/^@/, '')
-    return `@${handle.slice(0, 2)}•••`
+    const d = info.replace(/\D/g, '')
+    if (d.length === 10) return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`
+    if (d.length === 11 && d[0] === '1') return `(${d.slice(1, 4)}) ${d.slice(4, 7)}-${d.slice(7)}`
+    return info
   }
   return info
 }
@@ -269,7 +261,7 @@ function ContactAction({ method, info, seller }: { method: string | null; info: 
       className="flex items-center justify-between gap-3 bg-indigo-600 text-white rounded-xl px-5 py-4 hover:bg-indigo-700 transition-colors">
       <span className="flex flex-col min-w-0">
         <span className="text-lg font-bold leading-tight">{action}</span>
-        <span className="text-[13px] text-indigo-200 mt-0.5">{label} · {maskContact(method, info)}</span>
+        <span className="text-[13px] text-indigo-200 mt-0.5">{label} · {formatContact(method, info)}</span>
       </span>
       <span className="text-xl shrink-0" aria-hidden>→</span>
     </a>
