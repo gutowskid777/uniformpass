@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { supabase, type Listing, type PickupRequest, type ContactMessage, CONDITION_LABELS, CATEGORY_LABELS } from '@/lib/supabase'
 
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || ''
 const PLACEHOLDER = 'https://placehold.co/100x100/e8e8f0/9999bb?text=?'
 
 const STATUS_OPTIONS = ['available', 'sold', 'draft'] as const
@@ -46,21 +45,29 @@ export default function AdminPage() {
   const [messagesError, setMessagesError] = useState('')
 
   useEffect(() => {
-    if (sessionStorage.getItem('admin_authed') === '1') setAuthed(true)
+    const pw = sessionStorage.getItem('admin_pw')
+    if (pw) { setPassword(pw); setAuthed(true) }
   }, [])
 
-  const login = () => {
-    if (password === ADMIN_PASSWORD) {
-      sessionStorage.setItem('admin_authed', '1')
+  // Password is verified SERVER-SIDE now — it's never compared against a bundled value.
+  const login = async () => {
+    try {
+      const res = await fetch('/api/admin/listings', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-admin-password': password },
+        body: JSON.stringify({ action: 'verify' }),
+      })
+      if (!res.ok) { setPasswordError(true); return }
+      sessionStorage.setItem('admin_pw', password)
       setAuthed(true)
       setPasswordError(false)
-    } else {
+    } catch {
       setPasswordError(true)
     }
   }
 
   const logout = () => {
-    sessionStorage.removeItem('admin_authed')
+    sessionStorage.removeItem('admin_pw')
     setAuthed(false)
   }
 
@@ -85,14 +92,22 @@ export default function AdminPage() {
 
   const updateStatus = async (id: string, status: Status) => {
     setActionPending(id + '-status')
-    await supabase.from('listings').update({ status }).eq('id', id)
+    await fetch('/api/admin/listings', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify({ action: 'status', id, status }),
+    })
     await fetchListings()
     setActionPending(null)
   }
 
   const toggleVerified = async (id: string, current: boolean) => {
     setActionPending(id + '-verify')
-    await supabase.from('listings').update({ is_verified: !current }).eq('id', id)
+    await fetch('/api/admin/listings', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify({ action: 'verified', id, is_verified: !current }),
+    })
     await fetchListings()
     setActionPending(null)
   }
@@ -101,7 +116,7 @@ export default function AdminPage() {
     setPickupsLoading(true)
     setPickupsError('')
     try {
-      const res = await fetch('/api/pickup-requests', { headers: { 'x-admin-password': ADMIN_PASSWORD } })
+      const res = await fetch('/api/pickup-requests', { headers: { 'x-admin-password': password } })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || 'Failed to load requests')
       setPickups(json.requests || [])
@@ -116,7 +131,7 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/pickup-requests', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', 'x-admin-password': ADMIN_PASSWORD },
+        headers: { 'content-type': 'application/json', 'x-admin-password': password },
         body: JSON.stringify({ id, status }),
       })
       if (!res.ok) throw new Error((await res.json()).error || 'Update failed')
@@ -131,7 +146,7 @@ export default function AdminPage() {
     setMessagesLoading(true)
     setMessagesError('')
     try {
-      const res = await fetch('/api/contact', { headers: { 'x-admin-password': ADMIN_PASSWORD } })
+      const res = await fetch('/api/contact', { headers: { 'x-admin-password': password } })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || 'Failed to load messages')
       setMessages(json.messages || [])
@@ -150,15 +165,11 @@ export default function AdminPage() {
   const deleteListing = async (id: string, itemType: string) => {
     if (!confirm(`Delete "${itemType}"? This cannot be undone.`)) return
     setActionPending(id + '-delete')
-    const listing = listings.find(l => l.id === id)
-    if (listing?.photos?.length) {
-      const paths = listing.photos.map(url => {
-        const parts = url.split('/uniform-photos/')
-        return parts[1] || ''
-      }).filter(Boolean)
-      if (paths.length) await supabase.storage.from('uniform-photos').remove(paths)
-    }
-    await supabase.from('listings').delete().eq('id', id)
+    await fetch('/api/admin/listings', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify({ action: 'delete', id }),
+    })
     await fetchListings()
     setActionPending(null)
   }

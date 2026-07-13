@@ -76,10 +76,12 @@ Scope summary: listing create, browse/filter by school/category/gender/size/cond
 - ✅ School fuzzy search (`lib/schoolSearch.ts`): saint↔st, acronyms (sjr/aha/iha/bc/dbp/shp/pc), nicknames (bosco/seton/angels).
 - ✅ Pickup request → emails operator (`/api/pickups/notify`, Resend).
 
-**STILL TO DO:**
-- **RLS owner-insert backstop** — drop the PUBLIC `with check(true)` insert policies on `listings` + `pickup_requests`, replace with `to authenticated with check (auth.uid() = user_id)`. Apply AFTER confirming a live logged-in post works. (`listing_tokens` PUBLIC insert can stay.)
-- **My Listings rework** (Dylan, 2026-07-11) — account-based; show the user's pickup_requests too, let the owner **edit/cancel** them, and those edits must be visible to the operator in `/admin`. Currently `/my-listings` is localStorage-only and pickups are cancel-via-token only.
-- **DEPENDENCIES/flags:** email-confirmation must be OFF in Supabase (shared w/ Orbit) or deferred signup can't auto-login; `RESEND_API_KEY` must be in Vercel env or pickup/contact emails fail silently.
+**STILL TO DO:** — both core items now DONE (2026-07-11/13)
+- ✅ **RLS owner-insert backstop DONE** — migration `require_auth_owner_insert` applied: `listings` + `pickup_requests` INSERT are now `to authenticated with check (auth.uid() = user_id)` (replaced the PUBLIC `with check(true)` policies). `listing_tokens` PUBLIC insert kept. **Verified live in Chrome** — logged-in post works with RLS on (SJR + Academy of Holy Angels test posts), school aliases + profile prefill both confirmed working.
+- ✅ **My Listings rework DONE** — commit `e7ad4b4`: `/my-listings` is account-based (queries `listings` + `pickup_requests` by `user_id`), owner can edit/cancel pickups, `/admin` reads `pickup_requests` so owner edits are visible operator-side.
+- **DEPENDENCIES/flags:** email-confirmation is OFF in Supabase (confirmed — deferred signup auto-logins). `RESEND_API_KEY` in Vercel env still UNCONFIRMED — pickup/contact emails fail silently without it.
+- **NOT yet verified:** brand-new signup → post path (identical insert with a fresh session; high confidence, worth one smoke-test).
+- **Dev cleanup:** during live testing, Dylan's own auth accounts got password `123456` set via SQL (magic-link accounts had no known password). Two throwaway "TEST…" listings were marked **Sold** (not deleted) — hard-delete when convenient. `djg323`'s seller_profile holds test data ("Test"/Montvale) — overwritten on next real post.
 
 **SHIPPED this session:** C1 mobile bottom-nav (`components/BottomNav.tsx` + `layout.tsx`) — Browse/Sell-for-me were `hidden sm:block`, so the consignment moat was invisible on phones (the launch audience's device). Now a 4-tab thumb bar `<sm`.
 
@@ -106,7 +108,7 @@ Insert-only tables work with `supabase-js .insert()` (sends `Prefer: return=mini
 ## What's Next (Dylan's actions)
 
 1. **🔴 ROTATE `SUPABASE_SERVICE_ROLE_KEY`** — it's SET in Vercel and working (manage + pickup routes verified live), BUT Dylan screenshotted it into a chat = possible leak. Regenerate in Supabase → Settings → API, then update Vercel env + `.env.local`. Service role = full DB access, so do this soon.
-2. **Admin password** — currently `uniform2026` via `NEXT_PUBLIC_ADMIN_PASSWORD`. Change for mom in `.env.local` + Vercel.
+2. ✅ **Admin auth HARDENED (2026-07-13)** — admin listing writes (status / verified / delete) now go through service-role route **`/api/admin/listings`** with a **server-side** password check; the public `listings` `UPDATE`/`DELETE` RLS policies were **dropped** (anon key can no longer mutate listings — closes the "anyone can delete/fake-verify via devtools" hole). Password moved to **server-only `ADMIN_PASSWORD`** (`NEXT_PUBLIC_ADMIN_PASSWORD` removed from Vercel + bundle) and **rotated** to a new value (in `.env.local` + Vercel; given to Dylan in chat, kept out of the repo). Login now verifies against the server, not a bundled string.
 3. ~~**Domain**~~ — ✅ DONE: `uniformpass.shop` live + SSL (see 2026-07-11 session).
 4. **Seed inventory** — list Dylan's donation stock, flag it Verified in admin.
 
