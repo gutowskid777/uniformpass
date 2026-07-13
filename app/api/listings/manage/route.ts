@@ -19,13 +19,14 @@ const ENUMS: Record<string, string[]> = {
   gender: ['boy', 'girl', 'unisex'],
   contact_method: ['text', 'email', 'venmo', 'other'],
 }
-const EDITABLE = ['status', 'price', 'item_type', 'size', 'is_lot', 'condition', 'category', 'gender', 'description', 'contact_method', 'contact_info']
+const EDITABLE = ['status', 'price', 'item_type', 'size', 'is_lot', 'condition', 'category', 'gender', 'description', 'contact_method', 'contact_info', 'photos']
 
 function cleanUpdates(raw: Record<string, unknown>) {
   const out: Record<string, unknown> = {}
   for (const key of EDITABLE) {
     if (!(key in raw)) continue
     let val = raw[key]
+    if (key === 'photos' && !Array.isArray(val)) continue // photos must be an array of URLs
     if (ENUMS[key] && val != null && !ENUMS[key].includes(String(val))) continue // drop invalid enum
     if (key === 'price') val = Number(val) || 0
     if (key === 'is_lot') val = Boolean(val)
@@ -78,6 +79,16 @@ export async function POST(req: Request) {
   if (action === 'update') {
     const clean = cleanUpdates(updates || {})
     if (Object.keys(clean).length === 0) return NextResponse.json({ error: 'nothing to update' }, { status: 400 })
+    // Any content edit (not a bare status flip) stamps edited_at → shoppers see a subtle "edited" mark.
+    if (Object.keys(clean).some(k => k !== 'status')) clean.edited_at = new Date().toISOString()
+    // If photos changed, delete the removed files so storage doesn't bloat.
+    const newPhotos = clean.photos
+    if (Array.isArray(newPhotos)) {
+      const { data: old } = await db.from('listings').select('photos').eq('id', listingId).single()
+      const removed = ((old?.photos as string[]) || []).filter(u => !newPhotos.includes(u))
+      const paths = removed.map((u: string) => u.split('/uniform-photos/')[1] || '').filter(Boolean)
+      if (paths.length) await db.storage.from('uniform-photos').remove(paths)
+    }
     const { error } = await db.from('listings').update(clean).eq('id', listingId)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ ok: true })

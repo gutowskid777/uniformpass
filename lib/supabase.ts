@@ -35,6 +35,7 @@ export type Listing = {
   is_verified: boolean
   user_id: string | null
   created_at: string
+  edited_at: string | null
 }
 
 export type ContactMessage = {

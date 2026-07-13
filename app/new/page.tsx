@@ -333,7 +333,7 @@ export default function NewListingPage() {
               </label>
             )}
           </div>
-          <p className="text-xs text-gray-400">Add up to {MAX_PHOTOS}. Big phone photos are shrunk automatically.</p>
+          <p className="text-xs text-gray-400">Add up to {MAX_PHOTOS}.</p>
         </div>
 
         {/* Price, location, payment */}

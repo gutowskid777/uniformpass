@@ -1,14 +1,17 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ChangeEvent } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { type Listing, SIZES, CONTACT_METHODS } from '@/lib/supabase'
+import imageCompression from 'browser-image-compression'
+import { type Listing, SIZES, CONTACT_METHODS, supabase } from '@/lib/supabase'
 
 const STATUS_TABS = [
   { value: 'available', label: 'Available' },
   { value: 'sold', label: 'Sold' },
 ] as const
+
+const MAX_PHOTOS = 8
 
 type ManageForm = {
   status: string
@@ -56,6 +59,10 @@ export default function ManageListingPage() {
   const [deleting, setDeleting] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
+  const [existingPhotos, setExistingPhotos] = useState<string[]>([])
+  const [newFiles, setNewFiles] = useState<File[]>([])
+  const [newPreviews, setNewPreviews] = useState<string[]>([])
+  const [compressing, setCompressing] = useState(false)
 
   useEffect(() => {
     const sp = new URLSearchParams(window.location.search)
@@ -73,6 +80,7 @@ export default function ManageListingPage() {
         const { listing } = await res.json()
         setListing(listing)
         setForm(prefill(listing))
+        setExistingPhotos(listing.photos || [])
       })
       .catch(() => setInvalid(true))
       .finally(() => setLoading(false))
@@ -95,6 +103,41 @@ export default function ManageListingPage() {
     contact_info: f.contact_info.trim(),
   })
 
+  const handlePhotoChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    e.target.value = ''
+    const room = MAX_PHOTOS - existingPhotos.length - newFiles.length
+    const picked = files.slice(0, Math.max(0, room))
+    if (picked.length === 0) return
+    setError(''); setCompressing(true)
+    const out: File[] = []
+    for (const f of picked) {
+      try { out.push(await imageCompression(f, { maxSizeMB: 1, maxWidthOrHeight: 1600, useWebWorker: true })) }
+      catch { out.push(f) }
+    }
+    setNewFiles(prev => [...prev, ...out])
+    setNewPreviews(prev => [...prev, ...out.map(f => URL.createObjectURL(f))])
+    setCompressing(false)
+  }
+
+  const removeExisting = (i: number) => setExistingPhotos(prev => prev.filter((_, idx) => idx !== i))
+  const removeNew = (i: number) => {
+    setNewFiles(prev => prev.filter((_, idx) => idx !== i))
+    setNewPreviews(prev => { URL.revokeObjectURL(prev[i]); return prev.filter((_, idx) => idx !== i) })
+  }
+
+  const uploadNew = async () => {
+    const urls: string[] = []
+    for (const file of newFiles) {
+      const ext = file.name.split('.').pop() || 'jpg'
+      const path = `listings/${id}/${crypto.randomUUID()}.${ext}`
+      const { error: upErr } = await supabase.storage.from('uniform-photos').upload(path, file, { contentType: file.type })
+      if (upErr) throw upErr
+      urls.push(supabase.storage.from('uniform-photos').getPublicUrl(path).data.publicUrl)
+    }
+    return urls
+  }
+
   const patchStatus = async (status: string) => {
     if (!form) return
     setStatusSaving(true); setError('')
@@ -111,12 +154,20 @@ export default function ManageListingPage() {
     if (!form) return
     setSaving(true); setError(''); setSaved(false)
     if (!form.item_type.trim()) { setError('Item description can’t be empty.'); setSaving(false); return }
-    const res = await fetch('/api/listings/manage', {
-      method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ action: 'update', listingId: id, token, updates: buildUpdates(form) }),
-    })
-    if (res.ok) { setSaved(true); setTimeout(() => setSaved(false), 2500) }
-    else setError((await res.json()).error || 'Could not save changes')
+    try {
+      const newUrls = await uploadNew()
+      const photos = [...existingPhotos, ...newUrls]
+      const res = await fetch('/api/listings/manage', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ action: 'update', listingId: id, token, updates: { ...buildUpdates(form), photos } }),
+      })
+      if (!res.ok) { setError((await res.json()).error || 'Could not save changes'); setSaving(false); return }
+      setExistingPhotos(photos)
+      setNewPreviews([]); setNewFiles([])
+      setSaved(true); setTimeout(() => setSaved(false), 2500)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not save changes')
+    }
     setSaving(false)
   }
 
@@ -188,7 +239,35 @@ export default function ManageListingPage() {
             </button>
           ))}
         </div>
-        <p className="text-xs text-gray-400 mt-2">Mark it <b>Sold</b> to hide it from the marketplace without deleting it.</p>
+      </div>
+
+      {/* Photos */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-4">
+        <h2 className="font-semibold text-gray-800 mb-3">Photos</h2>
+        <div className="flex flex-wrap gap-3">
+          {existingPhotos.map((url, i) => (
+            <div key={url} className="relative w-24 h-32 rounded-lg overflow-hidden border border-gray-200">
+              <img src={url} alt="" className="w-full h-full object-cover" />
+              <button type="button" onClick={() => removeExisting(i)}
+                className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white text-base leading-none flex items-center justify-center hover:bg-black/80">×</button>
+            </div>
+          ))}
+          {newPreviews.map((url, i) => (
+            <div key={url} className="relative w-24 h-32 rounded-lg overflow-hidden border border-indigo-300">
+              <img src={url} alt="" className="w-full h-full object-cover" />
+              <span className="absolute bottom-1 left-1 text-[10px] font-semibold bg-indigo-600 text-white px-1.5 py-0.5 rounded">new</span>
+              <button type="button" onClick={() => removeNew(i)}
+                className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white text-base leading-none flex items-center justify-center hover:bg-black/80">×</button>
+            </div>
+          ))}
+          {existingPhotos.length + newFiles.length < MAX_PHOTOS && (
+            <label className={`w-24 h-32 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 ${compressing ? 'opacity-60 cursor-wait' : 'cursor-pointer hover:border-indigo-400 hover:bg-indigo-50'}`}>
+              {compressing ? <span className="text-xs">…</span> : (<><span className="text-2xl leading-none">+</span><span className="text-xs mt-1">Add</span></>)}
+              <input type="file" accept="image/*" capture="environment" multiple disabled={compressing} onChange={handlePhotoChange} className="hidden" />
+            </label>
+          )}
+        </div>
+        <p className="text-xs text-gray-400 mt-3">Up to {MAX_PHOTOS} photos. Tap × to remove.</p>
       </div>
 
       {/* Editable details */}
@@ -279,7 +358,7 @@ export default function ManageListingPage() {
               value={form.contact_info} onChange={e => set('contact_info', e.target.value)}
               className="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
           </div>
-          <p className="text-xs text-gray-400 mt-1">Shown publicly on your listing. Photos and school aren’t editable here. Delete and repost to change those.</p>
+          <p className="text-xs text-gray-400 mt-1">Shown publicly on your listing. School isn’t editable here — delete and repost to change it.</p>
         </div>
       </div>
 

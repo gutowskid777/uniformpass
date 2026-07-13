@@ -172,7 +172,7 @@ export default function ListingDetailPage() {
               <Row label="Payment" value={paymentLabels.join(' · ')} />
             )}
             <Row label="Listed by" value={listing.seller_name} />
-            <Row label="Posted" value={new Date(listing.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} />
+            <Row label="Posted" value={`${new Date(listing.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}${listing.edited_at ? ' · edited' : ''}`} />
           </div>
 
           {listing.user_id && (
