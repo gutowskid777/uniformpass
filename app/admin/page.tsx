@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase, type Listing, type PickupRequest, type ContactMessage, CONDITION_LABELS, CATEGORY_LABELS } from '@/lib/supabase'
 
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'uniform2026'
+const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || ''
 const PLACEHOLDER = 'https://placehold.co/100x100/e8e8f0/9999bb?text=?'
 
 const STATUS_OPTIONS = ['available', 'sold', 'draft'] as const
