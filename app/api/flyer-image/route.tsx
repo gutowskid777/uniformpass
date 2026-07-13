@@ -107,11 +107,11 @@ export async function GET() {
         </div>
 
         {/* Headline + one line: seller-first, the pile is the money */}
-        <div style={{ fontSize: 104, fontWeight: 900, letterSpacing: '-4px', lineHeight: 1.02, marginTop: 60 }}>
-          Outgrown uniforms are money.
+        <div style={{ fontSize: 108, fontWeight: 900, letterSpacing: '-4px', lineHeight: 1.0, marginTop: 56 }}>
+          Turn uniforms into cash.
         </div>
-        <div style={{ fontSize: 37, lineHeight: 1.35, marginTop: 26, opacity: 0.94, maxWidth: 900 }}>
-          We turn your pile into cash... or shop your school&apos;s used listings.
+        <div style={{ fontSize: 37, lineHeight: 1.35, marginTop: 38, opacity: 0.94, maxWidth: 900 }}>
+          Sell what your kids outgrew... or shop your school&apos;s used uniforms.
         </div>
 
         {/* The two doors: the do-nothing pickup leads */}

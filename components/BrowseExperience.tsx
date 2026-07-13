@@ -237,11 +237,19 @@ function Hero({ schools, query, onQueryChange, onPickSchool }: {
 
 function ConsignmentBand() {
   return (
-    <div className="mb-6 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 text-white px-6 py-6 sm:px-8 sm:py-7 flex flex-col sm:flex-row sm:items-center gap-4">
+    <div className="mb-6 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 text-white px-6 py-6 sm:px-8 sm:py-7 flex flex-col sm:flex-row sm:items-center gap-5">
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] font-extrabold tracking-[0.18em] text-emerald-200 uppercase">Auto Sell</p>
-        <p className="text-2xl sm:text-3xl font-black tracking-tight leading-tight mt-1">You do nothing.</p>
-        <p className="text-emerald-50 text-[15px] mt-1">We pick up your pile, sell it, and send you half.</p>
+        <div className="flex items-center gap-2.5">
+          <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/15 ring-1 ring-white/25 shrink-0">
+            <svg width="20" height="20" viewBox="0 0 32 32" fill="none" stroke="#FDE68A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="9" width="26" height="14" rx="2.5" /><circle cx="16" cy="16" r="4" /><path d="M7.5 13v6M24.5 13v6" />
+            </svg>
+          </span>
+          <h2 className="text-[30px] sm:text-4xl font-black tracking-tight leading-none">Auto&nbsp;Sell</h2>
+        </div>
+        <p className="text-emerald-50 text-[15px] sm:text-base mt-2.5 font-medium">
+          You do nothing. We pick up your pile, sell it, and send you half.
+        </p>
       </div>
       <Link href="/sell-for-me"
         className="shrink-0 text-center bg-white text-emerald-800 text-lg font-extrabold px-6 py-3.5 rounded-2xl hover:bg-emerald-50 transition-colors">

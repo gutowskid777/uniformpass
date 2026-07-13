@@ -79,10 +79,10 @@ export default async function FlyerPrintPage() {
           {/* Headline */}
           <div style={{ marginTop: 34 }}>
             <div style={{ fontSize: 62, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.0, color: '#111827' }}>
-              Outgrown uniforms are money.
+              Turn uniforms into cash.
             </div>
-            <div style={{ fontSize: 22, color: '#374151', marginTop: 14, lineHeight: 1.4, maxWidth: 660 }}>
-              We turn your pile into cash... or shop your school&apos;s used listings.
+            <div style={{ fontSize: 22, color: '#374151', marginTop: 16, lineHeight: 1.4, maxWidth: 660 }}>
+              Sell what your kids outgrew... or shop your school&apos;s used uniforms.
             </div>
           </div>
 

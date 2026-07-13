@@ -209,7 +209,7 @@ export default function NewListingPage() {
     <div className="max-w-2xl mx-auto px-4 py-10">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-1">Post a Listing</h1>
-        <p className="text-gray-500">List your uniform in under 3 minutes.</p>
+        <p className="text-gray-500">List your uniform in 2 minutes.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
