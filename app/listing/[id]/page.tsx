@@ -175,13 +175,6 @@ export default function ListingDetailPage() {
             <Row label="Posted" value={`${new Date(listing.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}${listing.edited_at ? ' · edited' : ''}`} />
           </div>
 
-          {listing.user_id && (
-            <Link href={`/seller/${listing.user_id}`}
-              className="inline-flex items-center gap-1 mb-6 text-sm font-semibold text-indigo-700 hover:underline">
-              See everything {listing.seller_name} is selling →
-            </Link>
-          )}
-
           {/* Comments */}
           {listing.description && (
             <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
@@ -207,7 +200,7 @@ export default function ListingDetailPage() {
                   <p className="text-sm font-medium text-indigo-900 mb-2">Contact {listing.seller_name}</p>
                   <ContactAction method={listing.contact_method} info={listing.contact_info} seller={listing.seller_name} />
                   <p className="text-xs text-indigo-500 mt-3">
-                    Message directly and arrange to meet up. Payment is cash or Venmo in person, never through this site.
+                    Message directly and arrange to meet up. Payment is in person, never through this site.
                   </p>
                 </div>
               ) : (
@@ -216,6 +209,13 @@ export default function ListingDetailPage() {
                 </div>
               )}
             </>
+          )}
+
+          {listing.user_id && (
+            <Link href={`/seller/${listing.user_id}`}
+              className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-indigo-700 hover:underline">
+              See everything {listing.seller_name} is selling →
+            </Link>
           )}
         </div>
       </div>
