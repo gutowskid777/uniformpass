@@ -284,7 +284,7 @@ export default function SellForMePage() {
             <p className="text-xs text-gray-400 mt-1.5">
               {form.payout_choice === 'donate'
                 ? 'Support the startup!'
-                : 'You receive 50% of every sale... bonus cash for outgrown uniforms.'}
+                : 'You receive 50% of every sale.'}
             </p>
           </div>
         </div>
