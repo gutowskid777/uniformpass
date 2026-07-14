@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import QRCode from 'qrcode'
 import { SITE_URL } from '@/lib/schoolTheme'
 import FlyerScale from '@/components/FlyerScale'
 import PrintButton from '@/components/PrintButton'
+import FlyerTabs from '@/components/FlyerTabs'
 import '../flyer.css'
 
 // The paper flyer: one school-neutral letter-size sheet with a QR code and
@@ -42,15 +42,8 @@ export default async function FlyerPrintPage() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Screen-only controls */}
       <div className="no-print mb-6">
-        <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">The paper flyer</h1>
-        <p className="text-gray-600 mt-2 text-base">
-          Print on plain paper. Pin it at school pickup, the parish hall, the deli corkboard.
-          Sharing in a group chat instead?{' '}
-          <Link href="/flyer" className="font-semibold text-indigo-600 underline underline-offset-2">
-            Use the digital flyer
-          </Link>.
-        </p>
-        <div className="mt-4">
+        <FlyerTabs />
+        <div className="mt-5">
           <PrintButton />
         </div>
       </div>
@@ -60,13 +53,8 @@ export default async function FlyerPrintPage() {
         <div className="flyer-sheet shadow-xl rounded-lg overflow-hidden" style={{ display: 'flex', flexDirection: 'column', padding: 40 }}>
           {/* Brand band */}
           <div style={{ background: PRIMARY_DARK, borderRadius: 24, padding: '26px 30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ color: '#fff', fontSize: 40, fontWeight: 900, letterSpacing: '-0.02em', lineHeight: 1.05 }}>
-                The uniform exchange
-              </div>
-              <div style={{ color: ACCENT, fontSize: 19, fontWeight: 700, marginTop: 6 }}>
-                For NJ private school families
-              </div>
+            <div style={{ color: '#fff', fontSize: 46, fontWeight: 900, letterSpacing: '-0.02em' }}>
+              UniformPass
             </div>
             <svg width="64" height="64" viewBox="0 0 32 32" aria-hidden>
               <g fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -91,10 +79,7 @@ export default async function FlyerPrintPage() {
             {/* QR block */}
             <div style={{ width: 296, borderRadius: 24, border: `3px solid ${PRIMARY}`, padding: 26, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <div className="flyer-qr" style={{ width: 220, height: 220 }} dangerouslySetInnerHTML={{ __html: qrSvg }} />
-              <div style={{ fontSize: 17, fontWeight: 700, color: '#374151', marginTop: 20, textAlign: 'center' }}>
-                Point your camera here
-              </div>
-              <div style={{ fontSize: 24, fontWeight: 900, color: PRIMARY, marginTop: 4, letterSpacing: '-0.01em' }}>
+              <div style={{ fontSize: 26, fontWeight: 900, color: PRIMARY, marginTop: 22, letterSpacing: '-0.01em' }}>
                 uniformpass.shop
               </div>
             </div>
@@ -175,10 +160,6 @@ export default async function FlyerPrintPage() {
           </div>
         </div>
       </FlyerScale>
-
-      <p className="no-print text-sm text-gray-400 mt-6 text-center">
-        Prints on one letter-size page. Color looks best, but it holds up in black and white.
-      </p>
     </div>
   )
 }

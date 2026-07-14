@@ -79,8 +79,8 @@ export async function GET(req: NextRequest) {
             <div style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-1px' }}>UniformPass</div>
           </div>
 
-          <div style={{ fontSize: 78, fontWeight: 900, letterSpacing: '-3px', lineHeight: 1.04, marginTop: 34 }}>
-            Outgrown uniforms are money.
+          <div style={{ fontSize: 82, fontWeight: 900, letterSpacing: '-3px', lineHeight: 1.02, marginTop: 34 }}>
+            Turn uniforms into cash.
           </div>
 
           <div style={{ display: 'flex', gap: 20, marginTop: 40 }}>
