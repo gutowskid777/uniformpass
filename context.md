@@ -18,6 +18,8 @@
 - **Listing detail photo** now `aspect-[3/4]` (was 1:1 square) — matches the grid cards + portrait phone photos, so tops/bottoms aren't cropped. Upload still only compresses (no crop); a full crop/preview step was offered and parked.
 - **"About the founder/team" section: PARKED** (Dylan: "later bc that's hard").
 - **localhost gotcha:** `.env.local` `SUPABASE_SERVICE_ROLE_KEY` is BLANK → every service-role route (my/pickups, listings/manage, "Post it", pickups) 500s locally. Prod (Vercel) has it. Paste the key locally to test those flows.
+- **Flyer merged to ONE page** (Dylan: paper looked identical to digital by design → collapse). `/flyer` now shows the image with **Save image / Print / Share**; **Print outputs the image itself** (print CSS in `app/flyer/flyer.css`). Deleted `/flyer/print`, `FlyerTabs`, `FlyerScale`. `PrintButton` now takes `className`/`label`.
+- More Auto Sell + footer copy: keep-line → "You receive 50% of every sale... bonus cash for outgrown uniforms" (Dylan: "receive" not "keep" — it's found money, not theirs to keep); payout line trimmed to "paid within a few days of each sale" and **hidden when Donate is selected**; pickup line → "We'll reach out to schedule a time before pickup. Cancel anytime."; footer drops "need to take down a listing?" (sellers self-serve) → just Contact us.
 - **Still not pushed** — Dylan reviewing on localhost; awaiting his go to deploy.
 
 ## 2026-07-11 FABLE session — flyer + share engine + simplicity pivot (merged to main)
