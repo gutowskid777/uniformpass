@@ -284,7 +284,7 @@ export default function SellForMePage() {
             <p className="text-xs text-gray-400 mt-1.5">
               {form.payout_choice === 'donate'
                 ? 'Support the startup!'
-                : 'You keep 50% of what it sells for.'}
+                : 'You receive 50% of every sale... bonus cash for outgrown uniforms.'}
             </p>
           </div>
         </div>
@@ -297,11 +297,13 @@ export default function SellForMePage() {
           className="w-full bg-emerald-600 text-white font-extrabold py-4 rounded-2xl hover:bg-emerald-700 disabled:opacity-50 transition-colors text-xl">
           {submitting ? 'Sending...' : 'Get my free pickup'}
         </button>
-        <p className="text-center text-sm text-gray-500">
-          You&apos;re paid within a few days of each sale, not when everything sells.
-        </p>
+        {form.payout_choice !== 'donate' && (
+          <p className="text-center text-sm text-gray-500">
+            You&apos;re paid within a few days of each sale.
+          </p>
+        )}
         <p className="text-center text-xs text-gray-400">
-          No obligation. We&apos;ll confirm the details before we come by.
+          We&apos;ll reach out to schedule a time before pickup. Cancel anytime.
         </p>
       </form>
 

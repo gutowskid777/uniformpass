@@ -65,7 +65,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/flyer" className="text-indigo-600 hover:underline font-medium">share the flyer</Link>
           </p>
           <p className="mt-1">
-            Questions, or need to take down a listing?{' '}
             <Link href="/contact" className="text-indigo-600 hover:underline">Contact us</Link>
           </p>
           <p className="mt-1 text-gray-400">© 2026 UniformPass. All rights reserved.</p>

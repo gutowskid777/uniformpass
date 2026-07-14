@@ -1,28 +1,12 @@
-/* Print styles for the school flyer. The sheet is designed at 816x1056px
-   (8.5x11in at 96dpi) and scaled down for on-screen preview. */
-
-.flyer-sheet {
-  width: 816px;
-  height: 1056px;
-  background: #ffffff;
-  color: #111827;
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
-}
-
-.flyer-qr svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
+/* Print the flyer image exactly as the shareable digital flyer looks.
+   On paper the buttons + app chrome fall away and the image fills a letter page. */
 
 @media print {
   @page {
     size: letter portrait;
-    margin: 0;
+    margin: 0.3in;
   }
 
-  /* Only the sheet prints: app chrome, preview UI, and scaling all go away. */
   header,
   footer,
   nav,
@@ -39,17 +23,20 @@
     background: #ffffff !important;
   }
 
-  .flyer-scale-outer {
+  .flyer-print-wrap {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .flyer-print-img {
+    width: 100% !important;
     height: auto !important;
-  }
-
-  .flyer-scale-inner {
-    transform: none !important;
-  }
-
-  .flyer-sheet {
-    box-shadow: none !important;
+    margin: 0 !important;
+    border: 0 !important;
     border-radius: 0 !important;
-    page-break-after: avoid;
+    box-shadow: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }
