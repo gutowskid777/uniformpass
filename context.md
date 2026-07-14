@@ -1,5 +1,16 @@
 # School Uniform Resale Platform — Context
-# Last updated: 2026-07-11 (Fable session merged + deployed)
+# Last updated: 2026-07-14 (chat-5 batch — committed to main, NOT yet pushed/deployed)
+
+## 2026-07-14 session (chat "Uniform5") — drafts, donate, drop NJ framing
+**Committed to `main` (e577f45), NOT pushed** — awaiting Dylan's review on localhost, then deploy.
+- **Drafts:** `/new` now has a "Save as draft" button (light validation: school + item only). Saving a draft writes `status='draft'`, stores the manage token, and routes to `/my-listings?saved=draft` (temporary "Draft saved" toast). Manage page has a **Draft** status tab + amber "this is a draft" banner. My Listings shows a Draft badge + green **"Post it"** button (→ available). Browse + `/seller/[id]` already filter `status='available'`, so drafts stay private. DB `status` CHECK already allowed 'draft'.
+- **Auto Sell donate option:** seller can donate their 50% cut instead of keeping it. New column **`pickup_requests.payout_choice`** (`text NOT NULL default 'keep'`, CHECK keep|donate) — migration APPLIED to prod. Choice captured on `/sell-for-me`, sent to the operator email (`/api/pickups/notify`), shown on the admin pickup card + the seller's `/pickup/[id]` confirmation. Rationale (Dylan): offer donate "while gaining traction."
+- **Auto Sell 3 steps:** step 1 body → "Leave it by your door at a set time."; step 2 "A local parent comes to you." → **"We come to you."** (dropped "parent"); step 3 unchanged.
+- **Dropped NJ/"jersey" framing** (NY-border Bergen families + expansion): "Meet up locally in NJ" → **"Meet locally"** in footer, browse hero, paper flyer trust row, flyer-image + OG cards. Also removed **"No account to browse"** from the footer, and dropped the **"Free"** payment option from `PAYMENT_OPTIONS`. Kept factual town labels (Montvale/Ramsey/Oradell, NJ) in `lib/schoolTheme.ts`.
+- **Flyer:** added instruction line on `/flyer`: "Forward to anyone you know who's looking to buy or sell uniforms."
+- **Schools:** added **Our Lady of Mercy Academy — Park Ridge, NJ** (id a38cff17…) as a 2nd entry alongside the existing Newfield, NJ one (two real OLM academies in NJ; picker disambiguates by town). Dylan said "Park Ridge NY" but Park Ridge is Bergen County NJ — confirmed NJ with him.
+- **"See what else a seller is selling":** already works — the link is on every listing detail with a `user_id`. The 2 listings where it DIDN'T show are old seed/demo posts with `user_id = null` (no owner to group by). All account-posted listings have it. Open option: attach/remove those 2 seeds.
+- Build passes (`next build` green); dev-server smoke-tested 200s on /, /new, /sell-for-me, /flyer, /my-listings.
 
 ## 2026-07-11 FABLE session — flyer + share engine + simplicity pivot (merged to main)
 - **Shipped:** digital flyer `/flyer` (`/api/flyer-image`, 1080x1350, QR decode-verified) + paper `/flyer/print` (letter, tear tabs) · SharePanel (native share + paste messages + real OG preview) · per-listing OG cards (`app/listing/[id]/layout.tsx` + `/api/og/listing`) · site OG thumbnail matches flyer ("Outgrown uniforms are money." + Auto Sell / Buy-and-sell doors) · consignment renamed **Auto Sell** (band on homepage, nav, mobile tab) · sell-for-me reskin (do-nothing hero, pile-size chips; account/submit flow untouched) · masked contact chooser + safe-meetup lines on listing detail · header pill polish · Inter fonts bundled for all satori renders (`lib/ogFonts.ts`).
