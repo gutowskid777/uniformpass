@@ -25,7 +25,7 @@ export async function POST(req: Request) {
 
   const { data: reqRow } = await db
     .from('pickup_requests')
-    .select('id, status, item_summary, school_name, created_at')
+    .select('id, status, item_summary, school_name, created_at, payout_choice')
     .eq('id', id)
     .eq('cancel_token', token)
     .maybeSingle()

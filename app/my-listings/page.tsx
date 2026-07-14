@@ -31,6 +31,17 @@ export default function MyListingsPage() {
   const [pendingAction, setPendingAction] = useState('')
   const [editingPickupId, setEditingPickupId] = useState<string | null>(null)
   const [pickupDraft, setPickupDraft] = useState<PickupDraft>({ item_summary: '', est_items: '', notes: '' })
+  const [savedToast, setSavedToast] = useState(false)
+
+  // Coming back from "Save as draft" on /new: a brief confirmation, then clear the URL.
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search)
+    if (sp.get('saved') !== 'draft') return
+    setSavedToast(true)
+    window.history.replaceState({}, '', '/my-listings')
+    const t = setTimeout(() => setSavedToast(false), 4500)
+    return () => clearTimeout(t)
+  }, [])
 
   useEffect(() => {
     if (!user) {
@@ -85,14 +96,14 @@ export default function MyListingsPage() {
     return session.access_token
   }
 
-  const listingAction = async (listing: Listing, action: 'update' | 'delete') => {
+  const listingAction = async (listing: Listing, action: 'update' | 'delete', targetStatus?: Listing['status']) => {
     if (action === 'delete' && !confirm(`Delete ${listing.item_type}? This cannot be undone.`)) return
     const key = `${listing.id}-${action}`
     setPendingAction(key)
     setActionError('')
     try {
       const jwt = await accessToken()
-      const nextStatus = listing.status === 'sold' ? 'available' : 'sold'
+      const nextStatus = targetStatus ?? (listing.status === 'sold' ? 'available' : 'sold')
       const response = await fetch('/api/listings/manage', {
         method: 'POST',
         headers: { 'content-type': 'application/json', Authorization: `Bearer ${jwt}` },
@@ -204,6 +215,12 @@ export default function MyListingsPage() {
         <p className="text-gray-500 mt-1">Manage everything you&apos;ve posted or arranged for pickup.</p>
       </div>
 
+      {savedToast && (
+        <div className="mb-6 flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 rounded-lg px-4 py-3 text-sm font-medium">
+          ✅ Draft saved. It&apos;s in your listings below... finish and post it whenever.
+        </div>
+      )}
+
       {loadError && <div className="mb-6 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{loadError}</div>}
       {actionError && <div className="mb-6 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{actionError}</div>}
 
@@ -220,6 +237,11 @@ export default function MyListingsPage() {
               const token = manageTokens[listing.id]
               const manageHref = `/listing/${listing.id}/manage${token ? `?token=${encodeURIComponent(token)}` : ''}`
               const sold = listing.status === 'sold'
+              const isDraft = listing.status === 'draft'
+              const primaryTarget = isDraft ? 'available' : sold ? 'available' : 'sold'
+              const primaryLabel = pendingAction === `${listing.id}-update`
+                ? (isDraft ? 'Posting…' : 'Saving…')
+                : (isDraft ? 'Post it' : sold ? 'Mark available' : 'Mark sold')
               return (
                 <div key={listing.id} className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-4 flex-wrap sm:flex-nowrap">
                   <div className="w-16 h-20 rounded-lg overflow-hidden shrink-0 bg-gray-100">
@@ -230,7 +252,7 @@ export default function MyListingsPage() {
                     <div className="flex items-center gap-2">
                       <p className="font-semibold text-gray-900 truncate">{listing.item_type}</p>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${
-                        sold ? 'bg-gray-100 text-gray-500' : listing.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
+                        sold ? 'bg-gray-100 text-gray-500' : isDraft || listing.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
                       }`}>
                         {listing.status.charAt(0).toUpperCase() + listing.status.slice(1)}
                       </span>
@@ -240,9 +262,11 @@ export default function MyListingsPage() {
                   </div>
                   <div className="w-full sm:w-auto flex items-center gap-2 shrink-0">
                     <Link href={manageHref} className="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-full transition-colors">Manage</Link>
-                    <button type="button" onClick={() => listingAction(listing, 'update')} disabled={Boolean(pendingAction)}
-                      className="text-sm font-semibold text-indigo-700 border border-indigo-200 hover:bg-indigo-50 px-3 py-2 rounded-full disabled:opacity-50 transition-colors">
-                      {pendingAction === `${listing.id}-update` ? 'Saving…' : sold ? 'Mark available' : 'Mark sold'}
+                    <button type="button" onClick={() => listingAction(listing, 'update', primaryTarget)} disabled={Boolean(pendingAction)}
+                      className={`text-sm font-semibold px-3 py-2 rounded-full border disabled:opacity-50 transition-colors ${
+                        isDraft ? 'text-white bg-green-600 border-green-600 hover:bg-green-700' : 'text-indigo-700 border-indigo-200 hover:bg-indigo-50'
+                      }`}>
+                      {primaryLabel}
                     </button>
                     <button type="button" onClick={() => listingAction(listing, 'delete')} disabled={Boolean(pendingAction)}
                       className="text-sm font-semibold text-red-600 border border-red-200 hover:bg-red-50 px-3 py-2 rounded-full disabled:opacity-50 transition-colors">

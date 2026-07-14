@@ -17,6 +17,7 @@ export default function NewListingPage() {
   const { user } = useAuth()
   const [schools, setSchools] = useState<School[]>([])
   const [showAccount, setShowAccount] = useState(false)
+  const [pendingIntent, setPendingIntent] = useState<'post' | 'draft'>('post')
   const [submitting, setSubmitting] = useState(false)
   const [compressing, setCompressing] = useState(false)
   const [error, setError] = useState('')
@@ -155,9 +156,10 @@ export default function NewListingPage() {
     return urls
   }
 
-  // The actual post — runs once we know who the seller is (existing session, or a
+  // The actual write — runs once we know who the seller is (existing session, or a
   // just-created account). Form + photos are still in memory, so nothing is re-entered.
-  const doPost = async (userId: string) => {
+  // A draft saves privately and drops the seller back in My Listings; a post goes live.
+  const doPost = async (userId: string, status: 'available' | 'draft') => {
     setSubmitting(true)
     setError('')
     try {
@@ -165,7 +167,7 @@ export default function NewListingPage() {
       const photoUrls = await uploadPhotos(listingId)
       const { error: insertError } = await supabase
         .from('listings')
-        .insert(buildPayload(listingId, photoUrls, 'available', userId))
+        .insert(buildPayload(listingId, photoUrls, status, userId))
       if (insertError) throw insertError
       // Remember this seller's details for next time (account memory).
       supabase.from('seller_profiles').upsert({
@@ -185,11 +187,11 @@ export default function NewListingPage() {
         .from('listing_tokens')
         .insert({ listing_id: listingId, token: manageToken })
       if (tokenError) {
-        router.push(`/listing/${listingId}`)
+        router.push(status === 'draft' ? '/my-listings?saved=draft' : `/listing/${listingId}`)
         return
       }
       localStorage.setItem(`uniformpass_manage_${listingId}`, manageToken)
-      router.push(`/listing/${listingId}/manage?token=${manageToken}&new=1`)
+      router.push(status === 'draft' ? '/my-listings?saved=draft' : `/listing/${listingId}/manage?token=${manageToken}&new=1`)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong.')
       setSubmitting(false)
@@ -201,8 +203,21 @@ export default function NewListingPage() {
     setError('')
     const err = validate()
     if (err) return setError(err)
+    setPendingIntent('post')
     if (!user) { setShowAccount(true); return }  // deferred account creation
-    doPost(user.id)
+    doPost(user.id, 'available')
+  }
+
+  // Save privately and come back later. Only needs enough to recognize the listing;
+  // everything else can be filled in from the manage page before it goes live.
+  const saveDraft = () => {
+    setError('')
+    if (!form.school_id) return setError('Pick a school to save a draft.')
+    if (form.school_id === 'other' && !form.custom_school.trim()) return setError('Please type your school name.')
+    if (!form.item_type.trim()) return setError('Add an item description to save a draft.')
+    setPendingIntent('draft')
+    if (!user) { setShowAccount(true); return }  // deferred account creation
+    doPost(user.id, 'draft')
   }
 
   return (
@@ -420,20 +435,26 @@ export default function NewListingPage() {
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{error}</div>
         )}
 
-        <button type="submit" disabled={submitting || compressing}
-          className="w-full bg-indigo-600 text-white font-semibold py-3.5 rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-colors text-lg">
-          {submitting ? 'Posting...' : 'Post listing'}
-        </button>
+        <div className="flex flex-col-reverse sm:flex-row gap-3">
+          <button type="button" onClick={saveDraft} disabled={submitting || compressing}
+            className="sm:w-44 border-2 border-gray-300 text-gray-700 font-semibold py-3.5 rounded-xl hover:border-gray-500 disabled:opacity-50 transition-colors">
+            {submitting && pendingIntent === 'draft' ? 'Saving...' : 'Save as draft'}
+          </button>
+          <button type="submit" disabled={submitting || compressing}
+            className="flex-1 bg-indigo-600 text-white font-semibold py-3.5 rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-colors text-lg">
+            {submitting && pendingIntent === 'post' ? 'Posting...' : 'Post listing'}
+          </button>
+        </div>
 
         <p className="text-center text-xs text-gray-400">
-          Free to post. Buyers reach out directly and you meet up to complete the sale.
+          Free to post. Save a draft to finish later, or post now... buyers reach out directly and you meet up to complete the sale.
         </p>
       </form>
 
       {showAccount && (
         <InlineAccountStep
           onClose={() => setShowAccount(false)}
-          onCreated={uid => { setShowAccount(false); doPost(uid) }}
+          onCreated={uid => { setShowAccount(false); doPost(uid, pendingIntent === 'draft' ? 'draft' : 'available') }}
           heading="Almost done... create your account"
           blurb="Your listing is filled in and waiting. Create a free account to post it and manage it anytime. 10 seconds, no email to check."
           cta="Create account & post"

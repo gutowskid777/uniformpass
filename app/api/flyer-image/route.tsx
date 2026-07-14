@@ -150,7 +150,7 @@ export async function GET() {
               uniformpass.shop
             </div>
             <div style={{ fontSize: 27, fontWeight: 700, color: '#6B7280', marginTop: 10 }}>
-              Free · No fees · Local NJ parents
+              No fees · No shipping · Meet locally
             </div>
           </div>
         </div>

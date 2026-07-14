@@ -59,6 +59,7 @@ export type PickupRequest = {
   notes: string | null
   user_id: string | null
   cancel_token: string
+  payout_choice: 'keep' | 'donate'
   status: 'new' | 'scheduled' | 'picked_up' | 'listed' | 'done' | 'declined' | 'cancelled'
   created_at: string
 }
@@ -89,7 +90,6 @@ export const US_STATES = [
 ]
 
 export const PAYMENT_OPTIONS = [
-  { value: 'free', label: 'Free' },
   { value: 'cash', label: 'Cash' },
   { value: 'venmo', label: 'Venmo' },
   { value: 'zelle', label: 'Zelle' },

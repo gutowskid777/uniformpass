@@ -20,7 +20,7 @@ const PRIMARY_DARK = '#312E81'
 const ACCENT = '#C7D2FE'
 const WASH = '#EEF2FF'
 
-const TRUST_ITEMS = ['No fees', 'No shipping', 'Meet up locally in NJ']
+const TRUST_ITEMS = ['No fees', 'No shipping', 'Meet locally']
 
 function Check({ color }: { color: string }) {
   return (

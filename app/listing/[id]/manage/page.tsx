@@ -8,6 +8,7 @@ import { type Listing, SIZES, CONTACT_METHODS, supabase } from '@/lib/supabase'
 
 const STATUS_TABS = [
   { value: 'available', label: 'Available' },
+  { value: 'draft', label: 'Draft' },
   { value: 'sold', label: 'Sold' },
 ] as const
 
@@ -215,6 +216,13 @@ export default function ManageListingPage() {
           <p className="text-sm text-emerald-800 mt-1">
             Find it anytime under <Link href="/my-listings" className="underline font-semibold">My Listings</Link>.
           </p>
+        </div>
+      )}
+
+      {form.status === 'draft' && (
+        <div className="mb-4 rounded-xl bg-amber-50 border border-amber-200 p-4">
+          <p className="font-bold text-amber-900">📝 This is a draft</p>
+          <p className="text-sm text-amber-800 mt-1">Only you can see it. Set the status to <strong>Available</strong> below when you&apos;re ready to go live.</p>
         </div>
       )}
 

@@ -350,6 +350,11 @@ export default function AdminPage() {
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${PICKUP_STATUS_STYLES[req.status] || 'bg-gray-100 text-gray-500'}`}>
                         {req.status.replace('_', ' ')}
                       </span>
+                      {req.payout_choice === 'donate' && (
+                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-amber-100 text-amber-800">
+                          💛 Donating their share
+                        </span>
+                      )}
                     </div>
                     <p className="text-sm text-indigo-700 font-medium mt-0.5">{req.contact}</p>
                     <p className="text-sm text-gray-600 mt-1">{req.item_summary}</p>

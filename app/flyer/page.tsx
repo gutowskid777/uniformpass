@@ -14,7 +14,11 @@ export default function FlyerPage() {
     <div className="max-w-xl mx-auto px-4 py-8">
       <FlyerTabs />
 
-      <div className="mt-5 grid grid-cols-2 gap-2">
+      <p className="mt-4 text-center text-[15px] font-semibold text-gray-700">
+        Forward to anyone you know who&apos;s looking to buy or sell uniforms.
+      </p>
+
+      <div className="mt-4 grid grid-cols-2 gap-2">
         <a
           href="/api/flyer-image"
           download="uniformpass-flyer.png"

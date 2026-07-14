@@ -11,10 +11,10 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   metadataBase: new URL('https://uniformpass.shop'),
   title: 'UniformPass · Buy & Sell School Uniforms',
-  description: 'Buy and sell used school uniforms and spirit wear right in your school community. No fees, meet up local.',
+  description: 'Buy and sell used school uniforms and spirit wear right in your school community. No fees, meet locally.',
   openGraph: {
     title: 'UniformPass · Buy & Sell School Uniforms',
-    description: 'Skip the $80 uniform. Buy and sell with families at your school. No fees, no shipping, meet up local.',
+    description: 'Skip the $80 uniform. Buy and sell with families at your school. No fees, no shipping, meet locally.',
     images: ['/api/og'],
   },
   twitter: {
@@ -59,7 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="min-h-screen pb-16 sm:pb-0">{children}</main>
         <BottomNav />
         <footer className="border-t border-gray-200 bg-white mt-16 py-8 text-center text-sm text-gray-500">
-          <p className="font-medium text-gray-600">No fees · No shipping · No account to browse · Meet up locally in NJ</p>
+          <p className="font-medium text-gray-600">No fees · No shipping · Meet locally</p>
           <p className="mt-2">
             Spread the word:{' '}
             <Link href="/flyer" className="text-indigo-600 hover:underline font-medium">share the flyer</Link>

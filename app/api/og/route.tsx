@@ -123,7 +123,7 @@ export async function GET(req: NextRequest) {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
-            <div style={{ fontSize: 26, fontWeight: 700, opacity: 0.85 }}>Free · No fees · Local NJ parents</div>
+            <div style={{ fontSize: 26, fontWeight: 700, opacity: 0.85 }}>No fees · No shipping · Meet locally</div>
             <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: '-1px', color: '#FDE68A' }}>uniformpass.shop</div>
           </div>
         </div>

@@ -226,7 +226,7 @@ function Hero({ schools, query, onQueryChange, onPickSchool }: {
         </div>
 
         <p className="mt-6 text-[13px] font-medium text-indigo-200">
-          No fees · No shipping · Meet up locally in NJ
+          No fees · No shipping · Meet locally
         </p>
       </div>
     </section>

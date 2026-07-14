@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   const school = theme ? theme.shortName : listing.school_name
   const priceLabel = listing.price === 0 ? 'Free' : `$${listing.price}`
   const title = `${priceLabel} · ${listing.item_type} · ${school}`
-  const description = `Used ${school} uniform on UniformPass. No fees, no shipping, meet up local.`
+  const description = `Used ${school} uniform on UniformPass. No fees, no shipping, meet locally.`
   const image = `/api/og/listing?id=${listing.id}`
 
   return {

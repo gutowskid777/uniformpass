@@ -9,8 +9,8 @@ import { useAuth } from '@/components/AuthProvider'
 import InlineAccountStep from '@/components/InlineAccountStep'
 
 const STEPS = [
-  { icon: '🛍️', title: 'Bag it up', body: 'Any condition. One bag works.' },
-  { icon: '🚗', title: 'We pick it up', body: 'A local parent comes to you.' },
+  { icon: '🛍️', title: 'Bag it up', body: 'Leave it by your door at a set time.' },
+  { icon: '🚗', title: 'We pick it up', body: 'We come to you.' },
   { icon: '💵', title: 'You get paid', body: 'Cash or Venmo. Half is yours.' },
 ]
 
@@ -43,6 +43,7 @@ export default function SellForMePage() {
     item_summary: '',
     est_items: '',
     notes: '',
+    payout_choice: 'keep',
   })
 
   useEffect(() => {
@@ -112,6 +113,7 @@ export default function SellForMePage() {
         item_summary: form.item_summary.trim(),
         est_items: form.est_items ? Number(form.est_items) : null,
         notes: form.notes.trim() || null,
+        payout_choice: form.payout_choice,
       })
       if (insertError) throw insertError
       localStorage.setItem(`uniformpass_pickup_${id}`, cancelToken)
@@ -135,6 +137,7 @@ export default function SellForMePage() {
           item_summary: form.item_summary.trim(),
           est_items: form.est_items || null,
           notes: form.notes.trim() || null,
+          payout: form.payout_choice,
         }),
       }).catch(() => {})
       router.push(`/pickup/${id}?token=${cancelToken}&new=1`)
@@ -251,6 +254,35 @@ export default function SellForMePage() {
               value={form.notes} onChange={e => set('notes', e.target.value)}
               className="w-full mt-2 rounded-lg border-gray-300 text-sm focus:ring-emerald-500 focus:border-emerald-500" />
           </details>
+
+          {/* Your 50% cut: keep it, or donate it while we grow */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Your 50% cut</label>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { value: 'keep', label: 'Pay me' },
+                { value: 'donate', label: 'Donate it 💛' },
+              ] as const).map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => set('payout_choice', opt.value)}
+                  className={`py-3 px-3 rounded-xl border-2 text-[15px] font-bold transition-colors ${
+                    form.payout_choice === opt.value
+                      ? 'border-emerald-600 bg-emerald-50 text-emerald-900'
+                      : 'border-gray-200 text-gray-700 hover:border-gray-400'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-gray-400 mt-1.5">
+              {form.payout_choice === 'donate'
+                ? 'Your half goes to families who need uniforms. No payment to arrange.'
+                : 'You keep 50% of what your pile sells for, paid as it sells.'}
+            </p>
+          </div>
         </div>
 
         {error && (

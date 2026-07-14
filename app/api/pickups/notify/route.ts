@@ -9,7 +9,7 @@ const PICKUP_FROM = process.env.PICKUP_EMAIL_FROM || 'UniformPass <no-reply@unif
 export async function POST(req: Request) {
   let body
   try { body = await req.json() } catch { return NextResponse.json({ error: 'bad request' }, { status: 400 }) }
-  const { name, contact, school, town, item_summary, est_items, notes } = body || {}
+  const { name, contact, school, town, item_summary, est_items, notes, payout } = body || {}
 
   const key = process.env.RESEND_API_KEY
   if (!key) return NextResponse.json({ ok: false, emailed: false })
@@ -20,6 +20,7 @@ export async function POST(req: Request) {
     `School: ${school || '—'}`,
     `Town: ${town || '—'}`,
     `Est. items: ${est_items ?? '—'}`,
+    `Payout: ${payout === 'donate' ? 'DONATING their 50% share' : 'Keeps their 50% (pay them)'}`,
     '',
     `What they have:\n${item_summary || '—'}`,
     notes ? `\nNotes:\n${notes}` : '',
