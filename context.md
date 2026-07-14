@@ -1,8 +1,8 @@
 # School Uniform Resale Platform — Context
-# Last updated: 2026-07-14 (chat-5 batch — committed to main, NOT yet pushed/deployed)
+# Last updated: 2026-07-14 (chat-5 batch — PUSHED + deployed to prod)
 
 ## 2026-07-14 session (chat "Uniform5") — drafts, donate, drop NJ framing
-**Committed to `main` (e577f45), NOT pushed** — awaiting Dylan's review on localhost, then deploy.
+**PUSHED to `main` (through e93d76a) → Vercel auto-deployed to prod.** Reviewed on localhost first, then Dylan said push.
 - **Drafts:** `/new` now has a "Save as draft" button (light validation: school + item only). Saving a draft writes `status='draft'`, stores the manage token, and routes to `/my-listings?saved=draft` (temporary "Draft saved" toast). Manage page has a **Draft** status tab + amber "this is a draft" banner. My Listings shows a Draft badge + green **"Post it"** button (→ available). Browse + `/seller/[id]` already filter `status='available'`, so drafts stay private. DB `status` CHECK already allowed 'draft'.
 - **Auto Sell donate option:** seller can donate their 50% cut instead of keeping it. New column **`pickup_requests.payout_choice`** (`text NOT NULL default 'keep'`, CHECK keep|donate) — migration APPLIED to prod. Choice captured on `/sell-for-me`, sent to the operator email (`/api/pickups/notify`), shown on the admin pickup card + the seller's `/pickup/[id]` confirmation. Rationale (Dylan): offer donate "while gaining traction."
 - **Auto Sell 3 steps:** step 1 body → "Leave it by your door at a set time."; step 2 "A local parent comes to you." → **"We come to you."** (dropped "parent"); step 3 unchanged.
