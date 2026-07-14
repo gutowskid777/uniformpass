@@ -6,8 +6,9 @@ import PrintButton from '@/components/PrintButton'
 import FlyerTabs from '@/components/FlyerTabs'
 import '../flyer.css'
 
-// The paper flyer: one school-neutral letter-size sheet with a QR code and
-// tear-off tabs, for the corkboard at pickup, the parish hall, the deli.
+// The paper flyer: one school-neutral letter-size sheet for the corkboard at
+// pickup, the parish hall, the deli. Mirrors the digital flyer's look (bold
+// indigo hero + two doors + QR) with tear-off tabs added for paper.
 // Designed at 816x1056px, previewed scaled, printed exact.
 
 export const metadata: Metadata = {
@@ -15,18 +16,53 @@ export const metadata: Metadata = {
   robots: { index: false },
 }
 
-const PRIMARY = '#4338CA'
 const PRIMARY_DARK = '#312E81'
-const ACCENT = '#C7D2FE'
-const WASH = '#EEF2FF'
+const ACCENT = '#FDE68A'
 
-const TRUST_ITEMS = ['No fees', 'No shipping', 'Meet locally']
-
-function Check({ color }: { color: string }) {
+function Hanger({ size, color }: { size: number; color: string }) {
   return (
-    <svg viewBox="0 0 20 20" fill="currentColor" style={{ width: 20, height: 20, color }} aria-hidden>
-      <path fillRule="evenodd" d="M16.7 5.3a1 1 0 0 1 0 1.4l-7.5 7.5a1 1 0 0 1-1.4 0l-3.5-3.5a1 1 0 1 1 1.4-1.4l2.8 2.8 6.8-6.8a1 1 0 0 1 1.4 0Z" clipRule="evenodd" />
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden>
+      <g fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M16 13 v-1.8 a2.3 2.3 0 1 0 -2.3 -2.3" />
+        <path d="M16 13 L6 22 H26 Z" />
+      </g>
     </svg>
+  )
+}
+
+function Cash({ size, color }: { size: number; color: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden>
+      <g fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="9" width="26" height="14" rx="2.5" />
+        <circle cx="16" cy="16" r="4" />
+        <path d="M7.5 13v6M24.5 13v6" />
+      </g>
+    </svg>
+  )
+}
+
+function Door({ icon, title, line, highlight }: { icon: React.ReactNode; title: string; line: string; highlight?: boolean }) {
+  return (
+    <div
+      style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        textAlign: 'center',
+        background: highlight ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.08)',
+        border: highlight ? `3px solid ${ACCENT}` : '2px solid rgba(255,255,255,0.26)',
+        borderRadius: 26,
+        padding: '26px 22px',
+      }}
+    >
+      <div style={{ width: 78, height: 78, borderRadius: 999, background: 'rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {icon}
+      </div>
+      <div style={{ fontSize: 31, fontWeight: 900, letterSpacing: '-1px', marginTop: 16 }}>{title}</div>
+      <div style={{ fontSize: 18, lineHeight: 1.3, marginTop: 8, color: 'rgba(255,255,255,0.9)' }}>{line}</div>
+    </div>
   )
 }
 
@@ -50,83 +86,67 @@ export default async function FlyerPrintPage() {
 
       {/* The sheet */}
       <FlyerScale>
-        <div className="flyer-sheet shadow-xl rounded-lg overflow-hidden" style={{ display: 'flex', flexDirection: 'column', padding: 40 }}>
-          {/* Brand band */}
-          <div style={{ background: PRIMARY_DARK, borderRadius: 24, padding: '26px 30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ color: '#fff', fontSize: 46, fontWeight: 900, letterSpacing: '-0.02em' }}>
-              UniformPass
+        <div className="flyer-sheet shadow-xl rounded-lg overflow-hidden" style={{ display: 'flex', flexDirection: 'column', padding: 40, gap: 22 }}>
+          {/* Hero: same bold indigo look as the digital flyer */}
+          <div
+            style={{
+              flex: 1,
+              background: 'linear-gradient(160deg, #312E81 0%, #4338CA 55%, #4F46E5 100%)',
+              borderRadius: 30,
+              padding: '44px 46px',
+              color: '#fff',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            {/* Wordmark */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <Hanger size={42} color="#ffffff" />
+              <div style={{ fontSize: 34, fontWeight: 800, letterSpacing: '-1px' }}>UniformPass</div>
             </div>
-            <svg width="64" height="64" viewBox="0 0 32 32" aria-hidden>
-              <g fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M16 13 v-1.8 a2.3 2.3 0 1 0 -2.3 -2.3" />
-                <path d="M16 13 L6 22 H26 Z" />
-              </g>
-            </svg>
-          </div>
 
-          {/* Headline */}
-          <div style={{ marginTop: 34 }}>
-            <div style={{ fontSize: 62, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.0, color: '#111827' }}>
+            {/* Headline */}
+            <div style={{ fontSize: 80, fontWeight: 900, letterSpacing: '-3px', lineHeight: 1.0, marginTop: 40 }}>
               Turn uniforms into cash.
             </div>
-            <div style={{ fontSize: 22, color: '#374151', marginTop: 16, lineHeight: 1.4, maxWidth: 660 }}>
+            <div style={{ fontSize: 24, lineHeight: 1.35, marginTop: 22, color: 'rgba(255,255,255,0.92)', maxWidth: 620 }}>
               Sell what your kids outgrew... or shop your school&apos;s used uniforms.
             </div>
+
+            {/* Two doors: the do-nothing pickup leads */}
+            <div style={{ display: 'flex', gap: 20, marginTop: 'auto' }}>
+              <Door
+                highlight
+                icon={<Cash size={44} color={ACCENT} />}
+                title="Auto Sell"
+                line="We pick up your pile. You get cash."
+              />
+              <Door
+                icon={<Hanger size={44} color={ACCENT} />}
+                title="Buy and sell"
+                line="Your school's marketplace for uniforms and merch."
+              />
+            </div>
           </div>
 
-          {/* QR + offers */}
-          <div style={{ display: 'flex', gap: 24, marginTop: 30, flex: 1 }}>
-            {/* QR block */}
-            <div style={{ width: 296, borderRadius: 24, border: `3px solid ${PRIMARY}`, padding: 26, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <div className="flyer-qr" style={{ width: 220, height: 220 }} dangerouslySetInnerHTML={{ __html: qrSvg }} />
-              <div style={{ fontSize: 26, fontWeight: 900, color: PRIMARY, marginTop: 22, letterSpacing: '-0.01em' }}>
+          {/* QR card */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 28, background: '#fff', border: '2px solid #E5E7EB', borderRadius: 26, padding: '22px 30px' }}>
+            <div className="flyer-qr" style={{ width: 150, height: 150, flexShrink: 0 }} dangerouslySetInnerHTML={{ __html: qrSvg }} />
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.14em', color: '#6366F1', textTransform: 'uppercase' }}>
+                Scan to start
+              </div>
+              <div style={{ fontSize: 54, fontWeight: 900, letterSpacing: '-2px', color: PRIMARY_DARK, marginTop: 4 }}>
                 uniformpass.shop
               </div>
-            </div>
-
-            {/* Offer cards: Auto Sell leads */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 20 }}>
-              <div style={{ background: PRIMARY_DARK, borderRadius: 24, padding: '24px 28px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.1em', color: ACCENT, textTransform: 'uppercase' }}>
-                  Auto Sell
-                </div>
-                <div style={{ fontSize: 32, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', marginTop: 8, lineHeight: 1.1 }}>
-                  You do nothing.
-                </div>
-                <div style={{ fontSize: 17, color: 'rgba(255,255,255,0.85)', marginTop: 8, lineHeight: 1.4 }}>
-                  We pick up your pile. You get cash.
-                </div>
-              </div>
-
-              <div style={{ background: WASH, borderRadius: 24, padding: '24px 28px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.1em', color: PRIMARY_DARK, textTransform: 'uppercase' }}>
-                  Buy and sell
-                </div>
-                <div style={{ fontSize: 32, fontWeight: 900, color: PRIMARY_DARK, letterSpacing: '-0.02em', marginTop: 8, lineHeight: 1.1 }}>
-                  Exactly what you need.
-                </div>
-                <div style={{ fontSize: 17, color: '#4B5563', marginTop: 8 }}>
-                  Your school&apos;s marketplace for uniforms and merch.
-                </div>
+              <div style={{ fontSize: 19, fontWeight: 600, color: '#6B7280', marginTop: 8 }}>
+                No fees · No shipping · Meet locally
               </div>
             </div>
-          </div>
-
-          {/* Trust row */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 26, padding: '0 6px' }}>
-            <div style={{ display: 'flex', gap: 22 }}>
-              {TRUST_ITEMS.map(item => (
-                <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                  <Check color="#16A34A" />
-                  <span style={{ fontSize: 16, fontWeight: 600, color: '#374151' }}>{item}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ fontSize: 15, fontWeight: 800, color: '#6B7280' }}>UniformPass</div>
           </div>
 
           {/* Tear-off tabs */}
-          <div style={{ marginTop: 24, borderTop: '2px dashed #9CA3AF', position: 'relative', display: 'flex' }}>
+          <div style={{ borderTop: '2px dashed #9CA3AF', position: 'relative', display: 'flex' }}>
             <span style={{ position: 'absolute', top: -13, left: 10, background: '#fff', padding: '0 6px', fontSize: 15, color: '#6B7280' }} aria-hidden>
               ✂
             </span>
@@ -135,7 +155,7 @@ export default async function FlyerPrintPage() {
                 key={i}
                 style={{
                   flex: 1,
-                  height: 128,
+                  height: 116,
                   borderLeft: i === 0 ? 'none' : '2px dashed #D1D5DB',
                   display: 'flex',
                   alignItems: 'center',
@@ -149,7 +169,7 @@ export default async function FlyerPrintPage() {
                     transform: 'rotate(180deg)',
                     fontSize: 13,
                     fontWeight: 800,
-                    color: '#111827',
+                    color: '#312E81',
                     letterSpacing: '0.01em',
                   }}
                 >

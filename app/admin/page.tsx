@@ -351,8 +351,8 @@ export default function AdminPage() {
                         {req.status.replace('_', ' ')}
                       </span>
                       {req.payout_choice === 'donate' && (
-                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-amber-100 text-amber-800">
-                          💛 Donating their share
+                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-emerald-100 text-emerald-800">
+                          💚 Donating their share
                         </span>
                       )}
                     </div>

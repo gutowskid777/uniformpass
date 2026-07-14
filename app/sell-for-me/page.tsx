@@ -17,9 +17,9 @@ const STEPS = [
 // One tap instead of "how many items?": a busy parent knows the SHAPE of the
 // pile, not the count. The est number is what the operator sees in admin.
 const PILE_SIZES = [
-  { label: 'A few', summary: 'A few items', est: 5 },
+  { label: 'A few items', summary: 'A few items', est: 5 },
   { label: 'A grocery bag', summary: 'A grocery bag of uniforms', est: 15 },
-  { label: 'A few bags', summary: 'A few bags of uniforms', est: 35 },
+  { label: 'Several bags', summary: 'Several bags of uniforms', est: 35 },
   { label: 'A closet-full', summary: 'A closet-full of uniforms', est: 60 },
 ]
 
@@ -43,7 +43,7 @@ export default function SellForMePage() {
     item_summary: '',
     est_items: '',
     notes: '',
-    payout_choice: 'keep',
+    payout_choice: 'donate',
   })
 
   useEffect(() => {
@@ -245,23 +245,27 @@ export default function SellForMePage() {
               className="w-full rounded-lg border-gray-300 text-sm focus:ring-emerald-500 focus:border-emerald-500" />
           </div>
 
-          <details className="group">
-            <summary className="text-sm font-medium text-gray-500 cursor-pointer list-none">
-              <span className="underline underline-offset-2 decoration-gray-300">Anything else?</span>
-              <span className="text-gray-400 font-normal"> (pickup times, condition notes...)</span>
+          <details className="group rounded-lg border border-gray-300">
+            <summary className="flex items-center justify-between cursor-pointer list-none px-3 py-2.5 text-sm font-medium text-gray-600">
+              <span>Anything else? <span className="text-gray-400 font-normal">(pickup times, condition notes...)</span></span>
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"
+                className="w-4 h-4 text-gray-400 shrink-0 transition-transform group-open:rotate-180" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 8l5 5 5-5" />
+              </svg>
             </summary>
-            <textarea rows={2} placeholder="Best times for pickup, condition notes, etc."
-              value={form.notes} onChange={e => set('notes', e.target.value)}
-              className="w-full mt-2 rounded-lg border-gray-300 text-sm focus:ring-emerald-500 focus:border-emerald-500" />
+            <div className="px-3 pb-3">
+              <textarea rows={2} placeholder="Best times for pickup, condition notes, etc."
+                value={form.notes} onChange={e => set('notes', e.target.value)}
+                className="w-full rounded-lg border-gray-300 text-sm focus:ring-emerald-500 focus:border-emerald-500" />
+            </div>
           </details>
 
-          {/* Your 50% cut: keep it, or donate it while we grow */}
+          {/* Donate the 50% cut (default) or take it */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Your 50% cut</label>
             <div className="grid grid-cols-2 gap-2">
               {([
+                { value: 'donate', label: 'Donate it 💚' },
                 { value: 'keep', label: 'Pay me' },
-                { value: 'donate', label: 'Donate it 💛' },
               ] as const).map(opt => (
                 <button
                   key={opt.value}
@@ -279,7 +283,7 @@ export default function SellForMePage() {
             </div>
             <p className="text-xs text-gray-400 mt-1.5">
               {form.payout_choice === 'donate'
-                ? 'Your half goes to families who need uniforms. No payment to arrange.'
+                ? 'Skip your cut and pay it forward. It keeps pickups free and uniforms affordable for local families.'
                 : 'You keep 50% of what your pile sells for, paid as it sells.'}
             </p>
           </div>

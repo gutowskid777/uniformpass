@@ -107,7 +107,7 @@ export default function PickupStatusPage() {
         <dl className="text-sm space-y-1.5">
           <div className="flex gap-2"><dt className="text-gray-500 w-20 shrink-0">Items</dt><dd className="text-gray-900">{req.item_summary}</dd></div>
           {req.school_name && <div className="flex gap-2"><dt className="text-gray-500 w-20 shrink-0">School</dt><dd className="text-gray-900">{req.school_name}</dd></div>}
-          <div className="flex gap-2"><dt className="text-gray-500 w-20 shrink-0">Your cut</dt><dd className="text-gray-900">{req.payout_choice === 'donate' ? 'Donating your share 💛' : 'Paid to you (50%)'}</dd></div>
+          <div className="flex gap-2"><dt className="text-gray-500 w-20 shrink-0">Your cut</dt><dd className="text-gray-900">{req.payout_choice === 'donate' ? 'Donating your share 💚' : 'Paid to you (50%)'}</dd></div>
           <div className="flex gap-2"><dt className="text-gray-500 w-20 shrink-0">Submitted</dt><dd className="text-gray-900">{new Date(req.created_at).toLocaleDateString()}</dd></div>
         </dl>
 
