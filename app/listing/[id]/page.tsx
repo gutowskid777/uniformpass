@@ -89,7 +89,7 @@ export default function ListingDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Photo gallery */}
         <div>
-          <div className="aspect-square rounded-2xl overflow-hidden bg-gray-100 mb-3">
+          <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-gray-100 mb-3">
             <img
               src={photos[activePhoto] || PLACEHOLDER}
               alt={listing.item_type}

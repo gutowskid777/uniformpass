@@ -283,8 +283,8 @@ export default function SellForMePage() {
             </div>
             <p className="text-xs text-gray-400 mt-1.5">
               {form.payout_choice === 'donate'
-                ? 'Skip your cut and pay it forward. It keeps pickups free and uniforms affordable for local families.'
-                : 'You keep 50% of what your pile sells for, paid as it sells.'}
+                ? 'Support the startup!'
+                : 'You keep 50% of what it sells for.'}
             </p>
           </div>
         </div>
