@@ -216,7 +216,7 @@ function Hero({ schools, query, onQueryChange, onPickSchool }: {
           Turn uniforms into cash.
         </h1>
         <p className="text-lg sm:text-xl mt-3 text-indigo-100 font-medium">
-          Or find your school&apos;s uniforms for a fraction of the store.
+          Buy and sell used uniforms with families at your school.
         </p>
 
         <div ref={boxRef} className="relative mt-7 sm:max-w-xl">
@@ -271,22 +271,37 @@ function Hero({ schools, query, onQueryChange, onPickSchool }: {
 
 function SellDoors() {
   return (
-    <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-      <Link href="/sell-for-me"
-        className="rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 text-white px-6 py-6 hover:from-emerald-500 hover:to-emerald-700 transition-colors">
-        <h2 className="text-[26px] sm:text-3xl font-black tracking-tight leading-none">We sell it for you</h2>
-        <p className="text-emerald-50 text-[15px] mt-2.5 font-medium">
-          You do nothing. We pick up your pile, sell it, and send you half.
-        </p>
-        <p className="text-lg font-extrabold mt-4">Keep 50% · free pickup →</p>
-      </Link>
+    <div className="mb-6 grid grid-cols-1 sm:grid-cols-5 gap-3">
+      <div className="sm:col-span-4 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 text-white px-6 py-6 sm:px-8 sm:py-7 flex flex-col sm:flex-row sm:items-center gap-5">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2.5">
+            <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/15 ring-1 ring-white/25 shrink-0">
+              <svg width="20" height="20" viewBox="0 0 32 32" fill="none" stroke="#FDE68A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="9" width="26" height="14" rx="2.5" /><circle cx="16" cy="16" r="4" /><path d="M7.5 13v6M24.5 13v6" />
+              </svg>
+            </span>
+            <h2 className="text-[30px] sm:text-4xl font-black tracking-tight leading-none">Auto&nbsp;Sell</h2>
+          </div>
+          <p className="text-emerald-50 text-[15px] sm:text-base mt-2.5 font-medium">
+            You do nothing. We pick up your pile, sell it, and send you half.
+          </p>
+        </div>
+        <Link href="/sell-for-me"
+          className="shrink-0 text-center bg-white text-emerald-800 text-lg font-extrabold px-6 py-3.5 rounded-2xl hover:bg-emerald-50 transition-colors">
+          Get a free pickup
+        </Link>
+      </div>
+
       <Link href="/new"
-        className="rounded-2xl bg-gradient-to-br from-indigo-700 to-indigo-800 text-white px-6 py-6 hover:from-indigo-600 hover:to-indigo-800 transition-colors">
-        <h2 className="text-[26px] sm:text-3xl font-black tracking-tight leading-none">List it yourself</h2>
-        <p className="text-indigo-100 text-[15px] mt-2.5 font-medium">
-          Post it in two minutes. Meet a parent, take the cash.
-        </p>
-        <p className="text-lg font-extrabold mt-4">Keep 100% →</p>
+        className="sm:col-span-1 rounded-2xl bg-gradient-to-br from-indigo-700 to-indigo-800 text-white px-6 py-5 sm:px-5 sm:py-7 flex sm:flex-col items-center sm:items-start gap-3 sm:gap-4 hover:from-indigo-600 hover:to-indigo-800 transition-colors">
+        <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/15 ring-1 ring-white/25 shrink-0">
+          <svg width="20" height="20" viewBox="0 0 32 32" fill="none" stroke="#C7D2FE" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 9a3 3 0 0 1 3-3h8l13 13-11 11L3 17z" /><circle cx="9.5" cy="12.5" r="2" />
+          </svg>
+        </span>
+        <span className="text-[19px] sm:text-[21px] font-black tracking-tight leading-[1.15]">
+          List it<br className="hidden sm:inline" /> yourself →
+        </span>
       </Link>
     </div>
   )
@@ -321,7 +336,7 @@ function NotifyForm({ topic }: { topic: string }) {
   if (state === 'done') {
     return (
       <p className="text-[15px] font-semibold text-green-700 bg-green-50 border border-green-200 rounded-2xl px-4 py-3.5">
-        Got it. We read these by hand and will email you when something lands.
+        Got it. We&apos;ll email you when one lands.
       </p>
     )
   }
@@ -342,7 +357,7 @@ function NotifyForm({ topic }: { topic: string }) {
           disabled={state === 'sending'}
           className="shrink-0 font-bold text-[15px] px-5 py-3.5 rounded-2xl text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 transition-colors"
         >
-          {state === 'sending' ? 'Saving...' : 'Email me'}
+          {state === 'sending' ? 'Saving...' : 'Notify me'}
         </button>
       </form>
       {state === 'error' && (
@@ -369,22 +384,23 @@ function EmptyState({ schoolName, hasFilters, onClear }: { schoolName: string; h
   }
 
   return (
-    <div className="text-center py-16">
+    <div className="py-14 max-w-md mx-auto text-center">
       <h2 className="text-2xl font-extrabold text-gray-900">
-        {schoolName ? `No one's listed from ${schoolName} yet.` : 'Nothing listed yet.'}
+        {schoolName ? `Nothing from ${schoolName} yet.` : 'Nothing listed yet.'}
       </h2>
-
-      <Link href="/sell-for-me"
-        className="inline-block mt-6 bg-emerald-600 text-white text-lg font-extrabold px-6 py-3.5 rounded-2xl hover:bg-emerald-700 transition-colors">
-        Auto Sell, get a free pickup
-      </Link>
-
-      <p className="mt-4 text-[15px] text-gray-500 font-medium">
-        Or <Link href="/new" className="font-bold text-indigo-700 underline underline-offset-2">be the first to sell</Link>
+      <p className="text-[15px] text-gray-500 font-medium mt-2">
+        We&apos;ll email you the moment the first one lands.
       </p>
-
-      <div className="mt-8 max-w-sm mx-auto">
+      <div className="mt-5">
         <NotifyForm topic={schoolName} />
+      </div>
+
+      <div className="mt-10 pt-8 border-t border-gray-200">
+        <p className="text-[15px] text-gray-600 font-medium">Got outgrown uniforms at home?</p>
+        <Link href="/sell-for-me"
+          className="inline-block mt-3 bg-emerald-600 text-white text-lg font-extrabold px-6 py-3.5 rounded-2xl hover:bg-emerald-700 transition-colors">
+          Get a free pickup
+        </Link>
       </div>
     </div>
   )

@@ -311,19 +311,6 @@ export default function SellForMePage() {
             : 'You’re paid within a few days of each sale.'}
         </p>
 
-        <details className="group rounded-lg border border-gray-300">
-          <summary className="flex items-center justify-between cursor-pointer list-none px-3 py-2.5 text-sm font-medium text-gray-600">
-            <span>What if it doesn&apos;t sell?</span>
-            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"
-              className="w-4 h-4 text-gray-400 shrink-0 transition-transform group-open:rotate-180" aria-hidden>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 8l5 5 5-5" />
-            </svg>
-          </summary>
-          <p className="px-3 pb-3 text-sm text-gray-500">
-            We keep it listed until it sells. No time limit, and no cost to you either way. If you want something back, just ask and we&apos;ll return it.
-          </p>
-        </details>
-
         <p className="text-center text-xs text-gray-400">
           We&apos;ll reach out within 2 days to set a pickup time. Cancel anytime.
         </p>

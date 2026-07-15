@@ -111,9 +111,6 @@ export default function SharePanel(props: ShareProps) {
               className="w-full rounded-xl border border-gray-200 shadow-sm"
               style={{ aspectRatio: '1200 / 630', objectFit: 'cover' }}
             />
-            <p className="text-sm text-gray-500 mt-2">
-              This is the exact preview the group will see when you paste the link.
-            </p>
 
             {/* Buy / sell message toggle (school shares only) */}
             {props.kind === 'school' && (
