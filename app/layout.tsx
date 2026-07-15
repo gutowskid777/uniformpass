@@ -8,8 +8,6 @@ import BottomNav from '@/components/BottomNav'
 
 const inter = Inter({ subsets: ['latin'] })
 
-const OPERATOR = 'NAME_ME'
-
 export const metadata: Metadata = {
   metadataBase: new URL('https://uniformpass.shop'),
   title: 'UniformPass · Buy & Sell School Uniforms',
@@ -53,24 +51,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 href="/new"
                 className="hidden sm:inline-flex items-center h-9 bg-indigo-600 text-white text-sm font-semibold px-4 rounded-full hover:bg-indigo-700 transition-colors"
               >
-                Sell It Myself
+                + Sell
               </Link>
             </div>
           </div>
         </header>
         <main className="min-h-screen">{children}</main>
         <BottomNav />
-        <footer className="border-t border-gray-200 bg-white mt-16 py-8 text-center text-sm text-gray-500">
-          <p className="font-medium text-gray-600">No fees · No shipping · Meet locally</p>
-          <p className="mt-2">
-            Spread the word:{' '}
-            <Link href="/flyer" className="text-indigo-600 hover:underline font-medium">share the flyer</Link>
-          </p>
-          <p className="mt-1">
-            <Link href="/contact" className="text-indigo-600 hover:underline">Contact us</Link>
-          </p>
-          <p className="mt-4 font-medium text-gray-600">UniformPass is run by {OPERATOR}, a Bergen County parent.</p>
-          <p className="mt-1 text-gray-400">© 2026 UniformPass. All rights reserved.</p>
+        <footer className="border-t border-gray-200 bg-white mt-16">
+          <div className="max-w-6xl mx-auto px-4 py-7 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
+            <p className="font-semibold text-gray-600">No fees · No shipping · Meet locally</p>
+            <div className="flex items-center gap-6 font-semibold">
+              <Link href="/flyer" className="text-indigo-600 hover:underline">Share the flyer</Link>
+              <Link href="/contact" className="text-gray-500 hover:text-indigo-700 transition-colors">Contact</Link>
+              <span className="font-normal text-gray-400">© 2026</span>
+            </div>
+          </div>
         </footer>
         </AuthProvider>
       </body>

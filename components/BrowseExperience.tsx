@@ -211,11 +211,11 @@ function Hero({ schools, query, onQueryChange, onPickSchool }: {
 
   return (
     <section className="text-white bg-gradient-to-br from-indigo-950 via-indigo-800 to-indigo-600">
-      <div className="max-w-6xl mx-auto px-4 py-10 sm:py-16">
-        <h1 className="text-[34px] sm:text-6xl font-black tracking-tight leading-[1.05]">
+      <div className="max-w-6xl mx-auto px-4 py-8 sm:py-16">
+        <h1 className="text-[30px] sm:text-6xl font-black tracking-tight leading-[1.05]">
           Turn uniforms into cash.
         </h1>
-        <p className="text-lg sm:text-xl mt-3 text-indigo-100 font-medium">
+        <p className="text-[15px] sm:text-xl mt-2.5 sm:mt-3 text-indigo-100 font-medium">
           Buy and sell used uniforms with families at your school.
         </p>
 
@@ -226,9 +226,9 @@ function Hero({ schools, query, onQueryChange, onPickSchool }: {
             value={query}
             onChange={e => onQueryChange(e.target.value)}
             onFocus={() => setFocused(true)}
-            placeholder={'Find your school... try "SJR" or "Bosco"'}
+            placeholder={'Find your school'}
             autoComplete="off"
-            className="w-full rounded-2xl border-0 px-5 py-4 text-lg font-semibold text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-white/40"
+            className="w-full rounded-2xl border-0 px-4 sm:px-5 py-3.5 sm:py-4 text-base sm:text-lg font-semibold text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-white/40"
           />
           {focused && query.trim() && (
             <div className="absolute z-20 mt-2 w-full bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
@@ -271,8 +271,8 @@ function Hero({ schools, query, onQueryChange, onPickSchool }: {
 
 function SellDoors() {
   return (
-    <div className="mb-6 grid grid-cols-1 sm:grid-cols-5 gap-3">
-      <div className="sm:col-span-4 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 text-white px-6 py-6 sm:px-8 sm:py-7 flex flex-col sm:flex-row sm:items-center gap-5">
+    <div className="mb-6 grid grid-cols-1 sm:grid-cols-4 gap-3">
+      <div className="sm:col-span-3 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 text-white px-6 py-6 sm:px-8 sm:py-7 flex flex-col sm:flex-row sm:items-center gap-5">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2.5">
             <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/15 ring-1 ring-white/25 shrink-0">
@@ -280,28 +280,31 @@ function SellDoors() {
                 <rect x="3" y="9" width="26" height="14" rx="2.5" /><circle cx="16" cy="16" r="4" /><path d="M7.5 13v6M24.5 13v6" />
               </svg>
             </span>
-            <h2 className="text-[30px] sm:text-4xl font-black tracking-tight leading-none">Auto&nbsp;Sell</h2>
+            <h2 className="text-[26px] sm:text-4xl font-black tracking-tight leading-none">Auto&nbsp;Sell</h2>
           </div>
-          <p className="text-emerald-50 text-[15px] sm:text-base mt-2.5 font-medium">
+          <p className="text-emerald-50 text-[14px] sm:text-base mt-2 sm:mt-2.5 font-medium">
             You do nothing. We pick up your pile, sell it, and send you half.
           </p>
         </div>
         <Link href="/sell-for-me"
-          className="shrink-0 text-center bg-white text-emerald-800 text-lg font-extrabold px-6 py-3.5 rounded-2xl hover:bg-emerald-50 transition-colors">
+          className="shrink-0 text-center bg-white text-emerald-800 text-base sm:text-lg font-extrabold px-6 py-3 sm:py-3.5 rounded-2xl hover:bg-emerald-50 transition-colors">
           Get a free pickup
         </Link>
       </div>
 
       <Link href="/new"
-        className="sm:col-span-1 rounded-2xl bg-gradient-to-br from-indigo-700 to-indigo-800 text-white px-6 py-5 sm:px-5 sm:py-7 flex sm:flex-col items-center sm:items-start gap-3 sm:gap-4 hover:from-indigo-600 hover:to-indigo-800 transition-colors">
+        className="group sm:col-span-1 rounded-2xl bg-gradient-to-br from-indigo-700 to-indigo-800 text-white px-6 py-6 sm:py-7 flex sm:flex-col items-center sm:items-start justify-center gap-3.5 hover:from-indigo-600 hover:to-indigo-800 transition-colors">
         <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/15 ring-1 ring-white/25 shrink-0">
           <svg width="20" height="20" viewBox="0 0 32 32" fill="none" stroke="#C7D2FE" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 9a3 3 0 0 1 3-3h8l13 13-11 11L3 17z" /><circle cx="9.5" cy="12.5" r="2" />
           </svg>
         </span>
-        <span className="text-[19px] sm:text-[21px] font-black tracking-tight leading-[1.15]">
-          List it<br className="hidden sm:inline" /> yourself →
-        </span>
+        <div>
+          <h2 className="text-[22px] sm:text-[25px] font-black tracking-tight leading-[1.05]">List it yourself</h2>
+          <span className="inline-flex items-center gap-1.5 text-indigo-200 text-sm font-bold mt-1.5 group-hover:text-white transition-colors">
+            Post an item <span aria-hidden>→</span>
+          </span>
+        </div>
       </Link>
     </div>
   )
@@ -398,7 +401,7 @@ function EmptyState({ schoolName, hasFilters, onClear }: { schoolName: string; h
       <div className="mt-10 pt-8 border-t border-gray-200">
         <p className="text-[15px] text-gray-600 font-medium">Got outgrown uniforms at home?</p>
         <Link href="/sell-for-me"
-          className="inline-block mt-3 bg-emerald-600 text-white text-lg font-extrabold px-6 py-3.5 rounded-2xl hover:bg-emerald-700 transition-colors">
+          className="inline-block mt-3 bg-emerald-600 text-white text-base sm:text-lg font-extrabold px-6 py-3 sm:py-3.5 rounded-2xl hover:bg-emerald-700 transition-colors">
           Get a free pickup
         </Link>
       </div>
