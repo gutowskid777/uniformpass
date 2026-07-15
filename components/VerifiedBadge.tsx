@@ -1,15 +1,23 @@
 'use client'
 
-// A small "Verified by UniformPass" badge with a plain-English explainer on hover.
-// Uses the native title tooltip on purpose: it can never be clipped by a card's
-// overflow-hidden (the previous custom popup was, so it never showed on Browse cards).
+// The badge's meaning is rendered inline, not in a title tooltip: the launch audience
+// is on phones and hover does not exist on touch. `compact` is for grid cards, where
+// there is no room for the explainer.
 export default function VerifiedBadge({ compact = false }: { compact?: boolean }) {
+  if (compact) {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-600 text-white shadow-sm">
+        ✓ Verified
+      </span>
+    )
+  }
+
   return (
-    <span
-      title="Operator-listed and quality-checked by UniformPass — we picked it up, checked it, and listed it ourselves."
-      className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-600 text-white shadow-sm cursor-help"
-    >
-      ✓ {compact ? 'Verified' : 'Verified by UniformPass'}
+    <span className="inline-flex flex-wrap items-center gap-2">
+      <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-600 text-white shadow-sm">
+        ✓ Verified by UniformPass
+      </span>
+      <span className="text-xs text-gray-500">We picked it up and checked it ourselves.</span>
     </span>
   )
 }

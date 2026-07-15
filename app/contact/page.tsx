@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
 export default function ContactPage() {
@@ -10,6 +10,11 @@ export default function ContactPage() {
   const [error, setError] = useState('')
 
   const set = (key: string, value: string) => setForm(f => ({ ...f, [key]: value }))
+
+  useEffect(() => {
+    const ref = new URLSearchParams(window.location.search).get('report')
+    if (ref) set('message', `Reporting listing ${ref}: `)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,7 +51,7 @@ export default function ContactPage() {
       <div className="mb-8">
         <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Contact us</h1>
         <p className="text-gray-500 text-lg mt-2">
-          Questions, or need help taking down a listing? Send us a note and we&apos;ll sort it out.
+          Questions, or reporting a listing? Send us a note and we&apos;ll sort it out.
         </p>
       </div>
 
@@ -67,7 +72,7 @@ export default function ContactPage() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Message *</label>
           <textarea rows={5} required value={form.message} onChange={e => set('message', e.target.value)}
-            placeholder="e.g. Please take down my listing for the navy blazer, size 16."
+            placeholder="e.g. The photos on this listing don't match the item."
             className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
         </div>
 

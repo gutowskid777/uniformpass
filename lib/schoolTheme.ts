@@ -98,9 +98,10 @@ export function themeForSchoolId(id: string | null | undefined): SchoolTheme | n
   return Object.values(SCHOOL_THEMES).find(t => t.dbId === id) || null
 }
 
-// The link Dylan shares / the QR target: short, human, school-scoped.
+// The link Dylan shares / the QR target: the browse grid, filtered to her school.
 export function scopedPath(code: string): string {
-  return `/s/${code}`
+  const theme = getTheme(code)
+  return theme ? `/?school=${theme.dbId}` : '/'
 }
 
 export function scopedUrl(code: string): string {

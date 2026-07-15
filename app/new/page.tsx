@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import imageCompression from 'browser-image-compression'
 import { supabase, type School, SIZES, US_STATES, PAYMENT_OPTIONS, CONTACT_METHODS } from '@/lib/supabase'
 import SchoolPicker from '@/components/SchoolPicker'
 import { useAuth } from '@/components/AuthProvider'
-import InlineAccountStep from '@/components/InlineAccountStep'
+import AccountField, { type AccountFieldHandle } from '@/components/AccountField'
 
 const MAX_PHOTOS = 8
 const MAX_FILE_SIZE_MB = 15 // fallback cap only used if compression can't decode a file
@@ -15,8 +15,8 @@ const LAST_DESC_KEY = 'uniformpass_last_description'
 export default function NewListingPage() {
   const router = useRouter()
   const { user } = useAuth()
+  const accountRef = useRef<AccountFieldHandle>(null)
   const [schools, setSchools] = useState<School[]>([])
-  const [showAccount, setShowAccount] = useState(false)
   const [pendingIntent, setPendingIntent] = useState<'post' | 'draft'>('post')
   const [submitting, setSubmitting] = useState(false)
   const [compressing, setCompressing] = useState(false)
@@ -69,6 +69,13 @@ export default function NewListingPage() {
       }))
     })
   }, [user])
+
+  // The school row already carries city/state, so the seller never types them.
+  useEffect(() => {
+    if (!form.school_id || form.school_id === 'other') return
+    const school = schools.find(s => s.id === form.school_id)
+    if (school) setForm(f => ({ ...f, location_city: school.city, location_state: school.state }))
+  }, [form.school_id, schools])
 
   const set = (key: string, value: string | boolean) => setForm(f => ({ ...f, [key]: value }))
 
@@ -132,14 +139,17 @@ export default function NewListingPage() {
     user_id: userId,
   })
 
-  const validate = (requireLocation = true) => {
+  const validate = () => {
     if (!form.school_id) return 'Please select a school.'
     if (form.school_id === 'other' && !form.custom_school.trim()) return 'Please type your school name.'
     if (!form.item_type.trim()) return 'Please describe the item.'
     if (!form.is_lot && !form.size) return 'Please select a size, or check "Multiple sizes (lot)".'
-    if (requireLocation && !form.location_city.trim()) return 'Please enter your city.'
-    if (requireLocation && !form.location_state) return 'Please select a state.'
+    if (photoFiles.length === 0) return 'Please add at least one photo.'
+    if (!form.price.trim()) return 'Please enter a price. Enter 0 if it is free.'
+    if (form.school_id === 'other' && !form.location_city.trim()) return 'Please enter your city.'
+    if (form.school_id === 'other' && !form.location_state) return 'Please select a state.'
     if (!form.seller_name.trim()) return 'Please enter your name.'
+    if (!form.contact_info.trim()) return 'Please add a way for buyers to reach you.'
     return null
   }
 
@@ -198,26 +208,34 @@ export default function NewListingPage() {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     const err = validate()
     if (err) return setError(err)
     setPendingIntent('post')
-    if (!user) { setShowAccount(true); return }  // deferred account creation
-    doPost(user.id, 'available')
+    let uid: string | undefined = user?.id
+    if (!uid) {
+      uid = (await accountRef.current?.ensureAccount()) ?? undefined
+      if (!uid) return
+    }
+    doPost(uid, 'available')
   }
 
   // Save privately and come back later. Only needs enough to recognize the listing;
   // everything else can be filled in from the manage page before it goes live.
-  const saveDraft = () => {
+  const saveDraft = async () => {
     setError('')
     if (!form.school_id) return setError('Pick a school to save a draft.')
     if (form.school_id === 'other' && !form.custom_school.trim()) return setError('Please type your school name.')
     if (!form.item_type.trim()) return setError('Add an item description to save a draft.')
     setPendingIntent('draft')
-    if (!user) { setShowAccount(true); return }  // deferred account creation
-    doPost(user.id, 'draft')
+    let uid: string | undefined = user?.id
+    if (!uid) {
+      uid = (await accountRef.current?.ensureAccount()) ?? undefined
+      if (!uid) return
+    }
+    doPost(uid, 'draft')
   }
 
   return (
@@ -242,7 +260,7 @@ export default function NewListingPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
               <select value={form.category} onChange={e => set('category', e.target.value)}
                 className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="uniform">Uniform</option>
@@ -252,7 +270,7 @@ export default function NewListingPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Gender *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
               <select value={form.gender} onChange={e => set('gender', e.target.value)}
                 className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="unisex">Unisex</option>
@@ -323,14 +341,14 @@ export default function NewListingPage() {
 
         {/* Photos */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-          <h2 className="font-semibold text-gray-800">Photos (up to {MAX_PHOTOS})</h2>
+          <h2 className="font-semibold text-gray-800">Photos *</h2>
           <div className="flex flex-wrap gap-3">
             {photoPreviews.map((src, i) => (
               <div key={i} className="relative w-24 h-32 rounded-lg overflow-hidden border border-gray-200">
                 <img src={src} alt="" className="w-full h-full object-cover" />
-                <button type="button" onClick={() => removePhoto(i)}
-                  className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-black">
-                  ×
+                <button type="button" onClick={() => removePhoto(i)} aria-label="Remove photo"
+                  className="group absolute top-0 right-0 w-11 h-11 flex items-start justify-end p-1">
+                  <span className="bg-black/60 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs group-hover:bg-black">×</span>
                 </button>
               </div>
             ))}
@@ -348,7 +366,7 @@ export default function NewListingPage() {
               </label>
             )}
           </div>
-          <p className="text-xs text-gray-400">Add up to {MAX_PHOTOS}.</p>
+          <p className="text-xs text-gray-400">At least one photo, up to {MAX_PHOTOS}.</p>
         </div>
 
         {/* Price, location, payment */}
@@ -363,22 +381,29 @@ export default function NewListingPage() {
             <p className="text-xs text-gray-400 mt-1">Enter 0 for free.</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">City *</label>
-              <input type="text" placeholder="Montvale"
-                value={form.location_city} onChange={e => set('location_city', e.target.value)}
-                className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+          {form.school_id === 'other' ? (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">City *</label>
+                <input type="text" placeholder="Montvale"
+                  value={form.location_city} onChange={e => set('location_city', e.target.value)}
+                  className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">State *</label>
+                <select value={form.location_state} onChange={e => set('location_state', e.target.value)}
+                  className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                  <option value="">Select...</option>
+                  {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
             </div>
+          ) : form.location_city && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">State *</label>
-              <select value={form.location_state} onChange={e => set('location_state', e.target.value)}
-                className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                <option value="">Select...</option>
-                {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+              <p className="text-sm text-gray-500">{form.location_city}, {form.location_state}</p>
             </div>
-          </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -410,10 +435,9 @@ export default function NewListingPage() {
         {/* Contact — how buyers reach you */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
           <div>
-            <h2 className="font-semibold text-gray-800">How buyers reach you</h2>
+            <h2 className="font-semibold text-gray-800">How buyers reach you *</h2>
             <p className="text-sm text-gray-500 mt-0.5">
               Buyers contact you directly and arrange payment (cash/Venmo) in person. Nothing goes through the site.
-              Listings with contact info sell much faster.
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-[9rem_1fr] gap-3">
@@ -427,9 +451,11 @@ export default function NewListingPage() {
               className="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
           </div>
           <p className="text-xs text-gray-400">
-            This will be shown publicly on your listing. Leave blank to only be reachable through the comments.
+            This will be shown publicly on your listing.
           </p>
         </div>
+
+        {!user && <AccountField ref={accountRef} />}
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{error}</div>
@@ -446,20 +472,8 @@ export default function NewListingPage() {
           </button>
         </div>
 
-        <p className="text-center text-xs text-gray-400">
-          Free to post. Save a draft to finish later, or post now... buyers reach out directly and you meet up to complete the sale.
-        </p>
+        <p className="text-center text-xs text-gray-400">Free to post.</p>
       </form>
-
-      {showAccount && (
-        <InlineAccountStep
-          onClose={() => setShowAccount(false)}
-          onCreated={uid => { setShowAccount(false); doPost(uid, pendingIntent === 'draft' ? 'draft' : 'available') }}
-          heading="Almost done... create your account"
-          blurb="Your listing is filled in and waiting. Create a free account to post it and manage it anytime. 10 seconds, no email to check."
-          cta="Create account & post"
-        />
-      )}
     </div>
   )
 }

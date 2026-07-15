@@ -8,6 +8,8 @@ import BottomNav from '@/components/BottomNav'
 
 const inter = Inter({ subsets: ['latin'] })
 
+const OPERATOR = 'NAME_ME'
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://uniformpass.shop'),
   title: 'UniformPass · Buy & Sell School Uniforms',
@@ -26,7 +28,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.className} pb-[calc(4rem_+_env(safe-area-inset-bottom))] sm:pb-0`}>
         <AuthProvider>
         <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
           <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
@@ -41,7 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </Link>
             <div className="flex items-center gap-2 sm:gap-2.5">
               <Link href="/sell-for-me" className="hidden sm:inline-flex items-center h-9 text-sm font-semibold text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 px-3.5 rounded-full transition-colors">
-                Auto Sell
+                We Sell It
               </Link>
               <Link href="/my-listings" className="hidden sm:inline-flex items-center h-9 text-sm font-semibold text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 px-3.5 rounded-full transition-colors">
                 My Listings
@@ -49,14 +51,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <AuthNav />
               <Link
                 href="/new"
-                className="inline-flex items-center h-9 bg-indigo-600 text-white text-sm font-semibold px-4 rounded-full hover:bg-indigo-700 transition-colors"
+                className="hidden sm:inline-flex items-center h-9 bg-indigo-600 text-white text-sm font-semibold px-4 rounded-full hover:bg-indigo-700 transition-colors"
               >
-                + Sell
+                Sell It Myself
               </Link>
             </div>
           </div>
         </header>
-        <main className="min-h-screen pb-16 sm:pb-0">{children}</main>
+        <main className="min-h-screen">{children}</main>
         <BottomNav />
         <footer className="border-t border-gray-200 bg-white mt-16 py-8 text-center text-sm text-gray-500">
           <p className="font-medium text-gray-600">No fees · No shipping · Meet locally</p>
@@ -67,6 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <p className="mt-1">
             <Link href="/contact" className="text-indigo-600 hover:underline">Contact us</Link>
           </p>
+          <p className="mt-4 font-medium text-gray-600">UniformPass is run by {OPERATOR}, a Bergen County parent.</p>
           <p className="mt-1 text-gray-400">© 2026 UniformPass. All rights reserved.</p>
         </footer>
         </AuthProvider>

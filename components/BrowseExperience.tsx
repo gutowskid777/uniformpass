@@ -26,6 +26,7 @@ export default function BrowseExperience() {
   const [size, setSize] = useState(() => searchParams.get('size') || '')
   const [condition, setCondition] = useState(() => searchParams.get('condition') || '')
   const [search, setSearch] = useState(() => searchParams.get('q') || '')
+  const [item, setItem] = useState(() => searchParams.get('item') || '')
   const [showFilters, setShowFilters] = useState(false)
 
   useEffect(() => {
@@ -35,6 +36,7 @@ export default function BrowseExperience() {
     setSize(searchParams.get('size') || '')
     setCondition(searchParams.get('condition') || '')
     setSearch(searchParams.get('q') || '')
+    setItem(searchParams.get('item') || '')
   }, [searchParams])
 
   const updateUrl = (updates: Record<string, string>) => {
@@ -74,12 +76,21 @@ export default function BrowseExperience() {
 
   useEffect(() => { fetchListings() }, [fetchListings])
 
-  const activeFilters = [schoolId, category, gender, size, condition].filter(Boolean).length
+  const activeFilters = [category, gender, size, condition, item.trim()].filter(Boolean).length
   const clearFilters = () => {
-    setSchoolId(''); setCategory(''); setGender(''); setSize(''); setCondition('')
-    updateUrl({ school: '', category: '', gender: '', size: '', condition: '' })
+    setCategory(''); setGender(''); setSize(''); setCondition(''); setItem('')
+    updateUrl({ category: '', gender: '', size: '', condition: '', item: '' })
+  }
+  const clearSchool = () => {
+    setSchoolId(''); setSearch('')
+    updateUrl({ school: '', q: '' })
   }
   const schoolName = schoolId ? (schools.find(s => s.id === schoolId)?.name ?? '') : ''
+
+  const itemQuery = item.trim().toLowerCase()
+  const visible = itemQuery
+    ? listings.filter(l => `${l.item_type} ${l.description ?? ''}`.toLowerCase().includes(itemQuery))
+    : listings
 
   return (
     <div>
@@ -95,11 +106,18 @@ export default function BrowseExperience() {
       />
 
       <div className="max-w-6xl mx-auto px-4 pt-6 pb-8">
-        <ConsignmentBand />
+        <SellDoors />
 
-        <h2 id="browse" className="scroll-mt-4 text-2xl sm:text-[26px] font-extrabold tracking-tight text-gray-900 mb-4">
-          {schoolName ? `Fresh from ${schoolName}` : 'Fresh listings'}
-        </h2>
+        <div className="flex flex-wrap items-center gap-3 mb-4">
+          <h2 id="browse" className="scroll-mt-4 text-2xl sm:text-[26px] font-extrabold tracking-tight text-gray-900">
+            {schoolName ? `Fresh from ${schoolName}` : 'Fresh listings'}
+          </h2>
+          {schoolName && (
+            <button onClick={clearSchool} className="shrink-0 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold px-3 py-1.5 hover:bg-indigo-100 transition-colors">
+              ✕ All schools
+            </button>
+          )}
+        </div>
 
         {/* Filter bar */}
         <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 shadow-sm">
@@ -114,10 +132,14 @@ export default function BrowseExperience() {
           </div>
 
           <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 ${!showFilters ? 'hidden sm:grid' : 'grid'}`}>
-            <select value={schoolId} onChange={e => { setSchoolId(e.target.value); updateUrl({ school: e.target.value }) }} className="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-              <option value="">All Schools</option>
-              {schools.map(s => <option key={s.id} value={s.id}>{s.name} ({s.state})</option>)}
-            </select>
+            <input
+              type="search"
+              value={item}
+              onChange={e => { setItem(e.target.value); updateUrl({ item: e.target.value }) }}
+              placeholder="Search items..."
+              className="rounded-lg border-gray-300 text-sm placeholder:text-gray-400 focus:ring-indigo-500 focus:border-indigo-500"
+              aria-label="Search items"
+            />
             <select value={category} onChange={e => { setCategory(e.target.value); updateUrl({ category: e.target.value }) }} className="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
               <option value="">All Categories</option>
               {Object.entries(CATEGORY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -148,11 +170,11 @@ export default function BrowseExperience() {
           <div className="flex items-center justify-center py-24">
             <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
           </div>
-        ) : listings.length === 0 ? (
+        ) : visible.length === 0 ? (
           <EmptyState schoolName={schoolName} hasFilters={activeFilters > 0} onClear={clearFilters} />
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {listings.map(listing => <ListingCard key={listing.id} listing={listing} />)}
+            {visible.map(listing => <ListingCard key={listing.id} listing={listing} />)}
           </div>
         )}
       </div>
@@ -191,10 +213,10 @@ function Hero({ schools, query, onQueryChange, onPickSchool }: {
     <section className="text-white bg-gradient-to-br from-indigo-950 via-indigo-800 to-indigo-600">
       <div className="max-w-6xl mx-auto px-4 py-10 sm:py-16">
         <h1 className="text-[34px] sm:text-6xl font-black tracking-tight leading-[1.05]">
-          Stop buying uniforms new.
+          Turn uniforms into cash.
         </h1>
         <p className="text-lg sm:text-xl mt-3 text-indigo-100 font-medium">
-          Buy and sell used uniforms with families at your school.
+          Or find your school&apos;s uniforms for a fraction of the store.
         </p>
 
         <div ref={boxRef} className="relative mt-7 sm:max-w-xl">
@@ -208,20 +230,32 @@ function Hero({ schools, query, onQueryChange, onPickSchool }: {
             autoComplete="off"
             className="w-full rounded-2xl border-0 px-5 py-4 text-lg font-semibold text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-white/40"
           />
-          {focused && results.length > 0 && (
-            <ul className="absolute z-20 mt-2 w-full bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-              {results.map(s => (
-                <li key={s.id}>
-                  <button
-                    onClick={() => pick(s)}
-                    className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors"
-                  >
-                    <span className="block text-[15px] font-bold text-gray-900 truncate">{s.name}</span>
-                    <span className="block text-[13px] text-gray-500">{s.city}, {s.state}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+          {focused && query.trim() && (
+            <div className="absolute z-20 mt-2 w-full bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+              {results.length > 0 ? (
+                <ul>
+                  {results.map(s => (
+                    <li key={s.id}>
+                      <button
+                        onClick={() => pick(s)}
+                        className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors"
+                      >
+                        <span className="block text-[15px] font-bold text-gray-900 truncate">{s.name}</span>
+                        <span className="block text-[13px] text-gray-500">{s.city}, {s.state}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="px-4 py-4">
+                  <p className="text-[15px] font-bold text-gray-900">No match for &ldquo;{query.trim()}&rdquo; yet.</p>
+                  <p className="text-[13px] text-gray-500 mt-1">Leave your email and we&apos;ll add it.</p>
+                  <div className="mt-3">
+                    <NotifyForm topic={query.trim()} />
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
@@ -233,35 +267,34 @@ function Hero({ schools, query, onQueryChange, onPickSchool }: {
   )
 }
 
-/* ---------------- Auto Sell: the moat, one band ---------------- */
+/* ---------------- Two doors: we sell it, or you do ---------------- */
 
-function ConsignmentBand() {
+function SellDoors() {
   return (
-    <div className="mb-6 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 text-white px-6 py-6 sm:px-8 sm:py-7 flex flex-col sm:flex-row sm:items-center gap-5">
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2.5">
-          <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/15 ring-1 ring-white/25 shrink-0">
-            <svg width="20" height="20" viewBox="0 0 32 32" fill="none" stroke="#FDE68A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="9" width="26" height="14" rx="2.5" /><circle cx="16" cy="16" r="4" /><path d="M7.5 13v6M24.5 13v6" />
-            </svg>
-          </span>
-          <h2 className="text-[30px] sm:text-4xl font-black tracking-tight leading-none">Auto&nbsp;Sell</h2>
-        </div>
-        <p className="text-emerald-50 text-[15px] sm:text-base mt-2.5 font-medium">
+    <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <Link href="/sell-for-me"
+        className="rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 text-white px-6 py-6 hover:from-emerald-500 hover:to-emerald-700 transition-colors">
+        <h2 className="text-[26px] sm:text-3xl font-black tracking-tight leading-none">We sell it for you</h2>
+        <p className="text-emerald-50 text-[15px] mt-2.5 font-medium">
           You do nothing. We pick up your pile, sell it, and send you half.
         </p>
-      </div>
-      <Link href="/sell-for-me"
-        className="shrink-0 text-center bg-white text-emerald-800 text-lg font-extrabold px-6 py-3.5 rounded-2xl hover:bg-emerald-50 transition-colors">
-        Get a free pickup
+        <p className="text-lg font-extrabold mt-4">Keep 50% · free pickup →</p>
+      </Link>
+      <Link href="/new"
+        className="rounded-2xl bg-gradient-to-br from-indigo-700 to-indigo-800 text-white px-6 py-6 hover:from-indigo-600 hover:to-indigo-800 transition-colors">
+        <h2 className="text-[26px] sm:text-3xl font-black tracking-tight leading-none">List it yourself</h2>
+        <p className="text-indigo-100 text-[15px] mt-2.5 font-medium">
+          Post it in two minutes. Meet a parent, take the cash.
+        </p>
+        <p className="text-lg font-extrabold mt-4">Keep 100% →</p>
       </Link>
     </div>
   )
 }
 
-/* ---------------- Empty state: never a dead end ---------------- */
+/* ---------------- Notify: no automated alerts, a person reads these ---------------- */
 
-function EmptyState({ schoolName, hasFilters, onClear }: { schoolName: string; hasFilters: boolean; onClear: () => void }) {
+function NotifyForm({ topic }: { topic: string }) {
   const [email, setEmail] = useState('')
   const [state, setState] = useState<'idle' | 'sending' | 'done' | 'error'>('idle')
 
@@ -276,7 +309,7 @@ function EmptyState({ schoolName, hasFilters, onClear }: { schoolName: string; h
         body: JSON.stringify({
           name: 'Listing waitlist',
           email: email.trim(),
-          message: `Notify me when uniforms are listed${schoolName ? ` for ${schoolName}` : ''}.`,
+          message: `Notify me when uniforms are listed${topic ? ` for ${topic}` : ''}.`,
         }),
       })
       setState(res.ok ? 'done' : 'error')
@@ -285,50 +318,74 @@ function EmptyState({ schoolName, hasFilters, onClear }: { schoolName: string; h
     }
   }
 
+  if (state === 'done') {
+    return (
+      <p className="text-[15px] font-semibold text-green-700 bg-green-50 border border-green-200 rounded-2xl px-4 py-3.5">
+        Got it. We read these by hand and will email you when something lands.
+      </p>
+    )
+  }
+
+  return (
+    <>
+      <form onSubmit={notify} className="flex gap-2">
+        <input
+          type="email"
+          value={email}
+          onChange={e => { setEmail(e.target.value); if (state === 'error') setState('idle') }}
+          placeholder="you@email.com"
+          className="flex-1 min-w-0 rounded-2xl border-gray-300 px-4 py-3.5 text-[15px]"
+          aria-label="Email for a heads-up when listings land"
+        />
+        <button
+          type="submit"
+          disabled={state === 'sending'}
+          className="shrink-0 font-bold text-[15px] px-5 py-3.5 rounded-2xl text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+        >
+          {state === 'sending' ? 'Saving...' : 'Email me'}
+        </button>
+      </form>
+      {state === 'error' && (
+        <p className="text-[13px] text-red-600 mt-2">That didn&apos;t go through. Check the email and try again.</p>
+      )}
+    </>
+  )
+}
+
+/* ---------------- Empty state: never a dead end ---------------- */
+
+function EmptyState({ schoolName, hasFilters, onClear }: { schoolName: string; hasFilters: boolean; onClear: () => void }) {
+  if (hasFilters) {
+    return (
+      <div className="text-center py-16">
+        <h2 className="text-2xl font-extrabold text-gray-900">
+          {schoolName ? `No matches for these filters at ${schoolName}.` : 'No matches for these filters.'}
+        </h2>
+        <button onClick={onClear} className="inline-block mt-5 text-[15px] font-bold text-indigo-700 underline underline-offset-2">
+          Clear the filters
+        </button>
+      </div>
+    )
+  }
+
   return (
     <div className="text-center py-16">
       <h2 className="text-2xl font-extrabold text-gray-900">
-        {schoolName ? 'Nothing here yet.' : 'No matches.'}
+        {schoolName ? `No one's listed from ${schoolName} yet.` : 'Nothing listed yet.'}
       </h2>
 
-      <div className="mt-6 max-w-sm mx-auto">
-        {state === 'done' ? (
-          <p className="text-[15px] font-semibold text-green-700 bg-green-50 border border-green-200 rounded-2xl px-4 py-3.5">
-            You&apos;re on the list.
-          </p>
-        ) : (
-          <form onSubmit={notify} className="flex gap-2">
-            <input
-              type="email"
-              value={email}
-              onChange={e => { setEmail(e.target.value); if (state === 'error') setState('idle') }}
-              placeholder="you@email.com"
-              className="flex-1 min-w-0 rounded-2xl border-gray-300 px-4 py-3.5 text-[15px]"
-              aria-label="Email for a heads-up when listings land"
-            />
-            <button
-              type="submit"
-              disabled={state === 'sending'}
-              className="shrink-0 font-bold text-[15px] px-5 py-3.5 rounded-2xl text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 transition-colors"
-            >
-              {state === 'sending' ? 'Saving...' : 'Notify me'}
-            </button>
-          </form>
-        )}
-        {state === 'error' && (
-          <p className="text-[13px] text-red-600 mt-2">That didn&apos;t go through. Check the email and try again.</p>
-        )}
-      </div>
+      <Link href="/sell-for-me"
+        className="inline-block mt-6 bg-emerald-600 text-white text-lg font-extrabold px-6 py-3.5 rounded-2xl hover:bg-emerald-700 transition-colors">
+        Auto Sell, get a free pickup
+      </Link>
 
-      {hasFilters ? (
-        <button onClick={onClear} className="inline-block mt-5 text-[15px] font-bold text-indigo-700 underline underline-offset-2">
-          Or clear the filters
-        </button>
-      ) : (
-        <Link href="/new" className="inline-block mt-5 text-[15px] font-bold text-indigo-700 underline underline-offset-2">
-          Or be the first to sell →
-        </Link>
-      )}
+      <p className="mt-4 text-[15px] text-gray-500 font-medium">
+        Or <Link href="/new" className="font-bold text-indigo-700 underline underline-offset-2">be the first to sell</Link>
+      </p>
+
+      <div className="mt-8 max-w-sm mx-auto">
+        <NotifyForm topic={schoolName} />
+      </div>
     </div>
   )
 }
@@ -349,9 +406,7 @@ function ListingCard({ listing }: { listing: Listing }) {
   return (
     <Link
       href={`/listing/${listing.id}`}
-      className={`group block bg-white rounded-xl overflow-hidden hover:shadow-lg transition-shadow ${
-        listing.is_verified ? 'ring-2 ring-indigo-500/70' : 'border border-gray-100'
-      }`}
+      className="group block bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow"
     >
       {/* Photo — 3:4 portrait ratio like Poshmark */}
       <div className="relative w-full" style={{ paddingBottom: '133%' }}>

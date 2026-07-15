@@ -17,8 +17,19 @@ const STATUS_LABEL: Record<string, string> = {
   cancelled: 'Cancelled',
 }
 
+const PICKUP_OVER = ['done', 'declined', 'cancelled']
+
 type Pickup = Pick<PickupRequest, 'id' | 'item_summary' | 'school_name' | 'town' | 'est_items' | 'notes' | 'status' | 'created_at'>
 type PickupDraft = { item_summary: string; est_items: string; notes: string }
+
+const missingFor = (listing: Listing) => [
+  !listing.price && 'a price',
+  !listing.photos?.length && 'a photo',
+  !listing.contact_info?.trim() && 'contact info',
+].filter(Boolean) as string[]
+
+const joinList = (parts: string[]) =>
+  parts.length < 3 ? parts.join(' and ') : `${parts.slice(0, -1).join(', ')}, and ${parts[parts.length - 1]}`
 
 export default function MyListingsPage() {
   const { user, loading: authLoading } = useAuth()
@@ -98,6 +109,13 @@ export default function MyListingsPage() {
 
   const listingAction = async (listing: Listing, action: 'update' | 'delete', targetStatus?: Listing['status']) => {
     if (action === 'delete' && !confirm(`Delete ${listing.item_type}? This cannot be undone.`)) return
+    if (targetStatus === 'available' && listing.status === 'draft') {
+      const missing = missingFor(listing)
+      if (missing.length) {
+        setActionError(`Finish your listing to post it: add ${joinList(missing)}.`)
+        return
+      }
+    }
     const key = `${listing.id}-${action}`
     setPendingAction(key)
     setActionError('')
@@ -208,40 +226,88 @@ export default function MyListingsPage() {
     )
   }
 
+  const drafts = listings.filter(listing => listing.status === 'draft')
+  const posted = listings.filter(listing => listing.status !== 'draft')
+  const soldCount = posted.filter(listing => listing.status === 'sold').length
+  const liveCount = posted.length - soldCount
+  const openPickups = pickups.filter(pickup => !PICKUP_OVER.includes(pickup.status))
+  const summary = [
+    liveCount > 0 && `${liveCount} live`,
+    soldCount > 0 && `${soldCount} sold`,
+    drafts.length > 0 && `${drafts.length} draft${drafts.length > 1 ? 's' : ''} unfinished`,
+    openPickups.some(pickup => pickup.status === 'scheduled') ? 'pickup scheduled'
+      : openPickups.length > 0 && `${openPickups.length} pickup request${openPickups.length > 1 ? 's' : ''}`,
+  ].filter(Boolean).join(' · ')
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">My Listings</h1>
-        <p className="text-gray-500 mt-1">Manage everything you&apos;ve posted or arranged for pickup.</p>
+        {summary
+          ? <p className="text-lg font-semibold text-gray-700 mt-1">{summary}</p>
+          : <p className="text-gray-500 mt-1">Manage everything you&apos;ve posted or arranged for pickup.</p>}
       </div>
 
       {savedToast && (
         <div className="mb-6 flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 rounded-lg px-4 py-3 text-sm font-medium">
-          ✅ Draft saved. It&apos;s in your listings below... finish and post it whenever.
+          ✅ Draft saved. Finish and post it whenever.
         </div>
       )}
 
       {loadError && <div className="mb-6 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{loadError}</div>}
       {actionError && <div className="mb-6 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{actionError}</div>}
 
+      {drafts.length > 0 && (
+        <div className="mb-8 space-y-3">
+          {drafts.map(listing => {
+            const token = manageTokens[listing.id]
+            const manageHref = `/listing/${listing.id}/manage${token ? `?token=${encodeURIComponent(token)}` : ''}`
+            const missing = missingFor(listing)
+            return (
+              <div key={listing.id} className="bg-amber-50 rounded-xl border border-amber-200 p-5">
+                <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">Unfinished draft</p>
+                <p className="text-xl font-bold text-gray-900 mt-1 truncate">{listing.item_type}</p>
+                <p className="text-sm text-amber-800 mt-1">
+                  {missing.length ? `Add ${joinList(missing)} to post it.` : 'Ready to go. Nobody can see it until you post it.'}
+                </p>
+                <div className="flex items-center gap-2 flex-wrap mt-4">
+                  <Link href={manageHref} className={`text-sm font-semibold px-4 py-2 rounded-full transition-colors ${
+                    missing.length ? 'text-white bg-amber-600 hover:bg-amber-700' : 'text-amber-800 border border-amber-300 hover:bg-amber-100'
+                  }`}>{missing.length ? 'Finish it' : 'Edit'}</Link>
+                  {missing.length === 0 && (
+                    <button type="button" onClick={() => listingAction(listing, 'update', 'available')} disabled={Boolean(pendingAction)}
+                      className="text-sm font-semibold text-white bg-green-600 border border-green-600 hover:bg-green-700 px-4 py-2 rounded-full disabled:opacity-50 transition-colors">
+                      {pendingAction === `${listing.id}-update` ? 'Posting…' : 'Post it'}
+                    </button>
+                  )}
+                  <button type="button" onClick={() => listingAction(listing, 'delete')} disabled={Boolean(pendingAction)}
+                    className="text-sm font-semibold text-red-600 border border-red-200 hover:bg-red-50 px-3 py-2 rounded-full disabled:opacity-50 transition-colors">
+                    {pendingAction === `${listing.id}-delete` ? 'Deleting…' : 'Delete'}
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
       <section>
         <h2 className="text-xl font-bold text-gray-900 mb-3">Your listings</h2>
-        {listings.length === 0 ? (
+        {posted.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-200 px-5 py-6 text-center">
-            <p className="text-gray-500 text-sm mb-4">No listings yet.</p>
+            <p className="text-gray-500 text-sm mb-4">Nothing posted yet.</p>
             <Link href="/new" className="inline-block bg-indigo-600 text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-indigo-700 transition-colors">Post a listing</Link>
           </div>
         ) : (
           <div className="space-y-3">
-            {listings.map(listing => {
+            {posted.map(listing => {
               const token = manageTokens[listing.id]
               const manageHref = `/listing/${listing.id}/manage${token ? `?token=${encodeURIComponent(token)}` : ''}`
               const sold = listing.status === 'sold'
-              const isDraft = listing.status === 'draft'
-              const primaryTarget = isDraft ? 'available' : sold ? 'available' : 'sold'
+              const primaryTarget = sold ? 'available' : 'sold'
               const primaryLabel = pendingAction === `${listing.id}-update`
-                ? (isDraft ? 'Posting…' : 'Saving…')
-                : (isDraft ? 'Post it' : sold ? 'Mark available' : 'Mark sold')
+                ? 'Saving…'
+                : (sold ? 'Mark available' : 'Mark sold')
               return (
                 <div key={listing.id} className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-4 flex-wrap sm:flex-nowrap">
                   <div className="w-16 h-20 rounded-lg overflow-hidden shrink-0 bg-gray-100">
@@ -252,7 +318,7 @@ export default function MyListingsPage() {
                     <div className="flex items-center gap-2">
                       <p className="font-semibold text-gray-900 truncate">{listing.item_type}</p>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${
-                        sold ? 'bg-gray-100 text-gray-500' : isDraft || listing.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
+                        sold ? 'bg-gray-100 text-gray-500' : listing.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
                       }`}>
                         {listing.status.charAt(0).toUpperCase() + listing.status.slice(1)}
                       </span>
@@ -263,9 +329,7 @@ export default function MyListingsPage() {
                   <div className="w-full sm:w-auto flex items-center gap-2 shrink-0">
                     <Link href={manageHref} className="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-full transition-colors">Manage</Link>
                     <button type="button" onClick={() => listingAction(listing, 'update', primaryTarget)} disabled={Boolean(pendingAction)}
-                      className={`text-sm font-semibold px-3 py-2 rounded-full border disabled:opacity-50 transition-colors ${
-                        isDraft ? 'text-white bg-green-600 border-green-600 hover:bg-green-700' : 'text-indigo-700 border-indigo-200 hover:bg-indigo-50'
-                      }`}>
+                      className="text-sm font-semibold text-indigo-700 border border-indigo-200 hover:bg-indigo-50 px-3 py-2 rounded-full disabled:opacity-50 transition-colors">
                       {primaryLabel}
                     </button>
                     <button type="button" onClick={() => listingAction(listing, 'delete')} disabled={Boolean(pendingAction)}

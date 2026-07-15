@@ -69,7 +69,10 @@ export default function SignInPage() {
             className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-sm font-medium text-gray-700">Password</label>
+            {!isSignup && <Link href="/reset-password" className="text-sm text-indigo-600 hover:underline">Forgot your password?</Link>}
+          </div>
           <input type="password" value={password} onChange={e => setPassword(e.target.value)}
             placeholder={isSignup ? 'At least 6 characters' : 'Your password'}
             autoComplete={isSignup ? 'new-password' : 'current-password'}

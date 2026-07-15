@@ -6,7 +6,7 @@ import { supabase, type School } from '@/lib/supabase'
 import { getTheme } from '@/lib/schoolTheme'
 import SchoolPicker from '@/components/SchoolPicker'
 import { useAuth } from '@/components/AuthProvider'
-import InlineAccountStep from '@/components/InlineAccountStep'
+import AccountField, { type AccountFieldHandle } from '@/components/AccountField'
 
 const STEPS = [
   { icon: '🛍️', title: 'Bag it up', body: 'Leave it by your door at a set time.' },
@@ -27,11 +27,11 @@ export default function SellForMePage() {
   const router = useRouter()
   const { user } = useAuth()
   const [schools, setSchools] = useState<School[]>([])
-  const [showAccount, setShowAccount] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [pile, setPile] = useState('')
   const autoSummary = useRef('')
+  const accountRef = useRef<AccountFieldHandle>(null)
 
   const [form, setForm] = useState({
     name: '',
@@ -147,7 +147,7 @@ export default function SellForMePage() {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     if (!form.name.trim()) return setError('Please enter your name.')
@@ -156,8 +156,12 @@ export default function SellForMePage() {
     if (form.school_id === 'other' && !form.custom_school.trim()) return setError('Please type the school name.')
     if (!form.town.trim()) return setError('Please enter your town so we can arrange pickup.')
     if (!form.item_summary.trim()) return setError('Tap a pile size, or tell us what you have.')
-    if (!user) { setShowAccount(true); return }  // deferred account creation
-    doSubmit(user.id)
+    let uid = user?.id
+    if (!uid) {
+      uid = (await accountRef.current?.ensureAccount()) ?? undefined
+      if (!uid) return
+    }
+    doSubmit(uid)
   }
 
   return (
@@ -174,12 +178,14 @@ export default function SellForMePage() {
       </div>
 
       {/* Bag → pickup → money */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mb-8">
         {STEPS.map((s, i) => (
-          <div key={i} className="bg-white rounded-2xl border border-gray-200 px-2 py-5 sm:p-5 flex flex-col items-center text-center gap-2">
-            <div className="text-5xl">{s.icon}</div>
-            <p className="font-extrabold text-gray-900 leading-tight text-[15px] sm:text-base">{s.title}</p>
-            <p className="text-[13px] text-gray-500 leading-snug">{s.body}</p>
+          <div key={i} className="bg-white rounded-2xl border border-gray-200 px-4 py-3 sm:p-5 flex sm:flex-col items-center sm:text-center gap-3 sm:gap-2">
+            <div className="text-4xl sm:text-5xl shrink-0">{s.icon}</div>
+            <div>
+              <p className="font-extrabold text-gray-900 leading-tight text-[15px] sm:text-base">{s.title}</p>
+              <p className="text-[13px] text-gray-500 leading-snug">{s.body}</p>
+            </div>
           </div>
         ))}
       </div>
@@ -289,6 +295,8 @@ export default function SellForMePage() {
           </div>
         </div>
 
+        {!user && <AccountField ref={accountRef} blurb="So you can check your pickup status later. No email to check." />}
+
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{error}</div>
         )}
@@ -297,25 +305,29 @@ export default function SellForMePage() {
           className="w-full bg-emerald-600 text-white font-extrabold py-4 rounded-2xl hover:bg-emerald-700 disabled:opacity-50 transition-colors text-xl">
           {submitting ? 'Sending...' : 'Get my free pickup'}
         </button>
-        {form.payout_choice !== 'donate' && (
-          <p className="text-center text-sm text-gray-500">
-            You&apos;re paid within a few days of each sale.
+        <p className="text-center text-sm text-gray-500">
+          {form.payout_choice === 'donate'
+            ? 'You’re giving your half of every sale.'
+            : 'You’re paid within a few days of each sale.'}
+        </p>
+
+        <details className="group rounded-lg border border-gray-300">
+          <summary className="flex items-center justify-between cursor-pointer list-none px-3 py-2.5 text-sm font-medium text-gray-600">
+            <span>What if it doesn&apos;t sell?</span>
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"
+              className="w-4 h-4 text-gray-400 shrink-0 transition-transform group-open:rotate-180" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 8l5 5 5-5" />
+            </svg>
+          </summary>
+          <p className="px-3 pb-3 text-sm text-gray-500">
+            We keep it listed until it sells. No time limit, and no cost to you either way. If you want something back, just ask and we&apos;ll return it.
           </p>
-        )}
+        </details>
+
         <p className="text-center text-xs text-gray-400">
-          We&apos;ll reach out to schedule a time before pickup. Cancel anytime.
+          We&apos;ll reach out within 2 days to set a pickup time. Cancel anytime.
         </p>
       </form>
-
-      {showAccount && (
-        <InlineAccountStep
-          onClose={() => setShowAccount(false)}
-          onCreated={uid => { setShowAccount(false); doSubmit(uid) }}
-          heading="Almost done... create your account"
-          blurb="Your request is filled in and waiting. Create a free account to send it and track your pickup. 10 seconds, no email to check."
-          cta="Create account & send"
-        />
-      )}
     </div>
   )
 }

@@ -64,10 +64,12 @@ export default function ListingDetailPage() {
     .filter(Boolean)
     .join(', ')
 
+  const showContactBar = listing.status !== 'sold' && !!listing.contact_info
+
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <div className="flex items-center justify-between gap-3 mb-6">
-        <Link href="/" className="text-sm text-indigo-600 hover:underline">
+    <div className={`max-w-5xl mx-auto px-4 pt-10 ${showContactBar ? 'pb-28 sm:pb-10' : 'pb-10'}`}>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <Link href={listing.school_id ? `/?school=${listing.school_id}` : '/'} className="text-sm text-indigo-600 hover:underline">
           ← Back to listings
         </Link>
         <div className="flex items-center gap-2">
@@ -80,7 +82,7 @@ export default function ListingDetailPage() {
           {manageToken && (
             <Link href={`/listing/${id}/manage?token=${manageToken}`}
               className="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-1.5 rounded-full transition-colors">
-              Manage your listing
+              Manage
             </Link>
           )}
         </div>
@@ -166,7 +168,6 @@ export default function ListingDetailPage() {
 
           {/* Details table */}
           <div className="bg-gray-50 rounded-xl border border-gray-200 divide-y divide-gray-200 mb-6">
-            <Row label="School" value={listing.school_name} />
             {locationStr && <Row label="Location" value={locationStr} />}
             {paymentLabels.length > 0 && (
               <Row label="Payment" value={paymentLabels.join(' · ')} />
@@ -196,7 +197,7 @@ export default function ListingDetailPage() {
               </div>
 
               {listing.contact_info ? (
-                <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
+                <div id="contact" className="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
                   <p className="text-sm font-medium text-indigo-900 mb-2">Contact {listing.seller_name}</p>
                   <ContactAction method={listing.contact_method} info={listing.contact_info} seller={listing.seller_name} />
                   <p className="text-xs text-indigo-500 mt-3">
@@ -204,8 +205,14 @@ export default function ListingDetailPage() {
                   </p>
                 </div>
               ) : (
-                <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-sm text-indigo-700">
-                  This seller hasn&apos;t listed contact info. Check the comments above, or reach out through your school community.
+                <div id="contact" className="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
+                  <p className="text-sm text-indigo-700">
+                    This seller hasn&apos;t listed contact info. Send us a note and we&apos;ll pass your message along.
+                  </p>
+                  <Link href="/contact"
+                    className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-full transition-colors">
+                    Ask us about this item →
+                  </Link>
                 </div>
               )}
             </>
@@ -219,6 +226,22 @@ export default function ListingDetailPage() {
           )}
         </div>
       </div>
+
+      {showContactBar && (
+        <div className="sm:hidden fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-40 bg-white border-t border-gray-200 px-4 py-3">
+          <div className="flex items-center gap-3">
+            <p className="text-2xl font-black leading-none text-indigo-700 shrink-0">
+              {listing.price === 0 ? 'Free' : `$${listing.price}`}
+            </p>
+            <a href={contactHref(listing.contact_method, listing.contact_info!) || '#contact'}
+              target={listing.contact_method === 'venmo' ? '_blank' : undefined} rel="noopener noreferrer"
+              className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold rounded-xl px-4 py-3 hover:bg-indigo-700 transition-colors">
+              {contactAction(listing.contact_method, listing.seller_name)}
+              <span aria-hidden>→</span>
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -235,15 +258,25 @@ function formatContact(method: string | null, info: string): string {
   return info
 }
 
+function contactHref(method: string | null, info: string): string | null {
+  if (method === 'text') return `sms:${info.replace(/[^\d+]/g, '')}`
+  if (method === 'email') return `mailto:${info}`
+  if (method === 'venmo') return `https://venmo.com/u/${info.replace(/^@/, '')}`
+  return null
+}
+
+function contactAction(method: string | null, seller: string): string {
+  const firstName = (seller || 'the seller').split(' ')[0]
+  if (method === 'text') return `Text ${firstName}`
+  if (method === 'email') return `Email ${firstName}`
+  if (method === 'venmo') return `Venmo ${firstName}`
+  return `Contact ${firstName}`
+}
+
 function ContactAction({ method, info, seller }: { method: string | null; info: string; seller: string }) {
   const label = CONTACT_METHOD_LABELS[method || 'other'] || 'Contact'
-  const firstName = (seller || 'the seller').split(' ')[0]
-
-  let href: string | null = null
-  let action = `Contact ${firstName}`
-  if (method === 'text') { href = `sms:${info.replace(/[^\d+]/g, '')}`; action = `Text ${firstName}` }
-  else if (method === 'email') { href = `mailto:${info}`; action = `Email ${firstName}` }
-  else if (method === 'venmo') { href = `https://venmo.com/u/${info.replace(/^@/, '')}`; action = `Venmo ${firstName}` }
+  const href = contactHref(method, info)
+  const action = contactAction(method, seller)
 
   if (!href) {
     // "Other" contact (e.g. Instagram): there is no app link, so the value
