@@ -74,16 +74,18 @@ export async function GET(req: NextRequest) {
             fontFamily: 'Inter',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Hanger size={36} color="#ffffff" />
-            <div style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-1px' }}>UniformPass</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <Hanger size={42} color="#ffffff" />
+            <div style={{ fontSize: 36, fontWeight: 800, letterSpacing: '-1px' }}>UniformPass</div>
           </div>
 
-          <div style={{ fontSize: 82, fontWeight: 900, letterSpacing: '-3px', lineHeight: 1.02, marginTop: 34 }}>
+          {/* Two lines on purpose: this is read at ~300px wide in a text thread,
+              so the headline has to survive a 4x downscale. */}
+          <div style={{ fontSize: 112, fontWeight: 900, letterSpacing: '-4px', lineHeight: 0.98, marginTop: 26, maxWidth: 860 }}>
             Turn uniforms into cash.
           </div>
 
-          <div style={{ display: 'flex', gap: 20, marginTop: 40 }}>
+          <div style={{ display: 'flex', gap: 20, marginTop: 34 }}>
             <div
               style={{
                 flex: 1,
@@ -92,15 +94,12 @@ export async function GET(req: NextRequest) {
                 gap: 18,
                 background: 'rgba(255,255,255,0.18)',
                 border: '3px solid #FDE68A',
-                borderRadius: 26,
-                padding: '22px 28px',
+                borderRadius: 24,
+                padding: '20px 26px',
               }}
             >
-              <Cash size={48} color="#FDE68A" />
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <div style={{ fontSize: 32, fontWeight: 900, letterSpacing: '-1px' }}>Auto Sell</div>
-                <div style={{ fontSize: 21, opacity: 0.92, marginTop: 4 }}>We pick up your pile. You get cash.</div>
-              </div>
+              <Cash size={46} color="#FDE68A" />
+              <div style={{ fontSize: 38, fontWeight: 900, letterSpacing: '-1.5px' }}>Auto Sell</div>
             </div>
             <div
               style={{
@@ -110,21 +109,18 @@ export async function GET(req: NextRequest) {
                 gap: 18,
                 background: 'rgba(255,255,255,0.10)',
                 border: '2px solid rgba(255,255,255,0.28)',
-                borderRadius: 26,
-                padding: '22px 28px',
+                borderRadius: 24,
+                padding: '20px 26px',
               }}
             >
-              <Hanger size={48} color="#FDE68A" />
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <div style={{ fontSize: 32, fontWeight: 900, letterSpacing: '-1px' }}>Buy and sell</div>
-                <div style={{ fontSize: 21, opacity: 0.92, marginTop: 4 }}>Your school&apos;s uniform marketplace.</div>
-              </div>
+              <Hanger size={46} color="#FDE68A" />
+              <div style={{ fontSize: 38, fontWeight: 900, letterSpacing: '-1.5px' }}>Buy and sell</div>
             </div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
-            <div style={{ fontSize: 26, fontWeight: 700, opacity: 0.85 }}>No fees · No shipping · Meet locally</div>
-            <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: '-1px', color: '#FDE68A' }}>uniformpass.shop</div>
+            <div style={{ fontSize: 28, fontWeight: 700, opacity: 0.85 }}>No fees · No shipping · Meet locally</div>
+            <div style={{ fontSize: 38, fontWeight: 900, letterSpacing: '-1px', color: '#FDE68A' }}>uniformpass.shop</div>
           </div>
         </div>
       ),
