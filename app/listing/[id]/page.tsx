@@ -18,9 +18,11 @@ export default function ListingDetailPage() {
   const [loading, setLoading] = useState(true)
   const [activePhoto, setActivePhoto] = useState(0)
   const [manageToken, setManageToken] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
     setManageToken(localStorage.getItem(`uniformpass_manage_${id}`))
+    supabase.auth.getSession().then(({ data: { session } }) => setUserId(session?.user.id ?? null))
   }, [id])
 
   useEffect(() => {
@@ -50,6 +52,7 @@ export default function ListingDetailPage() {
   if (!listing) return null
 
   const photos = listing.photos?.length ? listing.photos : [PLACEHOLDER]
+  const isOwner = Boolean(manageToken || (userId && listing.user_id === userId))
 
   const conditionColor: Record<string, string> = {
     new: 'bg-green-100 text-green-700 border-green-200',
@@ -79,10 +82,10 @@ export default function ListingDetailPage() {
             listing={{ id: listing.id, itemType: listing.item_type, price: listing.price, schoolName: listing.school_name }}
             buttonClassName="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 hover:border-gray-500 px-4 py-1.5 rounded-full transition-colors"
           />
-          {manageToken && (
-            <Link href={`/listing/${id}/manage?token=${manageToken}`}
+          {isOwner && (
+            <Link href={manageToken ? `/listing/${id}/manage?token=${manageToken}` : `/listing/${id}/manage`}
               className="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-1.5 rounded-full transition-colors">
-              Manage
+              Edit
             </Link>
           )}
         </div>

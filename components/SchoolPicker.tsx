@@ -62,7 +62,8 @@ export default function SchoolPicker({
               type="button" key={s.id} onClick={() => pick(s)}
               className="w-full text-left px-3 py-2 text-sm hover:bg-indigo-50"
             >
-              {s.name} <span className="text-gray-400">({s.state})</span>
+              <span className="block font-semibold text-gray-900">{s.name}</span>
+              <span className="block text-[13px] text-gray-500">{s.city}, {s.state}</span>
             </button>
           ))}
           {q && matches.length === 0 && (

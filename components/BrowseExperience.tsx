@@ -389,21 +389,24 @@ function EmptyState({ schoolName, hasFilters, onClear }: { schoolName: string; h
   return (
     <div className="py-14 max-w-md mx-auto text-center">
       <h2 className="text-2xl font-extrabold text-gray-900">
-        {schoolName ? `Nothing from ${schoolName} yet.` : 'Nothing listed yet.'}
+        {schoolName ? `Be the first to sell for ${schoolName}.` : 'Be the first to sell.'}
       </h2>
-      <p className="text-[15px] text-gray-500 font-medium mt-2">
-        We&apos;ll email you the moment the first one lands.
+
+      <Link href="/new"
+        className="inline-block mt-5 bg-indigo-600 text-white text-base sm:text-lg font-extrabold px-6 py-3 sm:py-3.5 rounded-2xl hover:bg-indigo-700 transition-colors">
+        Post an item
+      </Link>
+
+      <p className="mt-4 text-[15px] text-gray-500 font-medium">
+        Or let us do it:{' '}
+        <Link href="/sell-for-me" className="font-bold text-emerald-700 underline underline-offset-2">get a free pickup</Link>
       </p>
-      <div className="mt-5">
-        <NotifyForm topic={schoolName} />
-      </div>
 
       <div className="mt-10 pt-8 border-t border-gray-200">
-        <p className="text-[15px] text-gray-600 font-medium">Got outgrown uniforms at home?</p>
-        <Link href="/sell-for-me"
-          className="inline-block mt-3 bg-emerald-600 text-white text-base sm:text-lg font-extrabold px-6 py-3 sm:py-3.5 rounded-2xl hover:bg-emerald-700 transition-colors">
-          Get a free pickup
-        </Link>
+        <p className="text-[15px] text-gray-600 font-medium">Just looking to buy?</p>
+        <div className="mt-3">
+          <NotifyForm topic={schoolName} />
+        </div>
       </div>
     </div>
   )

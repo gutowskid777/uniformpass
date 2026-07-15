@@ -14,6 +14,14 @@ const STATUS_TABS = [
 
 const MAX_PHOTOS = 8
 
+// The token is the pre-accounts path (a secret link, no login). Signed-in owners
+// are authorized by their JWT instead, so manage works on any device.
+function authHeaders(jwt?: string): HeadersInit {
+  return jwt
+    ? { 'content-type': 'application/json', authorization: `Bearer ${jwt}` }
+    : { 'content-type': 'application/json' }
+}
+
 type ManageForm = {
   status: string
   price: string
@@ -70,21 +78,26 @@ export default function ManageListingPage() {
     const t = sp.get('token') || ''
     setIsNew(sp.get('new') === '1')
     setToken(t)
-    if (!t) { setInvalid(true); setLoading(false); return }
-    fetch('/api/listings/manage', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ action: 'load', listingId: id, token: t }),
-    })
-      .then(async res => {
+    ;(async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!t && !session) { setInvalid(true); setLoading(false); return }
+      try {
+        const res = await fetch('/api/listings/manage', {
+          method: 'POST',
+          headers: authHeaders(session?.access_token),
+          body: JSON.stringify({ action: 'load', listingId: id, token: t }),
+        })
         if (!res.ok) { setInvalid(true); return }
         const { listing } = await res.json()
         setListing(listing)
         setForm(prefill(listing))
         setExistingPhotos(listing.photos || [])
-      })
-      .catch(() => setInvalid(true))
-      .finally(() => setLoading(false))
+      } catch {
+        setInvalid(true)
+      } finally {
+        setLoading(false)
+      }
+    })()
   }, [id])
 
   const set = (key: keyof ManageForm, value: string | boolean) =>
@@ -143,8 +156,9 @@ export default function ManageListingPage() {
     if (!form) return
     setStatusSaving(true); setError('')
     setForm({ ...form, status })
+    const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch('/api/listings/manage', {
-      method: 'POST', headers: { 'content-type': 'application/json' },
+      method: 'POST', headers: authHeaders(session?.access_token),
       body: JSON.stringify({ action: 'update', listingId: id, token, updates: { status } }),
     })
     if (!res.ok) setError((await res.json()).error || 'Could not update status')
@@ -158,8 +172,9 @@ export default function ManageListingPage() {
     try {
       const newUrls = await uploadNew()
       const photos = [...existingPhotos, ...newUrls]
+      const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch('/api/listings/manage', {
-        method: 'POST', headers: { 'content-type': 'application/json' },
+        method: 'POST', headers: authHeaders(session?.access_token),
         body: JSON.stringify({ action: 'update', listingId: id, token, updates: { ...buildUpdates(form), photos } }),
       })
       if (!res.ok) { setError((await res.json()).error || 'Could not save changes'); setSaving(false); return }
@@ -175,8 +190,9 @@ export default function ManageListingPage() {
   const del = async () => {
     if (!confirm('Delete this listing permanently? This cannot be undone.')) return
     setDeleting(true); setError('')
+    const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch('/api/listings/manage', {
-      method: 'POST', headers: { 'content-type': 'application/json' },
+      method: 'POST', headers: authHeaders(session?.access_token),
       body: JSON.stringify({ action: 'delete', listingId: id, token }),
     })
     if (res.ok) {
