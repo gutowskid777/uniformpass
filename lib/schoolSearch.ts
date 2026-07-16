@@ -19,7 +19,8 @@ const ALIASES: Record<string, string[]> = {
   'pope john xxiii high school': ['pope john', 'pj'],
   'mary help of christians academy': ['mhc', 'mary help'],
   'albertus magnus high school': ['albertus', 'magnus'],
-  'st. anthony school': ['st ants', 'ants'],
+  'st. anthony school': ['st ants', 'ants', 'st anthonys'],
+  'st. margaret of antioch school': ['st margarets', 'margarets', 'pearl river'],
 }
 
 const ACRONYM_STOPWORDS = new Set(['of', 'the', 'and', 'at', 'high', 'school'])

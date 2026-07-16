@@ -61,6 +61,7 @@ export default function ManageListingPage() {
   const [isNew, setIsNew] = useState(false)
   const [loading, setLoading] = useState(true)
   const [invalid, setInvalid] = useState(false)
+  const [serverDown, setServerDown] = useState(false)
   const [listing, setListing] = useState<Listing | null>(null)
   const [form, setForm] = useState<ManageForm | null>(null)
   const [saving, setSaving] = useState(false)
@@ -87,13 +88,17 @@ export default function ManageListingPage() {
           headers: authHeaders(session?.access_token),
           body: JSON.stringify({ action: 'load', listingId: id, token: t }),
         })
-        if (!res.ok) { setInvalid(true); return }
+        if (!res.ok) {
+          if (res.status >= 500) setServerDown(true)
+          else setInvalid(true)
+          return
+        }
         const { listing } = await res.json()
         setListing(listing)
         setForm(prefill(listing))
         setExistingPhotos(listing.photos || [])
       } catch {
-        setInvalid(true)
+        setServerDown(true)
       } finally {
         setLoading(false)
       }
@@ -208,6 +213,17 @@ export default function ManageListingPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (serverDown) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-24 text-center">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Something went wrong on our end.</h1>
+        <p className="text-gray-500 mb-6">Your listing is fine. We couldn&apos;t load the editor just now. Try again in a moment.</p>
+        <button onClick={() => window.location.reload()} className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-full font-medium hover:bg-indigo-700 transition-colors">Try again</button>
+        <div className="mt-4"><Link href="/my-listings" className="text-sm text-indigo-600 hover:underline">My Listings</Link></div>
       </div>
     )
   }
