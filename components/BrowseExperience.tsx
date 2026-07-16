@@ -120,24 +120,42 @@ export default function BrowseExperience() {
         </div>
 
         {/* Filter bar */}
-        <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 shadow-sm">
-          <div className="flex items-center justify-between sm:hidden mb-3">
-            <button onClick={() => setShowFilters(!showFilters)} className="text-sm font-medium text-indigo-600">
-              {showFilters ? '▲ Hide filters' : '▼ Filters'}
-              {activeFilters > 0 && (
-                <span className="bg-indigo-600 text-white text-xs rounded-full w-5 h-5 inline-flex items-center justify-center ml-1">{activeFilters}</span>
-              )}
-            </button>
-            {activeFilters > 0 && <button onClick={clearFilters} className="text-xs text-gray-500 underline">Clear</button>}
-          </div>
-
-          <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 ${!showFilters ? 'hidden sm:grid' : 'grid'}`}>
+        <div className="bg-white rounded-xl border border-gray-200 p-3 sm:p-4 mb-6 shadow-sm">
+          {/* Search stays OUT of the collapse on mobile. Burying it behind a
+              "Filters" toggle hid the one control a buyer came to use. */}
+          <div className="flex items-center gap-2 sm:hidden">
             <input
               type="search"
               value={item}
               onChange={e => { setItem(e.target.value); updateUrl({ item: e.target.value }) }}
-              placeholder="Search items..."
-              className="rounded-lg border-gray-300 text-sm placeholder:text-gray-400 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Search items"
+              className="flex-1 min-w-0 rounded-lg border-gray-300 text-sm placeholder:text-gray-400 focus:ring-indigo-500 focus:border-indigo-500"
+              aria-label="Search items"
+            />
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`shrink-0 inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
+                activeFilters > 0 ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-gray-300 text-gray-600'
+              }`}
+            >
+              Filters
+              {activeFilters > 0 && (
+                <span className="bg-indigo-600 text-white text-[11px] font-bold rounded-full w-[18px] h-[18px] inline-flex items-center justify-center">{activeFilters}</span>
+              )}
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.2"
+                className={`w-3.5 h-3.5 transition-transform ${showFilters ? 'rotate-180' : ''}`} aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 8l5 5 5-5" />
+              </svg>
+            </button>
+          </div>
+
+          <div className={`grid grid-cols-2 md:grid-cols-5 gap-2.5 sm:gap-3 mt-3 sm:mt-0 ${!showFilters ? 'hidden sm:grid' : 'grid'}`}>
+            <input
+              type="search"
+              value={item}
+              onChange={e => { setItem(e.target.value); updateUrl({ item: e.target.value }) }}
+              placeholder="Search items"
+              className="hidden sm:block rounded-lg border-gray-300 text-sm placeholder:text-gray-400 focus:ring-indigo-500 focus:border-indigo-500"
               aria-label="Search items"
             />
             <select value={category} onChange={e => { setCategory(e.target.value); updateUrl({ category: e.target.value }) }} className="rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
@@ -159,7 +177,7 @@ export default function BrowseExperience() {
           </div>
 
           {activeFilters > 0 && (
-            <div className="hidden sm:flex mt-3 justify-end">
+            <div className="flex mt-3 justify-end">
               <button onClick={clearFilters} className="text-xs text-gray-500 underline hover:text-gray-700">Clear all filters</button>
             </div>
           )}
@@ -292,18 +310,25 @@ function SellDoors() {
         </Link>
       </div>
 
+      {/* Same anatomy as the band above: icon chip + wordmark, one line of copy,
+          white CTA. Only the axis changes, because this column is 1/4 wide. */}
       <Link href="/new"
-        className="group sm:col-span-1 rounded-2xl bg-gradient-to-br from-indigo-700 to-indigo-800 text-white px-6 py-6 sm:py-7 flex sm:flex-col items-center sm:items-start justify-center gap-3.5 hover:from-indigo-600 hover:to-indigo-800 transition-colors">
-        <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/15 ring-1 ring-white/25 shrink-0">
-          <svg width="20" height="20" viewBox="0 0 32 32" fill="none" stroke="#C7D2FE" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 9a3 3 0 0 1 3-3h8l13 13-11 11L3 17z" /><circle cx="9.5" cy="12.5" r="2" />
-          </svg>
-        </span>
-        <div>
-          <h2 className="text-[22px] sm:text-[25px] font-black tracking-tight leading-[1.05]">List it yourself</h2>
-          <span className="inline-flex items-center gap-1.5 text-indigo-200 text-sm font-bold mt-1.5 group-hover:text-white transition-colors">
-            Post an item <span aria-hidden>→</span>
-          </span>
+        className="sm:col-span-1 rounded-2xl bg-gradient-to-br from-indigo-700 to-indigo-800 text-white px-6 py-6 sm:py-7 flex flex-col gap-5 hover:from-indigo-600 hover:to-indigo-800 transition-colors">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2.5">
+            <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/15 ring-1 ring-white/25 shrink-0">
+              <svg width="20" height="20" viewBox="0 0 32 32" fill="none" stroke="#C7D2FE" strokeWidth="2.8" strokeLinecap="round">
+                <path d="M16 7v18M7 16h18" />
+              </svg>
+            </span>
+            <h2 className="text-[26px] sm:text-[23px] font-black tracking-tight leading-none">List it yourself</h2>
+          </div>
+          <p className="text-indigo-100 text-[14px] sm:text-[15px] mt-2 sm:mt-2.5 font-medium">
+            Post it in two minutes. Keep every dollar.
+          </p>
+        </div>
+        <div className="shrink-0 text-center bg-white text-indigo-800 text-base sm:text-lg font-extrabold px-6 py-3 sm:py-3.5 rounded-2xl">
+          Post an item
         </div>
       </Link>
     </div>

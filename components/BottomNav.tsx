@@ -25,7 +25,7 @@ const TABS = [
   },
   {
     href: '/new', label: 'Sell It Myself',
-    icon: <><path d="M3 9a3 3 0 0 1 3-3h8l13 13-11 11L3 17z" /><circle cx="9.5" cy="12.5" r="2" /></>,
+    icon: <path d="M16 7v18M7 16h18" />,
   },
   {
     href: '/my-listings', label: 'My Listings',
