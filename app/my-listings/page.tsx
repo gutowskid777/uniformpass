@@ -3,7 +3,21 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/components/AuthProvider'
-import { supabase, type Listing, type PickupRequest } from '@/lib/supabase'
+import { supabase, type Listing, type PickupRequest, LISTING_STATUS_LABELS, STALE_LISTING_DAYS } from '@/lib/supabase'
+
+const DAY_MS = 24 * 60 * 60 * 1000
+// A live listing is "stale" if it hasn't been posted or confirmed recently.
+const isStale = (l: Listing) =>
+  l.status === 'available' &&
+  (Date.now() - new Date(l.bumped_at || l.created_at).getTime()) > STALE_LISTING_DAYS * DAY_MS
+
+const STATUS_PILL: Record<string, string> = {
+  available: 'bg-green-100 text-green-700',
+  sold: 'bg-gray-100 text-gray-500',
+  inactive: 'bg-gray-100 text-gray-500',
+  pending: 'bg-amber-100 text-amber-700',
+  draft: 'bg-amber-100 text-amber-700',
+}
 
 const PLACEHOLDER = 'https://placehold.co/100x100/e8e8f0/9999bb?text=?'
 const LOCKED = ['picked_up', 'listed', 'done', 'cancelled']
@@ -142,6 +156,27 @@ export default function MyListingsPage() {
     }
   }
 
+  // "Yes, still up" from the nudge: reset the freshness clock server-side.
+  const confirmListing = async (listing: Listing) => {
+    setPendingAction(`${listing.id}-confirm`)
+    setActionError('')
+    try {
+      const jwt = await accessToken()
+      const response = await fetch('/api/listings/manage', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', Authorization: `Bearer ${jwt}` },
+        body: JSON.stringify({ action: 'confirm', listingId: listing.id }),
+      })
+      const json = await response.json()
+      if (!response.ok) throw new Error(json.error || 'Could not update listing.')
+      setListings(current => current.map(item => item.id === listing.id ? { ...item, bumped_at: json.bumped_at } : item))
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Could not update listing.')
+    } finally {
+      setPendingAction('')
+    }
+  }
+
   const beginPickupEdit = (pickup: Pickup) => {
     setActionError('')
     setEditingPickupId(pickup.id)
@@ -229,11 +264,13 @@ export default function MyListingsPage() {
   const drafts = listings.filter(listing => listing.status === 'draft')
   const posted = listings.filter(listing => listing.status !== 'draft')
   const soldCount = posted.filter(listing => listing.status === 'sold').length
-  const liveCount = posted.length - soldCount
+  const inactiveCount = posted.filter(listing => listing.status === 'inactive').length
+  const liveCount = posted.filter(listing => listing.status === 'available').length
   const openPickups = pickups.filter(pickup => !PICKUP_OVER.includes(pickup.status))
   const summary = [
     liveCount > 0 && `${liveCount} live`,
     soldCount > 0 && `${soldCount} sold`,
+    inactiveCount > 0 && `${inactiveCount} inactive`,
     drafts.length > 0 && `${drafts.length} draft${drafts.length > 1 ? 's' : ''} unfinished`,
     openPickups.some(pickup => pickup.status === 'scheduled') ? 'pickup scheduled'
       : openPickups.length > 0 && `${openPickups.length} pickup request${openPickups.length > 1 ? 's' : ''}`,
@@ -309,34 +346,50 @@ export default function MyListingsPage() {
                 ? 'Saving…'
                 : (sold ? 'Mark available' : 'Mark sold')
               return (
-                <div key={listing.id} className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-4 flex-wrap sm:flex-nowrap">
-                  <div className="w-16 h-20 rounded-lg overflow-hidden shrink-0 bg-gray-100">
-                    <img src={listing.photos?.[0] || PLACEHOLDER} alt="" className="w-full h-full object-cover"
-                      onError={e => { (e.target as HTMLImageElement).src = PLACEHOLDER }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold text-gray-900 truncate">{listing.item_type}</p>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${
-                        sold ? 'bg-gray-100 text-gray-500' : listing.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
-                      }`}>
-                        {listing.status.charAt(0).toUpperCase() + listing.status.slice(1)}
-                      </span>
+                <div key={listing.id} className="bg-white rounded-xl border border-gray-200 p-3">
+                  <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap">
+                    <div className="w-16 h-20 rounded-lg overflow-hidden shrink-0 bg-gray-100">
+                      <img src={listing.photos?.[0] || PLACEHOLDER} alt="" className={`w-full h-full object-cover ${sold ? 'grayscale opacity-70' : ''}`}
+                        onError={e => { (e.target as HTMLImageElement).src = PLACEHOLDER }} />
                     </div>
-                    <p className="text-sm text-gray-500 truncate">{listing.school_name}</p>
-                    <p className="text-sm font-bold text-gray-900 mt-0.5">{listing.price === 0 ? 'Free' : `$${listing.price}`}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-gray-900 truncate">{listing.item_type}</p>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${STATUS_PILL[listing.status] || 'bg-gray-100 text-gray-500'}`}>
+                          {LISTING_STATUS_LABELS[listing.status] || listing.status}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-500 truncate">{listing.school_name}</p>
+                      <p className="text-sm font-bold text-gray-900 mt-0.5">{listing.price === 0 ? 'Free' : `$${listing.price}`}</p>
+                    </div>
+                    <div className="w-full sm:w-auto flex items-center gap-2 shrink-0">
+                      <Link href={manageHref} className="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-full transition-colors">Manage</Link>
+                      <button type="button" onClick={() => listingAction(listing, 'update', primaryTarget)} disabled={Boolean(pendingAction)}
+                        className="text-sm font-semibold text-indigo-700 border border-indigo-200 hover:bg-indigo-50 px-3 py-2 rounded-full disabled:opacity-50 transition-colors">
+                        {primaryLabel}
+                      </button>
+                      <button type="button" onClick={() => listingAction(listing, 'delete')} disabled={Boolean(pendingAction)}
+                        className="text-sm font-semibold text-red-600 border border-red-200 hover:bg-red-50 px-3 py-2 rounded-full disabled:opacity-50 transition-colors">
+                        {pendingAction === `${listing.id}-delete` ? 'Deleting…' : 'Delete'}
+                      </button>
+                    </div>
                   </div>
-                  <div className="w-full sm:w-auto flex items-center gap-2 shrink-0">
-                    <Link href={manageHref} className="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-full transition-colors">Manage</Link>
-                    <button type="button" onClick={() => listingAction(listing, 'update', primaryTarget)} disabled={Boolean(pendingAction)}
-                      className="text-sm font-semibold text-indigo-700 border border-indigo-200 hover:bg-indigo-50 px-3 py-2 rounded-full disabled:opacity-50 transition-colors">
-                      {primaryLabel}
-                    </button>
-                    <button type="button" onClick={() => listingAction(listing, 'delete')} disabled={Boolean(pendingAction)}
-                      className="text-sm font-semibold text-red-600 border border-red-200 hover:bg-red-50 px-3 py-2 rounded-full disabled:opacity-50 transition-colors">
-                      {pendingAction === `${listing.id}-delete` ? 'Deleting…' : 'Delete'}
-                    </button>
-                  </div>
+
+                  {isStale(listing) && (
+                    <div className="mt-3 flex items-center gap-3 flex-wrap bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
+                      <p className="text-sm text-amber-800 font-medium flex-1 min-w-0">Still available? It&apos;s been a while... keep it fresh or mark it sold.</p>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button type="button" onClick={() => confirmListing(listing)} disabled={Boolean(pendingAction)}
+                          className="text-sm font-semibold text-amber-800 border border-amber-300 hover:bg-amber-100 px-3 py-1.5 rounded-full disabled:opacity-50 transition-colors">
+                          {pendingAction === `${listing.id}-confirm` ? 'Saving…' : 'Yes, still up'}
+                        </button>
+                        <button type="button" onClick={() => listingAction(listing, 'update', 'sold')} disabled={Boolean(pendingAction)}
+                          className="text-sm font-semibold text-white bg-amber-600 hover:bg-amber-700 px-3 py-1.5 rounded-full disabled:opacity-50 transition-colors">
+                          Mark sold
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )
             })}

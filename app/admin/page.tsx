@@ -5,7 +5,7 @@ import { supabase, type Listing, type PickupRequest, type ContactMessage, CONDIT
 
 const PLACEHOLDER = 'https://placehold.co/100x100/e8e8f0/9999bb?text=?'
 
-const STATUS_OPTIONS = ['available', 'sold', 'draft'] as const
+const STATUS_OPTIONS = ['available', 'sold', 'inactive', 'draft'] as const
 type Status = typeof STATUS_OPTIONS[number]
 
 const PICKUP_STATUSES = ['new', 'scheduled', 'picked_up', 'listed', 'done', 'declined', 'cancelled'] as const
@@ -24,6 +24,7 @@ const PICKUP_STATUS_STYLES: Record<string, string> = {
 const STATUS_STYLES: Record<Status, string> = {
   available: 'bg-green-100 text-green-700',
   sold: 'bg-gray-100 text-gray-500',
+  inactive: 'bg-gray-100 text-gray-500',
   draft: 'bg-purple-100 text-purple-700',
 }
 
@@ -260,7 +261,7 @@ export default function AdminPage() {
             const locationStr = [listing.location_city, listing.location_state].filter(Boolean).join(', ')
             return (
               <div key={listing.id} className={`bg-white rounded-xl border flex items-center gap-4 p-4 ${
-                status === 'sold' || status === 'draft' ? 'border-gray-200 opacity-70' : 'border-gray-200'
+                status === 'sold' || status === 'draft' || status === 'inactive' ? 'border-gray-200 opacity-70' : 'border-gray-200'
               }`}>
                 {/* Photo */}
                 <div className="w-16 h-20 rounded-lg overflow-hidden shrink-0 bg-gray-100">

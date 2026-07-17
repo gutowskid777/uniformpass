@@ -15,7 +15,7 @@ function admin() {
   return createClient(url, serviceKey, { auth: { persistSession: false } })
 }
 
-const STATUS = ['available', 'pending', 'sold', 'draft']
+const STATUS = ['available', 'pending', 'sold', 'draft', 'inactive']
 
 export async function POST(req: Request) {
   if (!ADMIN_PASSWORD || req.headers.get('x-admin-password') !== ADMIN_PASSWORD) {

@@ -13,7 +13,7 @@ function admin() {
 }
 
 const ENUMS: Record<string, string[]> = {
-  status: ['available', 'pending', 'sold', 'draft'],
+  status: ['available', 'pending', 'sold', 'draft', 'inactive'],
   condition: ['new', 'good', 'fair'],
   category: ['uniform', 'sport', 'spirit', 'alumni'],
   gender: ['boy', 'girl', 'unisex'],
@@ -92,6 +92,13 @@ export async function POST(req: Request) {
     const { error } = await db.from('listings').update(clean).eq('id', listingId)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ ok: true })
+  }
+
+  // "Still available" from the nudge: reset the freshness clock, nothing else.
+  if (action === 'confirm') {
+    const { error } = await db.from('listings').update({ bumped_at: new Date().toISOString() }).eq('id', listingId)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ ok: true, bumped_at: new Date().toISOString() })
   }
 
   if (action === 'delete') {

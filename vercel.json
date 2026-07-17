@@ -1,0 +1,5 @@
+{
+  "crons": [
+    { "path": "/api/cron/listing-nudge", "schedule": "0 14 * * 1" }
+  ]
+}

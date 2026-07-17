@@ -31,12 +31,28 @@ export type Listing = {
   seller_name: string
   description: string | null
   photos: string[]
-  status: 'available' | 'pending' | 'sold' | 'draft'
+  status: 'available' | 'pending' | 'sold' | 'draft' | 'inactive'
   is_verified: boolean
   user_id: string | null
   created_at: string
   edited_at: string | null
+  bumped_at: string | null
 }
+
+export type ListingStatus = Listing['status']
+
+// The value 'available' stays in the DB; sellers see it as "Active". Relabel only.
+export const LISTING_STATUS_LABELS: Record<string, string> = {
+  draft: 'Draft',
+  available: 'Active',
+  inactive: 'Inactive',
+  sold: 'Sold',
+  pending: 'Pending',
+}
+
+// A still-active listing older than this (since it was posted or last confirmed)
+// gets the "still available?" nudge, in-app and by the weekly email.
+export const STALE_LISTING_DAYS = 14
 
 export type ContactMessage = {
   id: string

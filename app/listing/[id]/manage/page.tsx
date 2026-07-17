@@ -6,10 +6,12 @@ import Link from 'next/link'
 import imageCompression from 'browser-image-compression'
 import { type Listing, SIZES, CONTACT_METHODS, supabase } from '@/lib/supabase'
 
+// Mom's four states. 'available' is stored as-is but shown as "Active".
 const STATUS_TABS = [
-  { value: 'available', label: 'Available' },
-  { value: 'draft', label: 'Draft' },
-  { value: 'sold', label: 'Sold' },
+  { value: 'draft', label: 'Draft', hint: 'Hidden. Nobody can see it yet.' },
+  { value: 'available', label: 'Active', hint: 'Live. Buyers can find and contact you.' },
+  { value: 'inactive', label: 'Inactive', hint: 'Paused. Hidden from browse, not sold.' },
+  { value: 'sold', label: 'Sold', hint: 'Marked sold. Still viewable by link.' },
 ] as const
 
 const MAX_PHOTOS = 8
@@ -269,16 +271,17 @@ export default function ManageListingPage() {
       {/* Status */}
       <div className="bg-white rounded-xl border border-gray-200 p-5 mb-4">
         <p className="text-sm font-medium text-gray-700 mb-3">Status {statusSaving && <span className="text-gray-400">· saving…</span>}</p>
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {STATUS_TABS.map(s => (
             <button key={s.value} onClick={() => patchStatus(s.value)} disabled={statusSaving}
-              className={`flex-1 py-2 rounded-lg text-sm font-semibold border transition-colors disabled:opacity-50 ${
+              className={`py-2 rounded-lg text-sm font-semibold border transition-colors disabled:opacity-50 ${
                 form.status === s.value ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
               }`}>
               {s.label}
             </button>
           ))}
         </div>
+        <p className="text-xs text-gray-500 mt-3">{STATUS_TABS.find(s => s.value === form.status)?.hint}</p>
       </div>
 
       {/* Photos */}

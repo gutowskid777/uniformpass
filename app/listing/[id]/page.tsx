@@ -53,6 +53,7 @@ export default function ListingDetailPage() {
 
   const photos = listing.photos?.length ? listing.photos : [PLACEHOLDER]
   const isOwner = Boolean(manageToken || (userId && listing.user_id === userId))
+  const sold = listing.status === 'sold'
 
   const conditionColor: Record<string, string> = {
     new: 'bg-green-100 text-green-700 border-green-200',
@@ -94,13 +95,18 @@ export default function ListingDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Photo gallery */}
         <div>
-          <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-gray-100 mb-3">
+          <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-gray-100 mb-3">
             <img
               src={photos[activePhoto] || PLACEHOLDER}
               alt={listing.item_type}
-              className="w-full h-full object-cover"
+              className={`w-full h-full object-cover ${sold ? 'grayscale opacity-60' : ''}`}
               onError={(e) => { (e.target as HTMLImageElement).src = PLACEHOLDER }}
             />
+            {sold && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="bg-gray-900/85 text-white text-lg font-black tracking-widest px-6 py-2 rounded-lg -rotate-6">SOLD</span>
+              </div>
+            )}
           </div>
           {photos.length > 1 && (
             <div className="flex gap-2">
@@ -134,14 +140,14 @@ export default function ListingDetailPage() {
                 <span className="inline-flex mt-2"><VerifiedBadge /></span>
               )}
             </div>
-            <p className="text-4xl font-black leading-none text-indigo-700 shrink-0">
+            <p className={`text-4xl font-black leading-none shrink-0 ${sold ? 'text-gray-400 line-through' : 'text-indigo-700'}`}>
               {listing.price === 0 ? 'Free' : `$${listing.price}`}
             </p>
           </div>
 
-          {listing.status === 'sold' && (
-            <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-2 text-sm font-medium mb-4">
-              This listing has been marked as sold.
+          {sold && (
+            <div className="bg-gray-100 border border-gray-200 text-gray-600 rounded-lg px-4 py-2 text-sm font-medium mb-4">
+              Sold. This is here as a price reference... it&apos;s no longer available.
             </div>
           )}
 
