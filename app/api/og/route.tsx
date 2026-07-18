@@ -47,43 +47,26 @@ export async function GET(req: NextRequest) {
   const fonts = await loadOgFonts()
 
   if (!theme) {
-    // Generic card: the site thumbnail, same language as the flyer.
+    // The motto is the hero; the brand is a quiet signature. Visual = the
+    // pretty background (soft glows on deep indigo, no blur, satori-safe).
+    // ?pos=top moves the wordmark up if we ever want it there.
+    const top = req.nextUrl.searchParams.get('pos') === 'top'
+    const PRETTY = 'radial-gradient(circle at 20% 15%, rgba(165,180,252,0.5), rgba(165,180,252,0) 42%), radial-gradient(circle at 85% 90%, rgba(129,140,248,0.55), rgba(129,140,248,0) 46%), linear-gradient(145deg, #1E1B4B 0%, #312E81 60%, #3730A3 100%)'
+
+    const wordmark = (
+      <div style={{ position: 'absolute', left: 0, right: 0, [top ? 'top' : 'bottom']: 54, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 11 }}>
+        <Hanger size={30} color="rgba(255,255,255,0.82)" />
+        <div style={{ fontSize: 30, fontWeight: 600, letterSpacing: '-0.5px', color: 'rgba(255,255,255,0.82)' }}>UniformPass</div>
+      </div>
+    )
+
     return new ImageResponse(
       (
-        <div
-          style={{
-            height: '100%',
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            background: '#4338CA',
-            color: 'white',
-            padding: '72px 80px',
-            fontFamily: 'Inter',
-          }}
-        >
-          {/* Less is more: wordmark, one line, domain. Generous negative space. */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <Hanger size={40} color="#ffffff" />
-            <div style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-0.5px' }}>UniformPass</div>
+        <div style={{ position: 'relative', height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 90, background: PRETTY, color: 'white', fontFamily: 'Inter' }}>
+          <div style={{ fontSize: 100, fontWeight: 800, letterSpacing: '-3px', lineHeight: 1.0, textAlign: 'center' }}>
+            Turn uniforms into cash.
           </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ fontSize: 104, fontWeight: 800, letterSpacing: '-4px', lineHeight: 0.98 }}>
-              Turn uniforms
-            </div>
-            <div style={{ fontSize: 104, fontWeight: 800, letterSpacing: '-4px', lineHeight: 0.98 }}>
-              into cash.
-            </div>
-            <div style={{ fontSize: 32, fontWeight: 500, marginTop: 26, color: 'rgba(255,255,255,0.72)' }}>
-              Buy and sell used school uniforms locally.
-            </div>
-          </div>
-
-          <div style={{ fontSize: 30, fontWeight: 600, letterSpacing: '-0.3px', color: 'rgba(255,255,255,0.72)' }}>
-            uniformpass.shop
-          </div>
+          {wordmark}
         </div>
       ),
       { ...SIZE, fonts },
