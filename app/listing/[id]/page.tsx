@@ -134,7 +134,9 @@ export default function ListingDetailPage() {
         <div>
           <div className="flex items-start justify-between mb-2">
             <div>
-              <p className="text-sm text-gray-500 font-medium">{listing.school_name}</p>
+              <p className={`text-sm font-medium ${listing.is_generic ? 'text-emerald-700' : 'text-gray-500'}`}>
+                {listing.is_generic ? 'Basics · fits any school' : listing.school_name}
+              </p>
               <h1 className="text-2xl font-bold text-gray-900 mt-0.5">{listing.item_type}</h1>
               {listing.is_verified && (
                 <span className="inline-flex mt-2"><VerifiedBadge /></span>
@@ -196,15 +198,6 @@ export default function ListingDetailPage() {
           {/* Contact seller */}
           {listing.status !== 'sold' && (
             <>
-              {/* Safety, right where the fear spikes */}
-              <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 mb-3">
-                <p className="text-[13px] font-bold text-gray-700">Meeting up, the safe way</p>
-                <ul className="text-[13px] text-gray-600 mt-1 space-y-0.5">
-                  <li>Meet in public, in daylight.</li>
-                  <li>Pay on pickup, never a deposit.</li>
-                </ul>
-              </div>
-
               {listing.contact_info ? (
                 <div id="contact" className="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
                   <p className="text-sm font-medium text-indigo-900 mb-2">Contact {listing.seller_name}</p>

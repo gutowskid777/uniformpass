@@ -34,6 +34,7 @@ export default function NewListingPage() {
     item_type: '',
     size: '',
     is_lot: false,
+    is_generic: false,
     condition: 'good',
     price: '',
     location_city: '',
@@ -125,6 +126,7 @@ export default function NewListingPage() {
     item_type: form.item_type.trim(),
     size: form.is_lot ? 'Multiple sizes' : form.size,
     is_lot: form.is_lot,
+    is_generic: form.is_generic,
     condition: form.condition,
     price: Number(form.price) || 0,
     location_city: form.location_city.trim(),
@@ -256,6 +258,13 @@ export default function NewListingPage() {
             <SchoolPicker schools={schools}
               value={{ school_id: form.school_id, school_name: form.school_name, custom_school: form.custom_school }}
               onChange={v => setForm(f => ({ ...f, ...v }))} />
+            <label className="flex items-start gap-2 mt-2.5 cursor-pointer">
+              <input type="checkbox" checked={form.is_generic} onChange={e => set('is_generic', e.target.checked)}
+                className="mt-0.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+              <span className="text-sm text-gray-600">
+                <span className="font-medium text-gray-800">Fits any school</span> ... plain basics with no school logo (khakis, plain polos). Shows up for families at every school, not just this one.
+              </span>
+            </label>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

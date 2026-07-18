@@ -63,7 +63,8 @@ export default function BrowseExperience() {
       .eq('status', 'available')
       .order('created_at', { ascending: false })
 
-    if (schoolId) query = query.eq('school_id', schoolId)
+    // A school view also surfaces generic basics (plain, no-logo items that fit any school).
+    if (schoolId) query = query.or(`school_id.eq.${schoolId},is_generic.eq.true`)
     if (category) query = query.eq('category', category)
     if (gender) query = query.eq('gender', gender)
     if (size) query = query.eq('size', size)
@@ -486,7 +487,9 @@ function ListingCard({ listing }: { listing: Listing }) {
           {listing.price === 0 ? 'Free' : `$${listing.price}`}
         </p>
         <p className="text-sm text-gray-800 font-medium truncate mt-1">{listing.item_type}</p>
-        <p className="text-xs text-gray-500 truncate">{listing.school_name}</p>
+        {listing.is_generic
+          ? <p className="text-xs font-semibold text-emerald-700 truncate">Basics · fits any school</p>
+          : <p className="text-xs text-gray-500 truncate">{listing.school_name}</p>}
         <p className="text-xs text-gray-400 mt-1">
           {listing.is_lot ? 'Multiple sizes' : `Size ${listing.size}`} · {genderLabel}
         </p>
