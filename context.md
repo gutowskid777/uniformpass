@@ -44,8 +44,8 @@ uniformpass.shop** (pushed in batches; final commit `1d889dc`).
 - **Freshness nudge** (Dylan picked in-app + email): new `listings.bumped_at`; a live listing untouched 14 days shows
   "Still available? Yes still up / Mark sold" on My Listings (new `confirm` action stamps bumped_at); + weekly email
   cron `app/api/cron/listing-nudge` (Mon 9am ET, `vercel.json`, CRON_SECRET-guarded, groups stale listings/seller via
-  Resend). **NOT SMS** (no provider, A2P registration, cost, spam risk). ⚠️ **CRON_SECRET must be set in Vercel prod
-  before the weekly email fires** (RESEND_API_KEY already set).
+  Resend). **NOT SMS** (no provider, A2P registration, cost, spam risk). ✅ **CRON_SECRET SET in Vercel prod +
+  redeployed (Dylan, 07-18) → the weekly email is ARMED.** (RESEND_API_KEY already set.)
 - **Generic "fits any school" basics** (the OLMA answer): new `listings.is_generic`; /new checkbox; browse surfaces
   generic items alongside any selected school (`.or` school_id/is_generic); card+detail show "Basics · fits any
   school". For Dylan's dead-OLMA pile: list the un-logo'd pieces generic → they reach every school.
@@ -59,10 +59,19 @@ My Listings nudge, sold visual, cron send, the generic post→browse round-trip 
 (a password I don't type) or the blank local `.env.local` service key. On prod the key works, so they should; they're
 tsc + build + code verified. `is_generic` is set at creation only (not editable on the manage page yet).
 
-**OPEN (Dylan's calls):** St. Gregory Barbarigio (Garnerville — the last Rockland Catholic school; in or out?) ·
-the headline vs. marketplace brand question (cash-first is right WHILE supply is the constraint; flip when the grid
-fills) · "Auto Sell" naming (Free Pickup was floated) · make is_generic editable on manage · a "current uniform?"
-screen on the Auto Sell intake so the operator doesn't accept dead stock (learned from the OLMA pile).
+**Continued same session (07-18, all PUSHED + live):** dropped the "Meeting up, the safe way" block from listing
+detail · **price input** no longer changes on scroll + spinner steps by $1 (was cents) + cut "Keep every dollar" ·
+**first listing fixed** (79f21f80: school_name "Saint Joseph's Regional" → canonical "St. Joseph Regional High
+School", location_state null → NY; DB-only, live) · **OG thumbnail FINAL** (Dylan iterated to it via the OG
+reference board `brain/harvest/og-research-2026-07-16/` — Together/Cognition mold): dark indigo, big centered "Turn
+uniforms into" white + huge green **"cash."**, no wordmark. SJR "varsity tennis hidden" bug did NOT reproduce (both
+tennis listings share school_id 2d1b3d72; likely a stale filter/cache).
+
+**DECIDED 07-18:** ❌ St. Gregory Barbarigio — NO (Dylan). Headline stays cash-first "for now" (his call). OLMA:
+Dylan sorts the pile himself (list plain pieces generic, one alumni post for logo'd, donate the rest).
+
+**STILL OPEN (Dylan's calls):** "Auto Sell" naming (Free Pickup floated) · make is_generic editable on the manage
+page · a "current uniform?" screen on the Auto Sell intake so the operator doesn't accept dead stock (OLMA lesson).
 **Dev infra:** UniformPass dev runs on **:3010** (port 3000 is the other chat's Orbit app); 390px harness = `tools/m390`
 served on :8899. Two orphan listings (Jeanette's, claimed to gutowskidylan@gmail.com) now have manage tokens minted.
 
