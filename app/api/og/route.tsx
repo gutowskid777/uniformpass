@@ -47,26 +47,12 @@ export async function GET(req: NextRequest) {
   const fonts = await loadOgFonts()
 
   if (!theme) {
-    // The motto is the hero; the brand is a quiet signature. Visual = the
-    // pretty background (soft glows on deep indigo, no blur, satori-safe).
-    // ?pos=top moves the wordmark up if we ever want it there.
-    const top = req.nextUrl.searchParams.get('pos') === 'top'
-    const PRETTY = 'radial-gradient(circle at 20% 15%, rgba(165,180,252,0.5), rgba(165,180,252,0) 42%), radial-gradient(circle at 85% 90%, rgba(129,140,248,0.55), rgba(129,140,248,0) 46%), linear-gradient(145deg, #1E1B4B 0%, #312E81 60%, #3730A3 100%)'
-
-    const wordmark = (
-      <div style={{ position: 'absolute', left: 0, right: 0, [top ? 'top' : 'bottom']: 54, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 11 }}>
-        <Hanger size={30} color="rgba(255,255,255,0.82)" />
-        <div style={{ fontSize: 30, fontWeight: 600, letterSpacing: '-0.5px', color: 'rgba(255,255,255,0.82)' }}>UniformPass</div>
-      </div>
-    )
-
+    // Chosen: dark indigo, motto centered, bright green "cash". No wordmark, big.
     return new ImageResponse(
       (
-        <div style={{ position: 'relative', height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 90, background: PRETTY, color: 'white', fontFamily: 'Inter' }}>
-          <div style={{ fontSize: 100, fontWeight: 800, letterSpacing: '-3px', lineHeight: 1.0, textAlign: 'center' }}>
-            Turn uniforms into cash.
-          </div>
-          {wordmark}
+        <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: 60, background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 62%, #3730A3 100%)', fontFamily: 'Inter' }}>
+          <div style={{ fontSize: 100, fontWeight: 800, letterSpacing: '-3px', color: '#ffffff', textAlign: 'center', lineHeight: 1.0 }}>Turn uniforms into</div>
+          <div style={{ fontSize: 200, fontWeight: 800, letterSpacing: '-6px', color: '#4ADE80', lineHeight: 1.0 }}>cash.</div>
         </div>
       ),
       { ...SIZE, fonts },
