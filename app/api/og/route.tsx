@@ -42,18 +42,6 @@ function Hanger({ size, color }: { size: number; color: string }) {
   )
 }
 
-function Cash({ size, color }: { size: number; color: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 32 32">
-      <g fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="9" width="26" height="14" rx="2.5" />
-        <circle cx="16" cy="16" r="4" />
-        <path d="M7.5 13v6M24.5 13v6" />
-      </g>
-    </svg>
-  )
-}
-
 export async function GET(req: NextRequest) {
   const theme = getTheme(req.nextUrl.searchParams.get('school'))
   const fonts = await loadOgFonts()
@@ -68,59 +56,33 @@ export async function GET(req: NextRequest) {
             width: '100%',
             display: 'flex',
             flexDirection: 'column',
-            background: 'linear-gradient(160deg, #312E81 0%, #4338CA 55%, #4F46E5 100%)',
+            justifyContent: 'space-between',
+            background: '#4338CA',
             color: 'white',
-            padding: 56,
+            padding: '72px 80px',
             fontFamily: 'Inter',
           }}
         >
+          {/* Less is more: wordmark, one line, domain. Generous negative space. */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <Hanger size={42} color="#ffffff" />
-            <div style={{ fontSize: 36, fontWeight: 800, letterSpacing: '-1px' }}>UniformPass</div>
+            <Hanger size={40} color="#ffffff" />
+            <div style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-0.5px' }}>UniformPass</div>
           </div>
 
-          {/* Two lines on purpose: this is read at ~300px wide in a text thread,
-              so the headline has to survive a 4x downscale. */}
-          <div style={{ fontSize: 112, fontWeight: 900, letterSpacing: '-4px', lineHeight: 0.98, marginTop: 26, maxWidth: 860 }}>
-            Turn uniforms into cash.
-          </div>
-
-          <div style={{ display: 'flex', gap: 20, marginTop: 34 }}>
-            <div
-              style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 18,
-                background: 'rgba(255,255,255,0.18)',
-                border: '3px solid #FDE68A',
-                borderRadius: 24,
-                padding: '20px 26px',
-              }}
-            >
-              <Cash size={46} color="#FDE68A" />
-              <div style={{ fontSize: 38, fontWeight: 900, letterSpacing: '-1.5px' }}>Auto Sell</div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ fontSize: 104, fontWeight: 800, letterSpacing: '-4px', lineHeight: 0.98 }}>
+              Turn uniforms
             </div>
-            <div
-              style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 18,
-                background: 'rgba(255,255,255,0.10)',
-                border: '2px solid rgba(255,255,255,0.28)',
-                borderRadius: 24,
-                padding: '20px 26px',
-              }}
-            >
-              <Hanger size={46} color="#FDE68A" />
-              <div style={{ fontSize: 38, fontWeight: 900, letterSpacing: '-1.5px' }}>Buy and sell</div>
+            <div style={{ fontSize: 104, fontWeight: 800, letterSpacing: '-4px', lineHeight: 0.98 }}>
+              into cash.
+            </div>
+            <div style={{ fontSize: 32, fontWeight: 500, marginTop: 26, color: 'rgba(255,255,255,0.72)' }}>
+              Buy and sell used school uniforms locally.
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
-            <div style={{ fontSize: 28, fontWeight: 700, opacity: 0.85 }}>No fees · No shipping · Meet locally</div>
-            <div style={{ fontSize: 38, fontWeight: 900, letterSpacing: '-1px', color: '#FDE68A' }}>uniformpass.shop</div>
+          <div style={{ fontSize: 30, fontWeight: 600, letterSpacing: '-0.3px', color: 'rgba(255,255,255,0.72)' }}>
+            uniformpass.shop
           </div>
         </div>
       ),
