@@ -375,8 +375,9 @@ export default function NewListingPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Price ($) *</label>
-            <input type="number" min="0" step="0.01" placeholder="25"
+            <input type="number" min="0" step="1" inputMode="numeric" placeholder="25"
               value={form.price} onChange={e => set('price', e.target.value)}
+              onWheel={e => e.currentTarget.blur()}
               className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
             <p className="text-xs text-gray-400 mt-1">Enter 0 for free.</p>
           </div>

@@ -324,7 +324,7 @@ function SellDoors() {
             <h2 className="text-[26px] sm:text-[23px] font-black tracking-tight leading-none">List it yourself</h2>
           </div>
           <p className="text-indigo-100 text-[14px] sm:text-[15px] mt-2 sm:mt-2.5 font-medium">
-            Post it in two minutes. Keep every dollar.
+            Post it in two minutes.
           </p>
         </div>
         <div className="shrink-0 text-center bg-white text-indigo-800 text-base sm:text-lg font-extrabold px-6 py-3 sm:py-3.5 rounded-2xl">

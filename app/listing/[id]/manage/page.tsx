@@ -326,7 +326,8 @@ export default function ManageListingPage() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
-            <input type="number" min="0" step="0.01" value={form.price} onChange={e => set('price', e.target.value)}
+            <input type="number" min="0" step="1" inputMode="numeric" value={form.price} onChange={e => set('price', e.target.value)}
+              onWheel={e => e.currentTarget.blur()}
               className="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
           </div>
           <div>
