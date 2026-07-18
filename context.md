@@ -1,5 +1,70 @@
 # School Uniform Resale Platform — Context
-# Last updated: 2026-07-14 (chat-5 batch — PUSHED + deployed to prod)
+# Last updated: 2026-07-18 (UXPuniform session — big UX + features batch, ALL PUSHED + deployed to prod)
+
+## 2026-07-15→18 session (chat "UXPuniform") — ux-pass, mom's feedback, generic basics. ALL DEPLOYED.
+Ran `/ux-pass` (⚡speed) → `docs/ux-pass/2026-07-15/` (37 valid findings; headline reframe = intake/distribution
+over browse polish). Then a long Dylan-directed build+polish loop across many turns. **Everything below is LIVE on
+uniformpass.shop** (pushed in batches; final commit `1d889dc`).
+
+**Shipped & deployed:**
+- **Empty state fixed** (the #1 ux-pass bug): `schoolId` counted as a filter, so "be the first to sell" could never
+  render once a school was picked. Now: pick a school with no stock → "Be the first to sell for {School}" → Post an
+  item → "Or let us do it: get a free pickup" → below a rule, "Just looking to buy?" + Notify me. Unknown-school
+  search now captures a request instead of rendering silence.
+- **Homepage**: H1 = "Turn uniforms into cash." (matches the in-circulation flyer + OG card verbatim); subheader
+  "Buy and sell used uniforms with families at your school." **Auto Sell band restored** (4/5) with cash icon +
+  wordmark + white "Get a free pickup"; **List it yourself** card (1/4) rebuilt to mirror it (icon chip + wordmark +
+  white "Post an item"), plus-icon. Killed the "Keep 50% vs 100%" framing (advertises against the moat).
+- **Footer** collapsed from 5 stacked lines → one row (promise · Share the flyer · Contact · © ). **Trust line
+  KILLED** ("run by X" — Dylan: horrible idea; C4 is dead, do not re-propose).
+- **Nav**: header pill back to "+ Sell"; "We Sell It" → "Auto Sell"; **bottom nav emoji → stroke icons** (the 🚗
+  read as automobile; now the cash icon; /new = plus).
+- **Mobile passes**: hero/headline/search scaled down for 390px ("Find your school", dropped the SJR/Bosco examples);
+  mobile filter bar — search pulled OUT of the "Filters" collapse (was buried), selects open as a 2×2.
+- **OG card** rebuilt: killed the dead middle band, H1 → 112px two lines (sized for the ~300px it's actually seen at
+  in a text), cut the unreadable sub-lines.
+- **Two manage bugs fixed**: (1) the real one — the token system is vestigial (pre-accounts); the manage page never
+  called the API's authenticated-owner path and gated the Edit button on device-local localStorage. Now sends the
+  session JWT (load/save/status/delete) and shows "Edit" when you OWN the row, works any device. (2) a 500 (blank
+  service key) was rendered as "Manage link not valid → Contact us to take down your listing" — a server fault told
+  sellers their link was broken. Now 5xx = "Something went wrong on our end, your listing is fine" + retry.
+- **Price input**: no more wheel-scroll changing it (onWheel blur), spinner steps by $1 not cents.
+- **Schools added** (all live in prod DB): Albertus Magnus (Bardonia NY), St. Anthony School (Nanuet NY / Rockland —
+  Dylan confirmed), Mary Help of Christians Academy (North Haledon NJ), St. Margaret of Antioch School (Pearl River
+  NY, verified PK3-8). Aliases added. **BUG FIXED**: the alias table was keyed by raw name but looked up by
+  normalize(name), so every alias on a school with a period ("st joes", "joes" for SJR) returned ZERO — dead since
+  written, hidden because the acronym path caught "sjr". Now keyed by normalize.
+
+**Mom's feedback (all built + deployed):**
+- **Status** = Draft / Active / Inactive / Sold (her set). 'available' stays in DB, shows as "Active". New
+  `inactive` = paused/hidden-not-sold. Manage page = 4-way grid + one-line hint each. Verified LIVE on prod.
+- **Sold** stays out of the grid (Dylan's call) but viewable by direct link as a price reference: grayscale photo +
+  SOLD stamp, struck-through price, "here as a price reference" banner. Also hidden on `/seller/[id]` (open: add
+  sold to profiles later as seller social proof — 5-min change, deferred).
+- **Freshness nudge** (Dylan picked in-app + email): new `listings.bumped_at`; a live listing untouched 14 days shows
+  "Still available? Yes still up / Mark sold" on My Listings (new `confirm` action stamps bumped_at); + weekly email
+  cron `app/api/cron/listing-nudge` (Mon 9am ET, `vercel.json`, CRON_SECRET-guarded, groups stale listings/seller via
+  Resend). **NOT SMS** (no provider, A2P registration, cost, spam risk). ⚠️ **CRON_SECRET must be set in Vercel prod
+  before the weekly email fires** (RESEND_API_KEY already set).
+- **Generic "fits any school" basics** (the OLMA answer): new `listings.is_generic`; /new checkbox; browse surfaces
+  generic items alongside any selected school (`.or` school_id/is_generic); card+detail show "Basics · fits any
+  school". For Dylan's dead-OLMA pile: list the un-logo'd pieces generic → they reach every school.
+
+**Backlogged (brain/queue.json):** in-app messaging (don't build now — no notification path without an app) +
+native app (Apple $99/yr, Google $25; Capacitor-wrap = days but Apple may reject a thin webview; push is the real
+unlock, also enables messaging; premature pre-distribution).
+
+**⚠️ Verification honesty:** manage status tabs VERIFIED on prod (token link, no password). NOT click-verified:
+My Listings nudge, sold visual, cron send, the generic post→browse round-trip — all need either a logged-in session
+(a password I don't type) or the blank local `.env.local` service key. On prod the key works, so they should; they're
+tsc + build + code verified. `is_generic` is set at creation only (not editable on the manage page yet).
+
+**OPEN (Dylan's calls):** St. Gregory Barbarigio (Garnerville — the last Rockland Catholic school; in or out?) ·
+the headline vs. marketplace brand question (cash-first is right WHILE supply is the constraint; flip when the grid
+fills) · "Auto Sell" naming (Free Pickup was floated) · make is_generic editable on manage · a "current uniform?"
+screen on the Auto Sell intake so the operator doesn't accept dead stock (learned from the OLMA pile).
+**Dev infra:** UniformPass dev runs on **:3010** (port 3000 is the other chat's Orbit app); 390px harness = `tools/m390`
+served on :8899. Two orphan listings (Jeanette's, claimed to gutowskidylan@gmail.com) now have manage tokens minted.
 
 ## 2026-07-14 session (chat "Uniform5") — drafts, donate, drop NJ framing
 **PUSHED to `main` (through e93d76a) → Vercel auto-deployed to prod.** Reviewed on localhost first, then Dylan said push.
